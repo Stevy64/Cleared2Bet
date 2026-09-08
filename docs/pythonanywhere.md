@@ -30,9 +30,17 @@ git pull
 pip install -r requirements.txt
 python manage.py migrate --noinput
 python manage.py collectstatic --noinput
+# Obligatoire : sans collectstatic, CSS/JS = page blanche en prod (DEBUG=0).
 python manage.py synchroniser_sofascore   # cron recommandé
 python manage.py calculer_analyses
 ```
+
+Dans l’onglet **Web** PythonAnywhere :
+- Virtualenv : chemin vers ton `.venv-r2b` (ou venv)
+- Static files : URL `/static/` → Directory `/home/Gabomazone/Cleared2Bet/staticfiles`
+- Puis **Reload**
+
+WhiteNoise sert aussi les static via WSGI si le mapping manque.
 
 ## WSGI (exemple)
 
