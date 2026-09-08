@@ -28,6 +28,8 @@ cd ~/Cleared2Bet
 source ~/.virtualenvs/cleared2bet/bin/activate   # adapte le nom du venv
 git pull
 pip install -r requirements.txt
+# Si quota OK (optionnel, sync SofaScore plus fiable) :
+# pip install "curl_cffi>=0.7.0"
 python manage.py migrate --noinput
 python manage.py collectstatic --noinput
 # Obligatoire : sans collectstatic, CSS/JS = page blanche en prod (DEBUG=0).
@@ -35,8 +37,17 @@ python manage.py synchroniser_sofascore   # cron recommandé
 python manage.py calculer_analyses
 ```
 
+Si `Disk quota exceeded` :
+
+```bash
+pip cache purge
+# Supprime les anciens venvs inutiles, ex. :
+# rm -rf ~/Cleared2Bet/.venv-r2b
+du -sh ~/Cleared2Bet/.* ~/Cleared2Bet/* 2>/dev/null | sort -h | tail
+```
+
 Dans l’onglet **Web** PythonAnywhere :
-- Virtualenv : chemin vers ton `.venv-r2b` (ou venv)
+- Virtualenv : chemin vers ton `.venv-c2b` (ou venv)
 - Static files : URL `/static/` → Directory `/home/Gabomazone/Cleared2Bet/staticfiles`
 - Puis **Reload**
 

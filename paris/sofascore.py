@@ -1,10 +1,20 @@
-"""Client SofaScore (API non officielle) via curl_cffi."""
+"""Client SofaScore (API non officielle).
+
+Préfère curl_cffi (empreinte Chrome) ; bascule sur urllib si absent
+(utile sur PythonAnywhere quand le quota disque bloque l’install).
+"""
 from __future__ import annotations
 
+import json
+import urllib.error
+import urllib.request
 from datetime import datetime, timezone
 from typing import Any
 
-from curl_cffi import requests
+try:
+    from curl_cffi import requests as _cffi_requests
+except ImportError:  # pragma: no cover - environnement sans curl_cffi
+    _cffi_requests = None
 
 BASE = 'https://api.sofascore.com/api/v1'
 
@@ -24,10 +34,33 @@ class SofaScoreErreur(RuntimeError):
 
 def _get(path: str) -> dict[str, Any]:
     url = BASE + path if path.startswith('/') else path
-    r = requests.get(url, impersonate='chrome124', timeout=25)
-    if r.status_code != 200:
-        raise SofaScoreErreur(f'SofaScore {r.status_code} sur {path}')
-    return r.json()
+    if _cffi_requests is not None:
+        r = _cffi_requests.get(url, impersonate='chrome124', timeout=25)
+        if r.status_code != 200:
+            raise SofaScoreErreur(f'SofaScore {r.status_code} sur {path}')
+        return r.json()
+
+    req = urllib.request.Request(
+        url,
+        headers={
+            'User-Agent': (
+                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+                'AppleWebKit/537.36 (KHTML, like Gecko) '
+                'Chrome/124.0.0.0 Safari/537.36'
+            ),
+            'Accept': 'application/json',
+        },
+        method='GET',
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=25) as resp:
+            if getattr(resp, 'status', 200) != 200:
+                raise SofaScoreErreur(f'SofaScore {resp.status} sur {path}')
+            return json.loads(resp.read().decode('utf-8'))
+    except urllib.error.HTTPError as exc:
+        raise SofaScoreErreur(f'SofaScore {exc.code} sur {path}') from exc
+    except urllib.error.URLError as exc:
+        raise SofaScoreErreur(f'SofaScore indisponible : {exc.reason}') from exc
 
 
 def saison_courante(tournament_id: int) -> int:

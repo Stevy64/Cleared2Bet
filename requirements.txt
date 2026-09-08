@@ -1,10 +1,9 @@
-# Python 3.10+ (PythonAnywhere) ; 3.12+ recommandé en local/CI.
+# Production (PythonAnywhere) — Python 3.10+
 Django==5.2.6
 djangorestframework==3.18.1
 numpy==2.2.6
 scipy==1.15.3
-pytest==8.3.5
-pytest-django==4.11.1
 gunicorn==23.0.0
 whitenoise==6.9.0
-curl_cffi>=0.7.0
+# curl_cffi ~15 Mo : installer à part si le quota disque le permet
+#   pip install "curl_cffi>=0.7.0"
