@@ -2,7 +2,7 @@ from django.contrib import admin
 
 from .models import (
     Analyse, Competition, Contexte, Cote, Equipe, Match, Option,
-    PropositionParis, Vote, VoteOption,
+    Profil, PropositionParis, Vote, VoteOption,
 )
 
 
@@ -130,3 +130,11 @@ class VoteAdmin(admin.ModelAdmin):
 class VoteOptionAdmin(admin.ModelAdmin):
     list_display = ('option', 'user', 'choix', 'created_at')
     list_filter = ('choix',)
+
+
+@admin.register(Profil)
+class ProfilAdmin(admin.ModelAdmin):
+    list_display = ('user', 'categorie')
+    list_filter = ('categorie',)
+    search_fields = ('user__username',)
+    raw_id_fields = ('user',)

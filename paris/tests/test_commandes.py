@@ -38,10 +38,10 @@ class CommandesTests(TestCase):
         self.assertIn('Dry-run', out.getvalue())
 
     def test_import_puis_calcul_idempotent(self):
-        call_command('importer_matchs', source=str(EXEMPLE), stdout=StringIO())
+        call_command('importer_matchs', source=str(EXEMPLE), allow_demo=True, stdout=StringIO())
         n = Match.objects.count()
         self.assertEqual(n, 9)
-        call_command('importer_matchs', source=str(EXEMPLE), stdout=StringIO())
+        call_command('importer_matchs', source=str(EXEMPLE), allow_demo=True, stdout=StringIO())
         self.assertEqual(Match.objects.count(), n)
         call_command('calculer_analyses', journee='2026-09-08', stdout=StringIO())
         m = Match.objects.select_related('analyse').first()
@@ -51,7 +51,7 @@ class CommandesTests(TestCase):
         self.assertEqual(Option.objects.count(), n_opt)
 
     def test_regler_apres_score(self):
-        call_command('importer_matchs', source=str(EXEMPLE), stdout=StringIO())
+        call_command('importer_matchs', source=str(EXEMPLE), allow_demo=True, stdout=StringIO())
         call_command('calculer_analyses', journee='2026-09-08', stdout=StringIO())
         m = Match.objects.first()
         m.buts_dom, m.buts_ext, m.statut = 2, 1, 'termine'
@@ -63,10 +63,14 @@ class CommandesTests(TestCase):
 
     def test_import_fichier_invalide_echoue(self):
         with self.assertRaises(CommandError):
-            call_command('importer_matchs', source='nexistepas.json')
+            call_command('importer_matchs', source='nexistepas.json', allow_demo=True)
+
+    def test_import_sans_allow_demo_refuse(self):
+        with self.assertRaises(CommandError):
+            call_command('importer_matchs', source=str(EXEMPLE), stdout=StringIO())
 
     def test_recalcul_preserve_options_reglees(self):
-        call_command('importer_matchs', source=str(EXEMPLE), stdout=StringIO())
+        call_command('importer_matchs', source=str(EXEMPLE), allow_demo=True, stdout=StringIO())
         call_command('calculer_analyses', journee='2026-09-08', stdout=StringIO())
         m = Match.objects.filter(statut='a_venir').first()
         # Simule un match encore à venir dont une option a déjà été réglée (edge).
@@ -76,6 +80,12 @@ class CommandesTests(TestCase):
         call_command('calculer_analyses', journee='2026-09-08', stdout=StringIO())
         opt.refresh_from_db()
         self.assertEqual(opt.resultat, 'gagne')
+
+    def test_purger_matchs_fictifs(self):
+        call_command('importer_matchs', source=str(EXEMPLE), allow_demo=True, stdout=StringIO())
+        self.assertEqual(Match.objects.filter(sofascore_id__isnull=True).count(), 9)
+        call_command('purger_matchs_fictifs', stdout=StringIO())
+        self.assertEqual(Match.objects.count(), 0)
 
 
 class SofaScoreHelpersTests(TestCase):

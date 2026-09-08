@@ -16,13 +16,30 @@ except ImportError:  # pragma: no cover
 
 
 class Command(BaseCommand):
-    help = 'Importe des matchs depuis le JSON d’analyse. Idempotent.'
+    help = (
+        'Importe des matchs depuis un JSON (OUTIL DE DÉMO UNIQUEMENT). '
+        'Les matchs réels doivent venir de synchroniser_sofascore.'
+    )
 
     def add_arguments(self, parser):
         parser.add_argument('--source', required=True, help='Fichier JSON')
         parser.add_argument('--dry-run', action='store_true')
+        parser.add_argument(
+            '--allow-demo',
+            action='store_true',
+            help=(
+                'Obligatoire : confirme que tu acceptes d’écrire des matchs '
+                'sans source externe (tests / démo locale uniquement).'
+            ),
+        )
 
     def handle(self, *args, **opts):
+        if not opts['allow_demo'] and not opts['dry_run']:
+            raise CommandError(
+                'Refus : importer_matchs invente des fiches hors calendrier réel. '
+                'Utilise `synchroniser_sofascore` pour les matchs officiels, '
+                'ou passe --allow-demo uniquement pour des essais locaux isolés.'
+            )
         chemin = Path(opts['source'])
         if not chemin.exists():
             raise CommandError(f'Fichier introuvable : {chemin}')
@@ -39,6 +56,10 @@ class Command(BaseCommand):
             self.stdout.write(f'Dry-run : {len(matchs)} matchs valides, aucune écriture.')
             return
 
+        self.stdout.write(self.style.WARNING(
+            'ATTENTION : import démo — ces matchs n’ont pas de sofascore_id '
+            'et resteront exclus de l’API publique.'
+        ))
         n_matchs = n_cotes = 0
         with transaction.atomic():
             for m in matchs:

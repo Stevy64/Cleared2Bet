@@ -16,7 +16,7 @@ from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from paris.models import Competition, Equipe, Match, Option, PropositionParis, Vote, VoteOption
+from paris.models import Competition, Equipe, Match, Option, Profil, PropositionParis, Vote, VoteOption
 from paris.moteur import VERSION_MOTEUR
 from paris.reglement import regler_match
 from paris import sofascore as sofa
@@ -33,6 +33,24 @@ from paris.serializers import (
 )
 
 MIN_ECHANTILLON = 20
+
+
+def _categorie_user(user):
+    """visiteur (anonyme) | membre | premium."""
+    if not user or not user.is_authenticated:
+        return 'visiteur'
+    profil, _ = Profil.objects.get_or_create(user=user)
+    if profil.categorie == 'premium':
+        return 'premium'
+    return 'membre'
+
+
+def _payload_auth(user):
+    return {
+        'authentifie': bool(user and user.is_authenticated),
+        'username': user.username if user and user.is_authenticated else None,
+        'categorie': _categorie_user(user),
+    }
 
 
 class Pagination30(PageNumberPagination):
@@ -71,8 +89,11 @@ def _fenetre_jour(d):
 
 
 def _matchs_qs():
+    # Uniquement matchs issus d’une source externe (SofaScore).
+    # Les JSON de démo (sans sofascore_id) ne doivent jamais apparaître en prod.
     return (
         Match.objects
+        .filter(sofascore_id__isnull=False)
         .select_related('competition', 'domicile', 'exterieur')
         .prefetch_related(
             Prefetch(
@@ -82,6 +103,17 @@ def _matchs_qs():
                 ),
             ),
         )
+    )
+
+
+def _match_detail_qs():
+    return (
+        Match.objects
+        .filter(sofascore_id__isnull=False)
+        .select_related(
+            'competition', 'domicile', 'exterieur', 'analyse', 'contexte',
+        )
+        .prefetch_related('analyse__options__votes_consensus')
     )
 
 
@@ -135,12 +167,7 @@ class MatchDetail(CacheETagMixin, APIView):
     permission_classes = [AllowAny]
 
     def get(self, request, pk):
-        match = get_object_or_404(
-            Match.objects.select_related(
-                'competition', 'domicile', 'exterieur', 'analyse', 'contexte',
-            ).prefetch_related('analyse__options__votes_consensus'),
-            pk=pk,
-        )
+        match = get_object_or_404(_match_detail_qs(), pk=pk)
         return Response(MatchDetailSerializer(match, context={'request': request}).data)
 
 
@@ -267,11 +294,9 @@ class Info(CacheETagMixin, APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
-        u = request.user
         return Response({
             'version_moteur': VERSION_MOTEUR,
-            'authentifie': u.is_authenticated,
-            'username': u.username if u.is_authenticated else None,
+            **_payload_auth(request.user),
         })
 
 
@@ -296,8 +321,9 @@ class Register(APIView):
             password=data['password'],
             email=data.get('email') or '',
         )
+        Profil.objects.get_or_create(user=user, defaults={'categorie': 'membre'})
         login(request, user)
-        return Response({'authentifie': True, 'username': user.username})
+        return Response(_payload_auth(user))
 
 
 class Login(APIView):
@@ -318,7 +344,7 @@ class Login(APIView):
         if user is None:
             return Response({'detail': 'Identifiants incorrects.'}, status=400)
         login(request, user)
-        return Response({'authentifie': True, 'username': user.username})
+        return Response(_payload_auth(user))
 
 
 class Logout(APIView):
@@ -327,7 +353,7 @@ class Logout(APIView):
 
     def post(self, request):
         logout(request)
-        return Response({'authentifie': False})
+        return Response({'authentifie': False, 'username': None, 'categorie': 'visiteur'})
 
 
 def _propositions_qs(match):

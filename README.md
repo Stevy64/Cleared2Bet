@@ -17,21 +17,33 @@ python manage.py createsuperuser   # pour l’admin et la saisie de scores
 
 ## Données
 
-Le JSON d’import est décrit dans `docs/format_import.md`. Exemple réel de journée :
+**Source de vérité : SofaScore** (calendrier réel). Ne jamais importer de JSON inventé en usage normal.
 
 ```bash
-python manage.py importer_matchs --source exemples/journee-2026-09-08.json
-python manage.py calculer_analyses --journee 2026-09-08
+python manage.py synchroniser_sofascore
+python manage.py calculer_analyses
 python manage.py runserver
 ```
 
-Les trois commandes acceptent `--dry-run`. Après un match, saisis le score dans l’admin (ou Réglages si tu es connecté) puis :
+Un fichier `exemples/journee-2026-09-08.json` existe pour les **tests unitaires uniquement**. Il contient des matchs **fictifs** (ex. Man Utd–Everton, Lille–Nice). L’API publique ignore tout match sans `sofascore_id`. Pour nettoyer une base polluée :
+
+```bash
+python manage.py purger_matchs_fictifs
+```
+
+Import JSON démo (interdit sans confirmation explicite) :
+
+```bash
+python manage.py importer_matchs --source exemples/journee-2026-09-08.json --allow-demo
+```
+
+Les commandes acceptent `--dry-run`. Après un match, saisis le score dans l’admin (ou Réglages si tu es connecté) puis :
 
 ```bash
 python manage.py regler_options
 ```
 
-Un cron peut enchaîner import → calcul → règlement.
+Un cron peut enchaîner sync SofaScore → calcul → règlement.
 
 ## Tests
 
@@ -39,19 +51,22 @@ Un cron peut enchaîner import → calcul → règlement.
 pytest
 ```
 
-## Déploiement
+CI GitHub Actions (`.github/workflows/ci.yml`) : pytest, migrations, `collectstatic`,
+`manage.py check --deploy`, smoke PythonAnywhere (`DEBUG=0`).
 
-`collectstatic` + gunicorn, rien d’autre (pas de build front).
+## Déploiement (PythonAnywhere)
+
+Voir [docs/pythonanywhere.md](docs/pythonanywhere.md).
 
 ```bash
-set DJANGO_DEBUG=0
-set DJANGO_SECRET_KEY=...
-set DJANGO_ALLOWED_HOSTS=ton.domaine
+export DJANGO_DEBUG=0
+export DJANGO_SECRET_KEY=...
+export DJANGO_ALLOWED_HOSTS=tonuser.pythonanywhere.com
+export DJANGO_SSL=1
+python manage.py migrate --noinput
 python manage.py collectstatic --noinput
-python manage.py migrate
-gunicorn config.wsgi:application --bind 0.0.0.0:8000
 ```
 
-PostgreSQL en production : renseigne `DATABASES` dans `config/settings.py` (SQLite suffit en local).
+Alternative locale / VPS : `gunicorn config.wsgi:application`.
 
 Ouvre `/` sur le téléphone, installe la PWA. Hors ligne, le service worker sert la coque et les derniers matchs mis en cache.

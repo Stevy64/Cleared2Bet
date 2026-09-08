@@ -22,6 +22,7 @@ class ApiMatchsQueriesTests(TestCase):
             m = Match.objects.create(
                 competition=comp, domicile=d, exterieur=ext,
                 coup_denvoi=now, journee='J1',
+                sofascore_id=900000 + i,
             )
             an = Analyse.objects.create(
                 match=m,

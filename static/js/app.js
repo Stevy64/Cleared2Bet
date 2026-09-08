@@ -177,11 +177,15 @@ const ICON_PATHS = {
   x: '<path d="M7 7l10 10M17 7 7 17"/>',
   trophy: '<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4z"/><path d="M7 6H5a2 2 0 0 0 0 4h2M17 6h2a2 2 0 0 1 0 4h-2"/>',
   shield: '<path d="M12 3 5 6v6c0 5 3.5 8.5 7 9.5 3.5-1 7-4.5 7-9.5V6l-7-3z"/>',
+  crosshair: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1.6"/><path d="M19.5 4.5 14 10M19.5 4.5l-3.2.7M19.5 4.5l.7 3.2"/>',
   chevron: '<path d="m9 6 6 6-6 6"/>',
   layers: '<path d="m12 3 9 4.5-9 4.5L3 7.5 12 3z"/><path d="m3 12 9 4.5L21 12"/><path d="m3 16.5 9 4.5 9-4.5"/>',
   info: '<circle cx="12" cy="12" r="9"/><path d="M12 10v6M12 7h.01"/>',
   share: '<path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="M16 6l-4-4-4 4"/><path d="M12 2v14"/>',
   download: '<path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/>',
+  eye: '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+  'badge-check': '<path d="M9 12.5 11 14.5 15.5 10"/><path d="M12 3 14.2 5.1l2.9-.4.9 2.8 2.6 1.4-1.4 2.6.4 2.9L16.9 15.5 15.5 18.4l-2.6-1.4L10.5 18.4 9.1 15.5 6.2 15.9l.4-2.9L5.2 10.4l2.6-1.4.9-2.8 2.9.4z"/>',
+  crown: '<path d="M3 8l3.5 3L12 4l5.5 7L21 8v10H3V8z"/><path d="M3 18h18"/>',
   users: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="3"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a3 3 0 0 1 0 5.74"/>',
 };
 
@@ -332,6 +336,7 @@ function c2b() {
     crestSvg,
     icon,
     drapeauComp,
+    fmtJour,
     TYPES_PROPOSITION,
     logoUrl(eq) {
       return eq && eq.id ? '/api/v1/equipes/' + eq.id + '/logo/' : '';
@@ -363,6 +368,7 @@ function c2b() {
     _matchReq: 0,
     authentifie: false,
     username: null,
+    categorie: 'visiteur',
     authUser: '',
     authPass: '',
     authMode: 'login',
@@ -372,6 +378,7 @@ function c2b() {
     propConfiance: 60,
     propErr: '',
     voteErr: '',
+    _voteBusy: null,
     optOuverte: null,
     panelChances: false,
     panelContexte: false,
@@ -426,11 +433,34 @@ function c2b() {
       this._lastScrollY = y;
     },
 
+    get estVisiteur() {
+      return this.categorie === 'visiteur' || !this.authentifie;
+    },
+    get peutVoter() {
+      return this.authentifie && (this.categorie === 'membre' || this.categorie === 'premium');
+    },
+    get peutCompos() {
+      return this.authentifie && (this.categorie === 'membre' || this.categorie === 'premium');
+    },
+    get libCategorie() {
+      return {
+        visiteur: 'Visiteur',
+        membre: 'Membre',
+        premium: 'Premium',
+      }[this.categorie] || 'Visiteur';
+    },
+    iconCategorie(cat) {
+      const c = cat || this.categorie || 'visiteur';
+      const name = { visiteur: 'eye', membre: 'badge-check', premium: 'crown' }[c] || 'eye';
+      return icon(name, 'icon icon-sm');
+    },
+
     async chargerInfo() {
       try {
         const { data } = await getJSON('/api/v1/info/');
         this.authentifie = !!(data && data.authentifie);
         this.username = data && data.username;
+        this.categorie = (data && data.categorie) || (this.authentifie ? 'membre' : 'visiteur');
         if (data && data.version_moteur) this.moteur = data.version_moteur;
       } catch (_) { /* hors ligne */ }
     },
@@ -553,10 +583,7 @@ function c2b() {
     },
 
     exigerAuth(motif, pending) {
-      if (this.authentifie) {
-        if (typeof pending === 'function') return pending();
-        return true;
-      }
+      if (this.authentifie) return true;
       this.ouvrirAuth(motif, pending);
       return false;
     },
@@ -952,42 +979,30 @@ function c2b() {
     },
 
     appliquerVoteOption(matchId, updated) {
-      const patch = (opts) => (opts || []).map((o) => (
-        o.id === updated.id
-          ? {
-              ...o,
-              likes: updated.likes,
-              dislikes: updated.dislikes,
-              pct_likes: updated.pct_likes,
-              mon_vote: updated.mon_vote,
-            }
-          : o
-      ));
-      this.matchs = this.matchs.map((m) => (
-        m.id === matchId ? { ...m, options: patch(m.options) } : m
-      ));
+      const patchOpts = (opts) => {
+        if (!opts) return;
+        const o = opts.find((x) => x.id === updated.id);
+        if (!o) return;
+        o.likes = updated.likes;
+        o.dislikes = updated.dislikes;
+        o.pct_likes = updated.pct_likes;
+        o.mon_vote = updated.mon_vote;
+      };
+      const m = this.matchs.find((x) => x.id === matchId);
+      if (m) patchOpts(m.options);
       if (this.fiche && this.fiche.id === matchId && this.fiche.analyse) {
-        this.fiche = {
-          ...this.fiche,
-          analyse: {
-            ...this.fiche.analyse,
-            options: patch(this.fiche.analyse.options),
-          },
-        };
+        patchOpts(this.fiche.analyse.options);
       }
       if (this.apercu && this.apercu.id === matchId && this.apercu.analyse) {
-        this.apercu = {
-          ...this.apercu,
-          analyse: {
-            ...this.apercu.analyse,
-            options: patch(this.apercu.analyse.options),
-          },
-        };
+        patchOpts(this.apercu.analyse.options);
       }
     },
 
     async voterOption(matchId, optId, choix, ev) {
       if (ev) ev.stopPropagation();
+      if (!matchId || !optId) return;
+      const lock = matchId + ':' + optId;
+      if (this._voteBusy === lock) return;
       this.voteErr = '';
       if (!this.exigerAuth(
         'Connecte-toi pour voter sur cette prédiction.',
@@ -995,24 +1010,83 @@ function c2b() {
       )) {
         return;
       }
-      const res = await fetch(
-        '/api/v1/matchs/' + matchId + '/options/' + optId + '/vote/',
-        {
-          method: 'POST',
-          credentials: 'same-origin',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': csrf(),
+      this._voteBusy = lock;
+      // Optimistic : bascule immédiate, rollback si l’API échoue.
+      const prev = this._snapshotVote(matchId, optId);
+      this._optimisticVote(matchId, optId, choix);
+      try {
+        const res = await fetch(
+          '/api/v1/matchs/' + matchId + '/options/' + optId + '/vote/',
+          {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': csrf(),
+            },
+            body: JSON.stringify({ choix }),
           },
-          body: JSON.stringify({ choix }),
-        },
-      );
-      if (res.ok) {
-        const updated = await res.json();
-        this.appliquerVoteOption(matchId, updated);
-      } else {
-        this.voteErr = 'Vote impossible.';
+        );
+        if (res.ok) {
+          const updated = await res.json();
+          this.appliquerVoteOption(matchId, updated);
+        } else {
+          if (prev) this.appliquerVoteOption(matchId, prev);
+          this.voteErr = res.status === 403
+            ? 'Connecte-toi pour voter.'
+            : 'Vote impossible.';
+        }
+      } catch (_) {
+        if (prev) this.appliquerVoteOption(matchId, prev);
+        this.voteErr = 'Réseau indisponible.';
+      } finally {
+        if (this._voteBusy === lock) this._voteBusy = null;
       }
+    },
+
+    _findOption(matchId, optId) {
+      const from = (opts) => (opts || []).find((o) => o.id === optId) || null;
+      if (this.fiche && this.fiche.id === matchId && this.fiche.analyse) {
+        const o = from(this.fiche.analyse.options);
+        if (o) return o;
+      }
+      if (this.apercu && this.apercu.id === matchId && this.apercu.analyse) {
+        const o = from(this.apercu.analyse.options);
+        if (o) return o;
+      }
+      const m = this.matchs.find((x) => x.id === matchId);
+      return m ? from(m.options) : null;
+    },
+
+    _snapshotVote(matchId, optId) {
+      const o = this._findOption(matchId, optId);
+      if (!o) return null;
+      return {
+        id: o.id,
+        likes: o.likes,
+        dislikes: o.dislikes,
+        pct_likes: o.pct_likes,
+        mon_vote: o.mon_vote,
+      };
+    },
+
+    _optimisticVote(matchId, optId, choix) {
+      const o = this._findOption(matchId, optId);
+      if (!o) return;
+      let likes = Number(o.likes) || 0;
+      let dislikes = Number(o.dislikes) || 0;
+      if (o.mon_vote === 'like') likes = Math.max(0, likes - 1);
+      if (o.mon_vote === 'dislike') dislikes = Math.max(0, dislikes - 1);
+      if (choix === 'like') likes += 1;
+      else if (choix === 'dislike') dislikes += 1;
+      const total = likes + dislikes;
+      this.appliquerVoteOption(matchId, {
+        id: optId,
+        likes,
+        dislikes,
+        pct_likes: total ? Math.round(100 * likes / total) : null,
+        mon_vote: choix,
+      });
     },
 
     async authSubmit() {
@@ -1046,6 +1120,7 @@ function c2b() {
         if (res.ok) {
           this.authentifie = true;
           this.username = data.username;
+          this.categorie = data.categorie || 'membre';
           this.authPass = '';
           this.authErr = '';
           const pending = this.authPending;
@@ -1076,6 +1151,7 @@ function c2b() {
       });
       this.authentifie = false;
       this.username = null;
+      this.categorie = 'visiteur';
     },
 
     setJourDate(val) {
@@ -1085,6 +1161,13 @@ function c2b() {
     },
 
     async ouvrirCompos() {
+      if (!this.peutCompos) {
+        this.ouvrirAuth(
+          'Compte Membre requis pour ouvrir les compos du jour.',
+          () => this.ouvrirCompos(),
+        );
+        return;
+      }
       this.sheetApercu = false;
       this.sheetClub = false;
       this.sheetAuth = false;
@@ -1201,18 +1284,15 @@ function c2b() {
       this.partageMsg = '';
       this.partageBusy = true;
       const titre = 'Cleared2Bet — Compos du ' + fmtJour(this.jourDate + 'T12:00:00');
-      const text = [titre, 'Prudente + Filet de sécurité', '', ...this.textePredictionsJour()].join('\n');
-      const blob = texteVersPdfBlob(titre, this.blocsPdfCompos());
-      const file = new File([blob], 'compos-cleared2bet-' + (this.jourDate || 'jour') + '.pdf', {
-        type: 'application/pdf',
-      });
+      const text = [
+        titre,
+        'Voici notre sélection du jour, tirée de notre moteur de prédiction C2B',
+        '',
+        ...this.textePredictionsJour(),
+      ].join('\n');
       try {
         if (navigator.share) {
-          const payload = { title: 'Compos Cleared2Bet', text };
-          if (navigator.canShare && navigator.canShare({ files: [file] })) {
-            payload.files = [file];
-          }
-          await navigator.share(payload);
+          await navigator.share({ title: 'Compos Cleared2Bet', text });
           this.partageMsg = 'Partage envoyé.';
           return;
         }
@@ -1231,20 +1311,24 @@ function c2b() {
       }
     },
 
-    telechargerPdfCompos() {
+    imprimerCompos() {
       this.partageMsg = '';
       if (!this.predictionsJour.length) return;
-      const titre = 'Cleared2Bet — Compos du ' + fmtJour(this.jourDate + 'T12:00:00');
-      const blob = texteVersPdfBlob(titre, this.blocsPdfCompos());
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'compos-cleared2bet-' + (this.jourDate || 'jour') + '.pdf';
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-      this.partageMsg = 'PDF téléchargé.';
+      this.composExpanded = true;
+      document.body.classList.add('print-compos');
+      const cleanup = () => {
+        document.body.classList.remove('print-compos');
+        window.removeEventListener('afterprint', cleanup);
+      };
+      window.addEventListener('afterprint', cleanup);
+      // Laisse le temps aux logos / styles de peindre avant l’aperçu PDF.
+      this.$nextTick(() => {
+        window.setTimeout(() => window.print(), 250);
+      });
+    },
+
+    telechargerPdfCompos() {
+      this.imprimerCompos();
     },
 
     ecouterInstallPWA() {

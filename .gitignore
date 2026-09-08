@@ -7,3 +7,10 @@ db.sqlite3
 *.egg-info/
 .idea/
 .vscode/
+.env
+.env.*
+!.env.example
+staticfiles/
+media/
+*.log
+.DS_Store

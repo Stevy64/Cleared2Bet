@@ -213,3 +213,22 @@ class VoteOption(models.Model):
 
     def __str__(self):
         return f"{self.user} → {self.option_id} {self.choix}"
+
+
+class Profil(models.Model):
+    """Catégorie compte : membre (défaut) ou premium (à venir)."""
+    CATEGORIES = [
+        ('membre', 'Membre'),
+        ('premium', 'Premium'),
+    ]
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='profil',
+    )
+    categorie = models.CharField(
+        max_length=16, choices=CATEGORIES, default='membre', db_index=True,
+    )
+
+    def __str__(self):
+        return f'{self.user.username} ({self.categorie})'

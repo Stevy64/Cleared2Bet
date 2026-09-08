@@ -9,7 +9,7 @@
   <title>Cleared2Bet</title>
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
-  <link rel="stylesheet" href="/static/css/app.css?v=32">
+  <link rel="stylesheet" href="/static/css/app.css?v=46">
 </head>
 <body
   x-data="c2b()"
@@ -17,6 +17,26 @@
   data-moteur="{{ version_moteur }}"
 >
   <a class="skip" href="#contenu">Aller au contenu</a>
+
+  <nav class="topnav" :class="tabHidden ? 'topnav-hide' : ''" aria-label="Compte">
+    <button type="button" class="topnav-brand" @click="allerAccueil()">Cleared2Bet</button>
+    <div class="topnav-right">
+      <span class="badge-cat" :class="'cat-' + categorie" :title="libCategorie">
+        <span class="badge-cat-ico" x-html="iconCategorie()"></span>
+        <span x-text="libCategorie"></span>
+      </span>
+      <button type="button" class="topnav-account" x-show="!authentifie" x-cloak
+        @click="ouvrirAuth('Connecte-toi pour accéder à ton compte Membre.')">
+        <span x-html="icon('users','icon icon-sm')"></span>
+        Connexion
+      </button>
+      <button type="button" class="topnav-account on" x-show="authentifie" x-cloak
+        @click="go('/reglages')" :title="username">
+        <span x-html="icon('users','icon icon-sm')"></span>
+        <span x-text="username || 'Compte'"></span>
+      </button>
+    </div>
+  </nav>
 
   <div class="banners">
     <div class="banner" x-show="cacheBanner" x-cloak role="status">
@@ -49,6 +69,9 @@
             <span x-html="icon('layers','icon icon-sm')"></span>
             Compos du jour
           </button>
+          <p class="hero-access hint" x-show="estVisiteur" x-cloak>
+            Accès Visiteur : consultation limitée. Connecte-toi pour les compos et les votes.
+          </p>
           <button type="button" class="btn btn-hero-ghost" x-show="peutInstaller" x-cloak
             @click="installerPWA()">Installer l’app</button>
         </div>
@@ -155,7 +178,10 @@
                   <div class="carte-reco">
                     <div class="pct-stack">
                       <div class="pct-row">
-                        <span x-text="prudente(m).libelle"></span>
+                        <span class="pred-titre">
+                          <span class="pred-mark" aria-hidden="true" x-html="icon('crosshair','icon icon-sm')"></span>
+                          <span x-text="prudente(m).libelle"></span>
+                        </span>
                         <strong class="pct-pred" :class="toneProb(prudente(m).probabilite)"
                           x-text="fmtPct(prudente(m).probabilite)"></strong>
                       </div>
@@ -169,7 +195,7 @@
                 </template>
                 <div class="carte-pied no-apercu">
                   <div class="carte-pied-left">
-                    <template x-if="prudente(m)">
+                    <template x-if="prudente(m) && peutVoter">
                       <div class="vote-row compact">
                         <button type="button" class="btn-vote like"
                           :class="prudente(m).mon_vote === 'like' ? 'on' : ''"
@@ -185,9 +211,13 @@
                         </button>
                       </div>
                     </template>
+                    <button type="button" class="btn-vote-lock" x-show="prudente(m) && !peutVoter" x-cloak
+                      @click.stop="ouvrirAuth('Crée un compte Membre pour liker / disliker.')">
+                      <span x-html="icon('users','icon icon-sm')"></span> Voter
+                    </button>
                   </div>
                   <button type="button" class="btn-voir" @click.stop="ouvrirMatch(m.id)">
-                    Voir <span x-html="icon('arrow')"></span>
+                    Détails <span x-html="icon('arrow')"></span>
                   </button>
                 </div>
               </article>
@@ -376,7 +406,7 @@
                       <p class="hcp-note" x-show="o.code.startsWith('HCP_')">
                         Handicap européen : perdre d’exactement un but gagne. Ce n’est pas un handicap asiatique.
                       </p>
-                      <div class="vote-row">
+                      <div class="vote-row" x-show="peutVoter">
                         <button type="button" class="btn-vote like" :class="o.mon_vote === 'like' ? 'on' : ''"
                           @click.stop="voterOption(fiche.id, o.id, 'like', $event)">
                           <span x-html="icon('thumbs-up')"></span> D’accord
@@ -386,6 +416,10 @@
                           <span x-html="icon('thumbs-down')"></span> Pas d’accord
                         </button>
                       </div>
+                      <button type="button" class="btn-vote-lock" x-show="!peutVoter" x-cloak
+                        @click="ouvrirAuth('Crée un compte Membre pour voter sur les tips.')">
+                        <span x-html="icon('users','icon icon-sm')"></span> Connexion pour voter
+                      </button>
                       <p class="ko" x-show="voteErr" x-text="voteErr" x-cloak></p>
                     </div>
                   </div>
@@ -721,11 +755,31 @@
           <h2>Compte</h2>
           <template x-if="authentifie">
             <div>
-              <p>Connecté en tant que <strong x-text="username"></strong>.</p>
+              <p>
+                Connecté en tant que <strong x-text="username"></strong>
+                · <span class="badge-cat" :class="'cat-' + categorie">
+                  <span class="badge-cat-ico" x-html="iconCategorie()"></span>
+                  <span x-text="libCategorie"></span>
+                </span>
+              </p>
+              <p class="hint" x-show="categorie === 'membre'" x-cloak>
+                Accès Membre : liste, compos du jour, likes / dislikes.
+              </p>
+              <p class="hint" x-show="categorie === 'premium'" x-cloak>
+                Statut Premium : avantages détaillés à venir.
+              </p>
               <button type="button" class="btn btn-ghost" @click="authLogout()">Se déconnecter</button>
             </div>
           </template>
           <template x-if="!authentifie">
+            <div>
+              <p class="hint">
+                Tu es <span class="badge-cat cat-visiteur">
+                  <span class="badge-cat-ico" x-html="iconCategorie('visiteur')"></span>
+                  <span>Visiteur</span>
+                </span> :
+                consultation limitée. Crée un compte pour devenir Membre.
+              </p>
             <form class="form-score" @submit.prevent="authSubmit()">
               <div class="puces">
                 <button type="button" :class="authMode === 'login' ? 'puce on' : 'puce'"
@@ -749,6 +803,7 @@
                 x-text="authBusy ? 'Patiente…' : (authMode === 'register' ? 'Créer mon compte' : 'Se connecter')"></button>
               <p class="ko" x-show="authErr" x-text="authErr" x-cloak></p>
             </form>
+            </div>
           </template>
         </section>
 
@@ -817,63 +872,96 @@
       aria-label="Agrandir ou réduire la feuille"
       title="Tirer vers le haut pour agrandir"></div>
     <div class="sheet-body compos-body">
-      <div class="compos-head">
-        <div>
-          <h2>Compos du jour</h2>
-          <p class="hint" x-text="'Prudente + filet · ' + fmtJour((jourDate || dateAujourdhui()) + 'T12:00:00')"></p>
-        </div>
+      <div class="compos-toolbar no-print">
         <label class="filtre-date compos-date">
           <input type="date" :value="jourDate" @change="setJourDate($event.target.value)">
         </label>
+        <div class="compos-actions">
+          <button type="button" class="btn" :disabled="!predictionsJour.length || partageBusy"
+            @click="partagerPredictionsJour()">
+            <span x-html="icon('share','icon icon-sm')"></span> Partager
+          </button>
+          <button type="button" class="btn btn-ghost" :disabled="!predictionsJour.length"
+            @click="imprimerCompos()">
+            <span x-html="icon('download','icon icon-sm')"></span> PDF
+          </button>
+        </div>
       </div>
-      <div class="compos-actions">
-        <button type="button" class="btn" :disabled="!predictionsJour.length || partageBusy"
-          @click="partagerPredictionsJour()">
-          <span x-html="icon('share','icon icon-sm')"></span> Partager
-        </button>
-        <button type="button" class="btn btn-ghost" :disabled="!predictionsJour.length"
-          @click="telechargerPdfCompos()">
-          <span x-html="icon('download','icon icon-sm')"></span> PDF
-        </button>
-      </div>
-      <p class="hint" x-show="partageMsg" x-cloak x-text="partageMsg"></p>
-      <div class="loader-wrap" x-show="chargementJour" x-cloak>
+      <p class="hint no-print" x-show="partageMsg" x-cloak x-text="partageMsg"></p>
+      <div class="loader-wrap no-print" x-show="chargementJour" x-cloak>
         <div class="spinner" role="status" aria-label="Chargement"></div>
         <p>Chargement des compos…</p>
       </div>
-      <div class="vide vide-sm" x-show="!chargementJour && !predictionsJour.length" x-cloak>
+      <div class="vide vide-sm no-print" x-show="!chargementJour && !predictionsJour.length" x-cloak>
         <p>Aucun pari proposé pour cette date.</p>
       </div>
-      <div class="compos-liste" x-show="!chargementJour && predictionsJour.length">
-        <template x-for="bloc in predictionsJour" :key="'compos-' + bloc.id">
-          <article class="carte-jour">
-            <header class="carte-jour-head">
-              <div>
-                <span class="badge soft" x-text="bloc.competition.code"></span>
-                <strong x-text="bloc.domicile.nom_court + ' – ' + bloc.exterieur.nom_court"></strong>
-                <p class="hint" x-text="dateHeure(bloc.coup_denvoi)"></p>
-              </div>
-            </header>
-            <div class="compos-opts">
-              <div class="compos-opt pred-prudente" x-show="bloc.prudente" x-cloak>
-                <span class="opt-niv">Prudente</span>
-                <span class="pred-lib" x-text="bloc.prudente && bloc.prudente.libelle"></span>
-                <strong class="pred-pct"
-                  x-text="bloc.prudente && fmtPct(bloc.prudente.probabilite)"></strong>
-              </div>
-              <div class="compos-opt pred-filet" x-show="bloc.filet" x-cloak>
-                <span class="opt-niv">
-                  <span x-html="icon('shield','icon icon-sm')"></span> Filet
+
+      <div id="compos-print" class="compos-print" x-show="!chargementJour && predictionsJour.length">
+        <header class="compos-head">
+          <div>
+            <h2>Compos du jour</h2>
+            <p class="hint">Voici notre sélection du jour, tirée de notre moteur de prédiction C2B</p>
+          </div>
+          <span class="compos-print-date" x-text="fmtJour((jourDate || dateAujourdhui()) + 'T12:00:00')"></span>
+        </header>
+        <div class="compos-liste">
+          <template x-for="bloc in predictionsJour" :key="'compos-' + bloc.id">
+            <article class="carte-jour">
+              <div class="cj-meta">
+                <span class="cj-ligue">
+                  <span class="flag-wrap" x-html="drapeauComp(bloc.competition)"></span>
+                  <span x-text="bloc.competition.code"></span>
                 </span>
-                <span class="pred-lib" x-text="bloc.filet && bloc.filet.libelle"></span>
-                <strong class="pred-pct"
-                  x-text="bloc.filet && fmtPct(bloc.filet.probabilite)"></strong>
+                <span class="cj-horaire" x-text="heure(bloc.coup_denvoi)"></span>
               </div>
-            </div>
-          </article>
-        </template>
+              <div class="cj-teams">
+                <div class="cj-club">
+                  <span class="cj-logo">
+                    <img class="club-logo" :src="logoUrl(bloc.domicile)" alt=""
+                      @error="onLogoError($event)">
+                    <span class="crest-wrap crest-fallback"
+                      x-html="crestSvg(bloc.domicile, 36)" style="display:none"></span>
+                  </span>
+                  <strong x-text="bloc.domicile.nom_court"></strong>
+                </div>
+                <span class="cj-vs" aria-hidden="true">vs</span>
+                <div class="cj-club cj-club-ext">
+                  <span class="cj-logo">
+                    <img class="club-logo" :src="logoUrl(bloc.exterieur)" alt=""
+                      @error="onLogoError($event)">
+                    <span class="crest-wrap crest-fallback"
+                      x-html="crestSvg(bloc.exterieur, 36)" style="display:none"></span>
+                  </span>
+                  <strong x-text="bloc.exterieur.nom_court"></strong>
+                </div>
+              </div>
+              <div class="compos-opts">
+                <div class="compos-opt pred-prudente" x-show="bloc.prudente" x-cloak>
+                  <span class="pred-mark" aria-hidden="true" x-html="icon('crosshair')"></span>
+                  <div class="pred-copy">
+                    <span class="opt-niv">Prudente</span>
+                    <span class="pred-lib" x-text="bloc.prudente && bloc.prudente.libelle"></span>
+                  </div>
+                  <strong class="pred-pct"
+                    x-text="bloc.prudente && fmtPct(bloc.prudente.probabilite)"></strong>
+                </div>
+                <div class="compos-opt pred-filet" x-show="bloc.filet" x-cloak>
+                  <span class="pred-mark" aria-hidden="true" x-html="icon('shield')"></span>
+                  <div class="pred-copy">
+                    <span class="opt-niv">Filet</span>
+                    <span class="pred-lib" x-text="bloc.filet && bloc.filet.libelle"></span>
+                  </div>
+                  <strong class="pred-pct"
+                    x-text="bloc.filet && fmtPct(bloc.filet.probabilite)"></strong>
+                </div>
+              </div>
+            </article>
+          </template>
+        </div>
+        <p class="compos-print-foot">You Are Cleared to Bet</p>
       </div>
-      <button type="button" class="btn btn-ghost btn-block" @click="fermerSheets()">Fermer</button>
+
+      <button type="button" class="btn btn-ghost btn-block no-print" @click="fermerSheets()">Fermer</button>
     </div>
   </div>
 
@@ -1045,7 +1133,7 @@
     </a>
   </nav>
 
-  <script defer src="/static/js/app.js?v=32"></script>
-  <script defer src="/static/vendor/alpine.min.js?v=32"></script>
+  <script defer src="/static/js/app.js?v=46"></script>
+  <script defer src="/static/vendor/alpine.min.js?v=46"></script>
 </body>
 </html>

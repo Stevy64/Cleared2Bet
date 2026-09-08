@@ -1,5 +1,10 @@
 # Format d'import JSON — Cleared2Bet
 
+> **Attention** : cet import est réservé aux **démos / tests**. En usage normal,
+> les matchs viennent uniquement de `synchroniser_sofascore`. Un JSON inventé
+> (comme `exemples/journee-2026-09-08.json`) détruit la confiance s’il est
+> importé en base : l’API n’expose désormais que les matchs avec `sofascore_id`.
+
 Un fichier contient une clé `matchs` : liste non vide. L'import est **tout ou rien** :
 si un match est invalide, rien n'est écrit.
 

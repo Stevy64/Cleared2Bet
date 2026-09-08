@@ -52,7 +52,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'paris',
+    'paris.apps.ParisConfig',
 ]
 
 MIDDLEWARE = [
