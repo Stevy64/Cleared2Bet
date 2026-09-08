@@ -9,7 +9,7 @@
   <title>Cleared2Bet</title>
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
-  <link rel="stylesheet" href="/static/css/app.css?v=49">
+  <link rel="stylesheet" href="/static/css/app.css?v=50">
 </head>
 <body
   x-data="c2b()"
@@ -64,16 +64,11 @@
     <template x-if="page === 'matchs'">
       <div class="hero-copy">
         <h1 class="slogan">Bienvenue sur le Fax du Bet</h1>
-        <p class="slogan-sub">You Are Cleared to Bet</p>
+        <p class="slogan-sub">Clear2Bet, votre clairance vers la victoire</p>
         <div class="hero-actions">
           <button type="button" class="btn btn-hero btn-hero-glass" @click="ouvrirCompos()">
             <span x-html="icon('layers','icon icon-sm')"></span>
             Compos du jour
-          </button>
-          <button type="button" class="btn btn-hero-ghost" x-show="!installePWA" x-cloak
-            @click="installerPWA()">
-            <span x-html="icon('download','icon icon-sm')"></span>
-            Installer l’app
           </button>
           <p class="hero-access hint" x-show="estVisiteur" x-cloak>
             Accès Visiteur : consultation limitée. Connecte-toi pour les compos et les votes.
@@ -1159,7 +1154,7 @@
     </a>
   </nav>
 
-  <script defer src="/static/js/app.js?v=49"></script>
-  <script defer src="/static/vendor/alpine.min.js?v=49"></script>
+  <script defer src="/static/js/app.js?v=50"></script>
+  <script defer src="/static/vendor/alpine.min.js?v=50"></script>
 </body>
 </html>
