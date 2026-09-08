@@ -1,8 +1,9 @@
+# Python 3.10+ (PythonAnywhere) ; 3.12+ recommandé en local/CI.
 Django==5.2.6
 djangorestframework==3.18.1
-numpy==2.5.3
-scipy==1.18.1
-pytest==9.1.1
-pytest-django==4.14.0
+numpy==2.2.6
+scipy==1.15.3
+pytest==8.3.5
+pytest-django==4.11.1
 gunicorn==23.0.0
 curl_cffi>=0.7.0

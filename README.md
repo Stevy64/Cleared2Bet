@@ -4,7 +4,8 @@ Application web (PWA) d’aide à la décision pour les paris football. Elle aff
 
 ## Installation
 
-Python 3.12+ recommandé.
+Python 3.10+ (3.12 recommandé). Sur PythonAnywhere, choisis **python3.10** (ou 3.12)
+pour le virtualenv — voir [docs/pythonanywhere.md](docs/pythonanywhere.md).
 
 ```bash
 python -m venv .venv

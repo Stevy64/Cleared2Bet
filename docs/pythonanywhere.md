@@ -1,5 +1,17 @@
 # Déploiement Cleared2Bet sur PythonAnywhere
 
+## Python
+
+Utilise **Python 3.10** minimum (3.12 si proposé dans le sélecteur de venv).
+Les pins `numpy==2.2.6` / `scipy==1.15.3` sont compatibles 3.10–3.13.
+
+Création du venv (exemple) :
+
+```bash
+mkvirtualenv --python=/usr/bin/python3.10 cleared2bet
+# ou via l’UI : Web → Virtualenv → python3.10
+```
+
 ## Variables d’environnement (Web app → WSGI / virtualenv)
 
 ```bash
@@ -57,4 +69,4 @@ application = get_wsgi_application()
 ## CI
 
 Le workflow GitHub Actions (`.github/workflows/ci.yml`) exécute tests, migrations,
-`collectstatic` et un smoke `DEBUG=0` avec l’hôte PythonAnywhere.
+`collectstatic` et un smoke `DEBUG=0` avec l’hôte PythonAnywhere (dont Python 3.10).
