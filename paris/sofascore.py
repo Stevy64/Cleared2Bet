@@ -268,21 +268,55 @@ def slugify_nom(nom: str) -> str:
     return s[:48] or 'equipe'
 
 
+def _http_get_bytes(url: str) -> tuple[bytes, str]:
+    """GET binaire (logos) via curl_cffi ou urllib."""
+    if _cffi_requests is not None:
+        r = _cffi_requests.get(url, impersonate='chrome124', timeout=25)
+        if r.status_code != 200 or not r.content:
+            raise SofaScoreErreur(f'HTTP {r.status_code} sur {url}')
+        ctype = (r.headers.get('content-type') or 'image/png').split(';')[0].strip()
+        return r.content, ctype
+
+    req = urllib.request.Request(
+        url,
+        headers={
+            'User-Agent': (
+                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+                'AppleWebKit/537.36 (KHTML, like Gecko) '
+                'Chrome/124.0.0.0 Safari/537.36'
+            ),
+            'Accept': 'image/avif,image/webp,image/apng,image/*,*/*;q=0.8',
+        },
+        method='GET',
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=25) as resp:
+            body = resp.read()
+            if not body:
+                raise SofaScoreErreur(f'Logo vide sur {url}')
+            ctype = resp.headers.get_content_type() if hasattr(resp.headers, 'get_content_type') else (
+                (resp.headers.get('Content-Type') or 'image/png').split(';')[0].strip()
+            )
+            return body, ctype
+    except urllib.error.HTTPError as exc:
+        raise SofaScoreErreur(f'HTTP {exc.code} sur {url}') from exc
+    except urllib.error.URLError as exc:
+        raise SofaScoreErreur(f'Réseau : {exc.reason}') from exc
+
+
 def logo_bytes(team_id: int) -> tuple[bytes, str]:
     tid = int(team_id)
     urls = [
-        f'{BASE}/team/{tid}/image',
         f'https://img.sofascore.com/api/v1/team/{tid}/image',
+        f'{BASE}/team/{tid}/image',
     ]
     last_err = None
     for url in urls:
         try:
-            r = requests.get(url, impersonate='chrome124', timeout=25)
-            if r.status_code == 200 and r.content:
-                ctype = r.headers.get('content-type') or 'image/png'
-                return r.content, ctype.split(';')[0].strip()
-            last_err = f'{r.status_code}'
-        except Exception as e:  # noqa: BLE001 — réseau externe
+            return _http_get_bytes(url)
+        except SofaScoreErreur as e:
+            last_err = str(e)
+        except Exception as e:  # noqa: BLE001
             last_err = str(e)
     raise SofaScoreErreur(f'Logo introuvable ({last_err})')
 

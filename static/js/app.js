@@ -339,7 +339,12 @@ function c2b() {
     fmtJour,
     TYPES_PROPOSITION,
     logoUrl(eq) {
-      return eq && eq.id ? '/api/v1/equipes/' + eq.id + '/logo/' : '';
+      if (!eq) return '';
+      // CDN SofaScore direct (évite le proxy serveur / cache SVG de secours).
+      if (eq.sofascore_id) {
+        return 'https://img.sofascore.com/api/v1/team/' + eq.sofascore_id + '/image';
+      }
+      return eq.id ? '/api/v1/equipes/' + eq.id + '/logo/' : '';
     },
     moteur: document.body.dataset.moteur,
     chargement: false,
@@ -348,7 +353,16 @@ function c2b() {
     matchs: [],
     matchsPasses: [],
     filtre: localStorage.getItem(LS_FILTRE) || '',
-    filtreDate: localStorage.getItem(LS_DATE) || '',
+    filtreDate: (() => {
+      const auj = dateLocaleISO(new Date());
+      const saved = localStorage.getItem(LS_DATE) || '';
+      // Ne pas rester coincé sur une date passée (donne l’impression d’une vieille version).
+      if (!saved || saved < auj) {
+        localStorage.setItem(LS_DATE, auj);
+        return auj;
+      }
+      return saved;
+    })(),
     masquees: JSON.parse(localStorage.getItem(LS_MASQUEES) || '[]'),
     navDir: 'forward',
     fiche: null,
@@ -686,10 +700,11 @@ function c2b() {
       q.set('statut', 'a_venir,en_cours');
       q.set('page_size', '50');
       if (filtreActif) q.set('competition', filtreActif);
-      if (this.filtreDate) {
-        q.set('depuis', this.filtreDate);
-        q.set('jusqu_a', this.filtreDate);
-      }
+      // Toujours borner à « aujourd’hui » minimum pour ne pas resservir d’anciens jours.
+      const auj = this.dateAujourdhui();
+      const depuis = this.filtreDate || auj;
+      q.set('depuis', depuis);
+      if (this.filtreDate) q.set('jusqu_a', this.filtreDate);
       const { data, fromCache } = await getJSON('/api/v1/matchs/?' + q.toString());
       if (token !== this._matchReq) return;
       this.noterCache(fromCache);
@@ -700,6 +715,8 @@ function c2b() {
       }
       if (this.filtreDate) {
         list = list.filter((m) => dateLocaleISO(m.coup_denvoi) === this.filtreDate);
+      } else {
+        list = list.filter((m) => dateLocaleISO(m.coup_denvoi) >= auj);
       }
       this.matchs = list;
       this.chargement = false;
