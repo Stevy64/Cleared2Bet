@@ -1,0 +1,165 @@
+{
+  "matchs": [
+    {
+      "competition": {"code": "UCL", "nom": "Ligue des champions", "pays": "Europe", "ordre": 10},
+      "domicile": {"nom": "Paris Saint-Germain", "nom_court": "PSG", "slug": "psg"},
+      "exterieur": {"nom": "Bayern Munich", "nom_court": "Bayern", "slug": "bayern"},
+      "coup_denvoi": "2026-09-08T21:00:00+02:00",
+      "journee": "Phase de ligue",
+      "cotes": {
+        "bookmaker": "consensus",
+        "1X2": {"1": 2.45, "N": 3.50, "2": 2.80},
+        "OU25": {"over": 1.65, "under": 2.25}
+      },
+      "contexte": {
+        "forme_dom": "V V N V D sur les cinq derniers.",
+        "forme_ext": "V V V N V, défense encore poreuse à l'extérieur.",
+        "absents_dom": "Rien de structurant annoncé.",
+        "absents_ext": "Un latéral titulaire douteux.",
+        "tendance_buts": "Les deux attaquent ; les totaux hauts reviennent souvent.",
+        "a_savoir": "Premier choc de la phase de ligue pour les deux.",
+        "confrontations": "Le Bayern a souvent marqué à Paris ces dernières années.",
+        "fiabilite": "moyenne",
+        "source": "notes 8 sept. 2026"
+      }
+    },
+    {
+      "competition": {"code": "UCL", "nom": "Ligue des champions", "pays": "Europe", "ordre": 10},
+      "domicile": {"nom": "Real Madrid", "nom_court": "Madrid", "slug": "real-madrid"},
+      "exterieur": {"nom": "Manchester City", "nom_court": "City", "slug": "man-city"},
+      "coup_denvoi": "2026-09-08T21:00:00+02:00",
+      "journee": "Phase de ligue",
+      "cotes": {
+        "1X2": {"1": 2.20, "N": 3.60, "2": 3.10},
+        "OU25": {"over": 1.55, "under": 2.45}
+      },
+      "contexte": {
+        "forme_dom": "V V V N V",
+        "forme_ext": "V N V V D",
+        "tendance_buts": "Match ouvert, les deux cadres poussent.",
+        "fiabilite": "haute",
+        "source": "notes 8 sept. 2026"
+      }
+    },
+    {
+      "competition": {"code": "PL", "nom": "Premier League", "pays": "Angleterre", "ordre": 20},
+      "domicile": {"nom": "Liverpool", "nom_court": "Liverpool", "slug": "liverpool"},
+      "exterieur": {"nom": "Arsenal", "nom_court": "Arsenal", "slug": "arsenal"},
+      "coup_denvoi": "2026-09-08T17:30:00+01:00",
+      "journee": "Journée 4",
+      "cotes": {
+        "1X2": {"1": 2.30, "N": 3.40, "2": 3.10},
+        "OU25": {"over": 1.80, "under": 2.05}
+      },
+      "contexte": {
+        "forme_dom": "V V D V V",
+        "forme_ext": "V V V N V",
+        "a_savoir": "Classique de haut de tableau, rythme élevé attendu.",
+        "fiabilite": "moyenne"
+      }
+    },
+    {
+      "competition": {"code": "PL", "nom": "Premier League", "pays": "Angleterre", "ordre": 20},
+      "domicile": {"nom": "Manchester United", "nom_court": "Man Utd", "slug": "man-utd"},
+      "exterieur": {"nom": "Everton", "nom_court": "Everton", "slug": "everton"},
+      "coup_denvoi": "2026-09-08T16:00:00+01:00",
+      "journee": "Journée 4",
+      "cotes": {
+        "1X2": {"1": 1.55, "N": 4.20, "2": 6.00},
+        "OU25": {"over": 1.70, "under": 2.15}
+      },
+      "contexte": {
+        "forme_dom": "V N V V D",
+        "forme_ext": "D N D V N",
+        "tendance_buts": "United crée, Everton ferme peu à l'extérieur.",
+        "fiabilite": "moyenne"
+      }
+    },
+    {
+      "competition": {"code": "LIGA", "nom": "LaLiga", "pays": "Espagne", "ordre": 30},
+      "domicile": {"nom": "FC Barcelone", "nom_court": "Barça", "slug": "barcelone"},
+      "exterieur": {"nom": "Girona FC", "nom_court": "Girona", "slug": "girona"},
+      "coup_denvoi": "2026-09-08T21:00:00+02:00",
+      "journee": "Jornada 4",
+      "cotes": {
+        "1X2": {"1": 1.35, "N": 5.25, "2": 8.50},
+        "OU25": {"over": 1.45, "under": 2.75}
+      },
+      "contexte": {
+        "forme_dom": "V V V V N",
+        "forme_ext": "N D V D N",
+        "a_savoir": "Gros favori à domicile, écart possible.",
+        "fiabilite": "moyenne"
+      }
+    },
+    {
+      "competition": {"code": "L1", "nom": "Ligue 1", "pays": "France", "ordre": 40},
+      "domicile": {"nom": "Olympique de Marseille", "nom_court": "OM", "slug": "om"},
+      "exterieur": {"nom": "AS Monaco", "nom_court": "Monaco", "slug": "monaco"},
+      "coup_denvoi": "2026-09-08T20:45:00+02:00",
+      "journee": "Journée 4",
+      "cotes": {
+        "1X2": {"1": 2.60, "N": 3.40, "2": 2.65},
+        "OU25": {"over": 1.75, "under": 2.10}
+      },
+      "contexte": {
+        "forme_dom": "V D V N V",
+        "forme_ext": "V V N V D",
+        "tendance_buts": "Équilibré ; un but de chaque côté n'étonnerait pas.",
+        "fiabilite": "moyenne"
+      }
+    },
+    {
+      "competition": {"code": "L1", "nom": "Ligue 1", "pays": "France", "ordre": 40},
+      "domicile": {"nom": "LOSC Lille", "nom_court": "Lille", "slug": "lille"},
+      "exterieur": {"nom": "OGC Nice", "nom_court": "Nice", "slug": "nice"},
+      "coup_denvoi": "2026-09-08T17:00:00+02:00",
+      "journee": "Journée 4",
+      "cotes": {
+        "1X2": {"1": 2.05, "N": 3.30, "2": 3.70},
+        "OU25": {"over": 2.05, "under": 1.80}
+      },
+      "contexte": {
+        "forme_dom": "N V V D V",
+        "forme_ext": "D V N V N",
+        "tendance_buts": "Rencontre souvent fermée entre ces deux-là.",
+        "fiabilite": "moyenne"
+      }
+    },
+    {
+      "competition": {"code": "SA", "nom": "Serie A", "pays": "Italie", "ordre": 50},
+      "domicile": {"nom": "Inter Milan", "nom_court": "Inter", "slug": "inter"},
+      "exterieur": {"nom": "SSC Napoli", "nom_court": "Naples", "slug": "napoli"},
+      "coup_denvoi": "2026-09-08T20:45:00+02:00",
+      "journee": "Journée 3",
+      "cotes": {
+        "1X2": {"1": 2.15, "N": 3.25, "2": 3.55},
+        "OU25": {"over": 2.00, "under": 1.85}
+      },
+      "contexte": {
+        "forme_dom": "V V N V V",
+        "forme_ext": "V N V V D",
+        "a_savoir": "Choc au sommet, prudence sur les totaux.",
+        "fiabilite": "moyenne"
+      }
+    },
+    {
+      "competition": {"code": "SA", "nom": "Serie A", "pays": "Italie", "ordre": 50},
+      "domicile": {"nom": "Como 1907", "nom_court": "Côme", "slug": "como"},
+      "exterieur": {"nom": "Genoa CFC", "nom_court": "Genoa", "slug": "genoa"},
+      "coup_denvoi": "2026-09-08T15:00:00+02:00",
+      "journee": "Journée 3",
+      "cotes": {
+        "1X2": {"1": 2.40, "N": 3.10, "2": 3.20},
+        "OU25": {"over": 2.20, "under": 1.70}
+      },
+      "contexte": {
+        "forme_dom": "N D V N D",
+        "forme_ext": "D N D V N",
+        "tendance_buts": "Peu de buts chez les deux récemment.",
+        "a_savoir": "Handicap européen : perdre d'un but reste couvert à +1.",
+        "fiabilite": "faible"
+      }
+    }
+  ]
+}

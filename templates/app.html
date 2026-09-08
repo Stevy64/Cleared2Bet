@@ -1,0 +1,1051 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b1728">
+  <meta name="color-scheme" content="light">
+  <meta name="description" content="You Are Cleared to Bet. Chances réelles, cote juste.">
+  <title>Cleared2Bet</title>
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
+  <link rel="stylesheet" href="/static/css/app.css?v=32">
+</head>
+<body
+  x-data="c2b()"
+  x-init="init()"
+  data-moteur="{{ version_moteur }}"
+>
+  <a class="skip" href="#contenu">Aller au contenu</a>
+
+  <div class="banners">
+    <div class="banner" x-show="cacheBanner" x-cloak role="status">
+      Données du <span x-text="cacheLabel"></span>
+    </div>
+    <div class="banner banner-update" x-show="swWaiting" x-cloak>
+      Nouvelle version prête.
+      <button type="button" class="btn-text" @click="appliquerMaj()">Mettre à jour</button>
+    </div>
+    <div class="banner" x-show="voteErr && !sheetAuth" x-cloak role="status">
+      <span x-text="voteErr"></span>
+    </div>
+  </div>
+
+  <header class="page-hero" :class="page === 'matchs' ? 'page-hero-photo' : 'page-hero-accent'">
+    <div class="hero-bar">
+      <button type="button" class="btn-back" x-show="page === 'fiche'" x-cloak
+        aria-label="Retour" @click="retourListe()">‹</button>
+      <button type="button" class="brand" @click="allerAccueil()" aria-label="Accueil Cleared2Bet">
+        Cleared2Bet
+      </button>
+    </div>
+
+    <template x-if="page === 'matchs'">
+      <div class="hero-copy">
+        <h1 class="slogan">Bienvenue sur le Fax du Bet</h1>
+        <p class="slogan-sub">You Are Cleared to Bet</p>
+        <div class="hero-actions">
+          <button type="button" class="btn btn-hero btn-hero-glass" @click="ouvrirCompos()">
+            <span x-html="icon('layers','icon icon-sm')"></span>
+            Compos du jour
+          </button>
+          <button type="button" class="btn btn-hero-ghost" x-show="peutInstaller" x-cloak
+            @click="installerPWA()">Installer l’app</button>
+        </div>
+      </div>
+    </template>
+
+    <template x-if="page !== 'matchs'">
+      <div class="hero-copy">
+        <p class="kicker" x-text="kickerPage"></p>
+        <h1 class="page-title" x-text="titrePage"></h1>
+      </div>
+    </template>
+  </header>
+
+  <main id="contenu" class="sheet">
+    <template x-if="page === 'matchs'">
+      <div class="ecran" :class="navDir === 'back' ? 'ecran-back' : ''"
+        @touchstart="ptrStart($event)" @touchend="ptrEnd($event)">
+        <div class="puces" role="tablist" aria-label="Compétitions">
+          <button type="button" role="tab"
+            :aria-selected="filtre === ''"
+            :class="filtre === '' ? 'puce on' : 'puce'"
+            @click="setFiltre('')">Tous</button>
+          <template x-for="c in competitions" :key="c.code">
+            <button type="button" role="tab" class="puce-comp"
+              :aria-selected="filtre === c.code"
+              :class="filtre === c.code ? 'puce on' : 'puce'"
+              :aria-label="c.nom"
+              :title="c.nom"
+              @click="setFiltre(c.code)">
+              <span class="flag-wrap" x-html="drapeauComp(c)"></span>
+              <span x-text="c.code"></span>
+            </button>
+          </template>
+        </div>
+
+        <div class="filtre-date-bar">
+          <label class="filtre-date">
+            <span x-html="icon('calendar','icon icon-sm')"></span>
+            <span>Date</span>
+            <input type="date" :value="filtreDate" @change="setFiltreDate($event.target.value)">
+          </label>
+          <button type="button" class="puce" :class="filtreDate === dateAujourdhui() ? 'on' : ''"
+            @click="setFiltreDate(dateAujourdhui())">Aujourd’hui</button>
+          <button type="button" class="puce" x-show="filtreDate" x-cloak
+            @click="setFiltreDate('')">Toutes dates</button>
+        </div>
+        <p class="hint hint-logos">
+          <span x-html="icon('info','icon icon-sm')"></span>
+          Touche un <strong>blason</strong> pour voir forme, classement et matchs récents.
+        </p>
+
+        <div class="loader-wrap" x-show="chargement" x-cloak>
+          <div class="spinner" role="status" aria-label="Chargement"></div>
+          <p>Chargement des matchs…</p>
+        </div>
+
+        <template x-if="!chargement && !groupes.length">
+          <div class="vide">
+            <div class="vide-illu" aria-hidden="true">○</div>
+            <p>Aucun match pour ce filtre</p>
+            <button type="button" class="btn" @click="setFiltre(''); setFiltreDate('')">Réinitialiser les filtres</button>
+          </div>
+        </template>
+
+        <template x-for="g in groupes" :key="g.cle">
+          <section class="jour">
+            <h2 class="jour-tete" x-text="g.label"></h2>
+            <template x-for="m in g.matchs" :key="filtre + '-' + m.id">
+              <article class="carte-match"
+                @click="ouvrirApercuFromCard(m.id, $event)">
+                <div class="carte-haut">
+                  <div class="avatars">
+                    <button type="button" class="crest-btn" @click.stop="ouvrirClub(m.domicile, $event)"
+                      :aria-label="'Forme et classement de ' + m.domicile.nom_court"
+                      title="Voir forme & classement">
+                      <img class="club-logo" :src="logoUrl(m.domicile)" alt="" @error="onLogoError($event)">
+                      <span class="crest-wrap crest-fallback" x-html="crestSvg(m.domicile, 32)" style="display:none"></span>
+                    </button>
+                    <span class="avatars-sep" aria-hidden="true"></span>
+                    <button type="button" class="crest-btn" @click.stop="ouvrirClub(m.exterieur, $event)"
+                      :aria-label="'Forme et classement de ' + m.exterieur.nom_court"
+                      title="Voir forme & classement">
+                      <img class="club-logo" :src="logoUrl(m.exterieur)" alt="" @error="onLogoError($event)">
+                      <span class="crest-wrap crest-fallback" x-html="crestSvg(m.exterieur, 32)" style="display:none"></span>
+                    </button>
+                  </div>
+                  <div class="carte-titres">
+                    <strong>
+                      <span x-text="m.domicile.nom_court"></span>
+                      <span class="sep"> – </span>
+                      <span x-text="m.exterieur.nom_court"></span>
+                    </strong>
+                    <p class="carte-comp" x-text="m.competition.nom"></p>
+                  </div>
+                </div>
+                <div class="tags">
+                  <span class="tag"><span x-html="icon('trophy','icon icon-sm')"></span><span x-text="m.competition.code"></span></span>
+                  <span class="tag"><span x-html="icon('calendar','icon icon-sm')"></span><span x-text="jourCourt(m.coup_denvoi)"></span></span>
+                  <span class="tag"><span x-html="icon('clock','icon icon-sm')"></span><span x-text="heure(m.coup_denvoi)"></span></span>
+                  <span class="tag" x-show="m.score" x-text="m.score"></span>
+                </div>
+                <template x-if="prudente(m)">
+                  <div class="carte-reco">
+                    <div class="pct-stack">
+                      <div class="pct-row">
+                        <span x-text="prudente(m).libelle"></span>
+                        <strong class="pct-pred" :class="toneProb(prudente(m).probabilite)"
+                          x-text="fmtPct(prudente(m).probabilite)"></strong>
+                      </div>
+                      <div class="pct-row consensus">
+                        <span>Consensus</span>
+                        <strong class="pct-cons" :class="toneConsensus(prudente(m))"
+                          x-text="fmtConsensus(prudente(m))"></strong>
+                      </div>
+                    </div>
+                  </div>
+                </template>
+                <div class="carte-pied no-apercu">
+                  <div class="carte-pied-left">
+                    <template x-if="prudente(m)">
+                      <div class="vote-row compact">
+                        <button type="button" class="btn-vote like"
+                          :class="prudente(m).mon_vote === 'like' ? 'on' : ''"
+                          @click.stop="voterOption(m.id, prudente(m).id, 'like', $event)"
+                          aria-label="D’accord">
+                          <span x-html="icon('thumbs-up')"></span>
+                        </button>
+                        <button type="button" class="btn-vote dislike"
+                          :class="prudente(m).mon_vote === 'dislike' ? 'on' : ''"
+                          @click.stop="voterOption(m.id, prudente(m).id, 'dislike', $event)"
+                          aria-label="Pas d’accord">
+                          <span x-html="icon('thumbs-down')"></span>
+                        </button>
+                      </div>
+                    </template>
+                  </div>
+                  <button type="button" class="btn-voir" @click.stop="ouvrirMatch(m.id)">
+                    Voir <span x-html="icon('arrow')"></span>
+                  </button>
+                </div>
+              </article>
+            </template>
+          </section>
+        </template>
+      </div>
+    </template>
+
+    <template x-if="page === 'fiche'">
+      <article class="ecran fiche" :class="navDir === 'back' ? 'ecran-back' : ''">
+        <div class="loader-wrap" x-show="chargement && !fiche" x-cloak>
+          <div class="spinner" role="status" aria-label="Chargement"></div>
+          <p>Chargement du match…</p>
+        </div>
+        <template x-if="fiche">
+          <div>
+            <div class="bilan-wrap" x-show="fiche.statut === 'termine' && recoFiche.length" x-cloak>
+              <div class="bilan-head">
+                <span class="panel-ico" x-html="icon('trophy')"></span>
+                <div>
+                  <h2>Bilan des recommandations</h2>
+                  <p class="hint">Résultat réel face aux paris proposés pour ce match.</p>
+                </div>
+              </div>
+              <div class="bilan-grid">
+                <template x-for="o in recoFiche" :key="o.code">
+                  <article :class="'bilan-item bilan-' + (o.resultat || 'attente')">
+                    <div class="bilan-status">
+                      <span class="bilan-pill" x-html="iconResultat(o.resultat)"></span>
+                      <small x-text="motResultat(o.resultat)"></small>
+                    </div>
+                    <div class="bilan-body">
+                      <span class="bilan-niv" x-text="libNiveau(o.niveau)"></span>
+                      <strong x-text="o.libelle"></strong>
+                      <div class="bilan-meta">
+                        <span :class="'pct-pred ' + toneProb(o.probabilite)" x-text="fmtPct(o.probabilite)"></span>
+                        <span class="opt-cons" x-show="o.pct_likes != null"
+                          x-text="'Consensus ' + fmtConsensus(o)"></span>
+                      </div>
+                    </div>
+                  </article>
+                </template>
+              </div>
+            </div>
+
+            <header class="fiche-panel">
+              <div class="badges-row">
+                <span class="badge soft" x-text="fiche.competition.code"></span>
+                <span class="badge soft" x-text="fiche.statut === 'termine' ? 'Terminé' : 'À venir'"></span>
+              </div>
+              <div class="fiche-vs">
+                <button type="button" class="crest-btn lg" @click="ouvrirClub(fiche.domicile, $event)"
+                  :aria-label="'Forme et classement de ' + fiche.domicile.nom_court"
+                  title="Voir forme & classement">
+                  <span class="crest-media">
+                    <img class="club-logo lg" :src="logoUrl(fiche.domicile)" alt="" @error="onLogoError($event)">
+                    <span class="crest-wrap lg crest-fallback" x-html="crestSvg(fiche.domicile, 64)" style="display:none"></span>
+                    <span class="crest-badge" aria-hidden="true" x-html="icon('info','icon icon-sm')"></span>
+                  </span>
+                  <small x-text="fiche.domicile.nom_court"></small>
+                </button>
+                <span class="vs">VS</span>
+                <button type="button" class="crest-btn lg" @click="ouvrirClub(fiche.exterieur, $event)"
+                  :aria-label="'Forme et classement de ' + fiche.exterieur.nom_court"
+                  title="Voir forme & classement">
+                  <span class="crest-media">
+                    <img class="club-logo lg" :src="logoUrl(fiche.exterieur)" alt="" @error="onLogoError($event)">
+                    <span class="crest-wrap lg crest-fallback" x-html="crestSvg(fiche.exterieur, 64)" style="display:none"></span>
+                    <span class="crest-badge" aria-hidden="true" x-html="icon('info','icon icon-sm')"></span>
+                  </span>
+                  <small x-text="fiche.exterieur.nom_court"></small>
+                </button>
+              </div>
+              <h2>
+                <span x-text="fiche.domicile.nom"></span>
+                <span class="sep"> – </span>
+                <span x-text="fiche.exterieur.nom"></span>
+              </h2>
+              <p class="comp" x-text="fiche.competition.nom"></p>
+              <div class="info-grid info-grid-4">
+                <div>
+                  <small>Jour</small>
+                  <b x-text="jourCourt(fiche.coup_denvoi)"></b>
+                </div>
+                <div>
+                  <small>Heure</small>
+                  <b x-text="heure(fiche.coup_denvoi)"></b>
+                </div>
+                <div>
+                  <small>Score</small>
+                  <b x-text="fiche.score || '—'"></b>
+                </div>
+                <div>
+                  <small>Journée</small>
+                  <b x-text="fiche.journee || '—'"></b>
+                </div>
+              </div>
+            </header>
+
+            <template x-if="fiche.analyse">
+              <div class="stats-table">
+                <div class="stats-row head">
+                  <span>Indicateur</span>
+                  <span>Valeur</span>
+                </div>
+                <div class="stats-row">
+                  <span>Profil</span>
+                  <strong x-text="libProfil(fiche.analyse.profil)"></strong>
+                </div>
+                <div class="stats-row">
+                  <span>Score probable</span>
+                  <strong x-text="fiche.analyse.score_probable"></strong>
+                </div>
+                <div class="stats-row">
+                  <span x-text="'Buts attendus · ' + fiche.domicile.nom_court"></span>
+                  <strong x-text="fiche.analyse.buts_dom_attendus.toFixed(2)"></strong>
+                </div>
+                <div class="stats-row">
+                  <span x-text="'Buts attendus · ' + fiche.exterieur.nom_court"></span>
+                  <strong x-text="fiche.analyse.buts_ext_attendus.toFixed(2)"></strong>
+                </div>
+                <div class="stats-row">
+                  <span>1X2 (prob.)</span>
+                  <strong x-text="fmtPct(fiche.analyse.p1) + ' / ' + fmtPct(fiche.analyse.pn) + ' / ' + fmtPct(fiche.analyse.p2)"></strong>
+                </div>
+              </div>
+            </template>
+            <p x-show="fiche.analyse && fiche.analyse.douteuse" class="doute">Ajustement douteux (résidu élevé) — à lire avec prudence.</p>
+
+            <h2 class="sec-titre">Recommandations</h2>
+            <p class="hint">Touche une carte pour l’explication. Vote pour comparer le consensus à la prédiction.</p>
+            <template x-for="(o, i) in recoFiche" :key="o.code">
+              <section :class="'opt opt-' + o.niveau + (optOuverte === o.id ? ' open' : '')"
+                :style="'animation-delay:' + (i * 0.08) + 's'"
+                role="button" tabindex="0"
+                @click="toggleOpt(o.id)"
+                @keydown.enter.prevent="toggleOpt(o.id)">
+                <div class="opt-top">
+                  <p class="opt-niv" x-text="libNiveau(o.niveau)"></p>
+                  <div class="opt-top-right">
+                    <div class="pct-stack right">
+                      <span class="opt-pct" :class="toneProb(o.probabilite)" x-text="fmtPct(o.probabilite)"></span>
+                      <span class="opt-cons" :class="toneConsensus(o)" x-text="'Consensus ' + fmtConsensus(o)"></span>
+                    </div>
+                    <span class="opt-chevron" :class="optOuverte === o.id ? 'rot' : ''" x-html="icon('chevron')"></span>
+                  </div>
+                </div>
+                <h3 x-text="o.libelle"></h3>
+                <div class="jauge-block">
+                  <div class="jauge-legend">
+                    <span><i class="dot pred" :class="toneProb(o.probabilite)"></i> Prédiction Cleared2Bet</span>
+                    <strong :class="toneProb(o.probabilite)" x-text="fmtPct(o.probabilite)"></strong>
+                  </div>
+                  <div class="jauge" :class="toneProb(o.probabilite)" aria-hidden="true">
+                    <i :style="'width:' + sur100(o.probabilite) + '%'"></i>
+                  </div>
+                </div>
+                <div class="jauge-block jauge-block-cons" x-show="o.pct_likes != null" x-cloak>
+                  <div class="jauge-legend">
+                    <span><i class="dot cons"></i> Consensus votes</span>
+                    <strong :class="toneConsensus(o)" x-text="fmtConsensus(o)"></strong>
+                  </div>
+                  <div class="jauge jauge-cons" aria-hidden="true">
+                    <i :style="'width:' + (o.pct_likes || 0) + '%'"></i>
+                  </div>
+                </div>
+                <div class="opt-collapse" :class="optOuverte === o.id ? 'open' : ''">
+                  <div class="opt-collapse-inner">
+                    <div class="opt-detail" @click.stop>
+                      <p x-text="expliquerNiveau(o.niveau)"></p>
+                      <div class="stats-table compact">
+                        <div class="stats-row"><span>Famille</span><strong x-text="o.famille"></strong></div>
+                        <div class="stats-row"><span>Origine</span><strong x-text="o.origine === 'marche' ? 'Cotes marché' : 'Calcul moteur'"></strong></div>
+                        <div class="stats-row"><span>Score probable</span><strong x-text="fiche.analyse.score_probable"></strong></div>
+                        <div class="stats-row"><span>Profil match</span><strong x-text="libProfil(fiche.analyse.profil)"></strong></div>
+                        <div class="stats-row"><span>1X2 (prob.)</span>
+                          <strong x-text="fmtPct(fiche.analyse.p1) + ' / ' + fmtPct(fiche.analyse.pn) + ' / ' + fmtPct(fiche.analyse.p2)"></strong>
+                        </div>
+                        <div class="stats-row"><span>Buts attendus</span>
+                          <strong x-text="fiche.analyse.buts_dom_attendus.toFixed(2) + ' – ' + fiche.analyse.buts_ext_attendus.toFixed(2)"></strong>
+                        </div>
+                        <div class="stats-row"><span>Cote juste</span><strong x-text="fmtCote(o.cote_juste)"></strong></div>
+                      </div>
+                      <p class="cote-hint">En dessous de <span x-text="fmtCote(o.cote_juste)"></span>, tu paies trop cher.</p>
+                      <p class="hcp-note" x-show="o.code.startsWith('HCP_')">
+                        Handicap européen : perdre d’exactement un but gagne. Ce n’est pas un handicap asiatique.
+                      </p>
+                      <div class="vote-row">
+                        <button type="button" class="btn-vote like" :class="o.mon_vote === 'like' ? 'on' : ''"
+                          @click.stop="voterOption(fiche.id, o.id, 'like', $event)">
+                          <span x-html="icon('thumbs-up')"></span> D’accord
+                        </button>
+                        <button type="button" class="btn-vote dislike" :class="o.mon_vote === 'dislike' ? 'on' : ''"
+                          @click.stop="voterOption(fiche.id, o.id, 'dislike', $event)">
+                          <span x-html="icon('thumbs-down')"></span> Pas d’accord
+                        </button>
+                      </div>
+                      <p class="ko" x-show="voteErr" x-text="voteErr" x-cloak></p>
+                    </div>
+                  </div>
+                </div>
+              </section>
+            </template>
+
+            <aside class="filet-card" x-show="filetFiche" x-cloak>
+              <div class="filet-ico" x-html="icon('shield','icon icon-md')"></div>
+              <div class="filet-body">
+                <p class="filet-label">Filet de sécurité</p>
+                <strong x-text="filetFiche && filetFiche.libelle"></strong>
+                <p class="filet-hint">Plan B si ta mise principale flanche — à garder en tête.</p>
+              </div>
+              <div class="filet-pct">
+                <b x-text="filetFiche && fmtPct(filetFiche.probabilite)"></b>
+                <span>estimé</span>
+              </div>
+            </aside>
+
+            <section class="panel-card">
+              <button type="button" class="panel-head" @click="panelChances = !panelChances"
+                :aria-expanded="panelChances">
+                <span class="panel-ico" x-html="icon('layers')"></span>
+                <span class="panel-titles">
+                  <strong>Toutes les chances</strong>
+                  <small>Marchés détaillés du moteur</small>
+                </span>
+                <span class="opt-chevron" :class="panelChances ? 'rot' : ''" x-html="icon('chevron')"></span>
+              </button>
+              <div class="opt-collapse" :class="panelChances ? 'open' : ''">
+                <div class="opt-collapse-inner">
+                  <div class="panel-body">
+                    <template x-for="sec in sectionsChances" :key="sec.titre">
+                      <div class="chance-sec" x-show="sec.items.length">
+                        <h4 x-text="sec.titre"></h4>
+                        <ul class="chance-list">
+                          <template x-for="o in sec.items" :key="o.code">
+                            <li>
+                              <div class="chance-row">
+                                <span class="chance-lib" x-text="o.libelle"></span>
+                                <strong x-text="fmtPct(o.probabilite)"></strong>
+                              </div>
+                              <div class="jauge" :class="toneProb(o.probabilite)" aria-hidden="true">
+                                <i :style="'width:' + sur100(o.probabilite) + '%'"></i>
+                              </div>
+                              <span class="chance-warn" x-show="peuFiable(o.famille)">Indicatif · famille peu fiable</span>
+                            </li>
+                          </template>
+                        </ul>
+                      </div>
+                    </template>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section class="panel-card" x-show="fiche.contexte" x-cloak>
+              <button type="button" class="panel-head" @click="panelContexte = !panelContexte"
+                :aria-expanded="panelContexte">
+                <span class="panel-ico" x-html="icon('info')"></span>
+                <span class="panel-titles">
+                  <strong>Contexte</strong>
+                  <small>Forme, absents, tendances</small>
+                </span>
+                <span class="opt-chevron" :class="panelContexte ? 'rot' : ''" x-html="icon('chevron')"></span>
+              </button>
+              <div class="opt-collapse" :class="panelContexte ? 'open' : ''">
+                <div class="opt-collapse-inner">
+                  <template x-if="fiche.contexte">
+                    <div class="panel-body">
+                      <div class="ctx-grid">
+                        <article class="ctx-tile">
+                          <small>Forme domicile</small>
+                          <p x-text="fiche.contexte.forme_dom || '—'"></p>
+                        </article>
+                        <article class="ctx-tile">
+                          <small>Forme extérieur</small>
+                          <p x-text="fiche.contexte.forme_ext || '—'"></p>
+                        </article>
+                        <article class="ctx-tile">
+                          <small>Absents domicile</small>
+                          <p x-text="fiche.contexte.absents_dom || '—'"></p>
+                        </article>
+                        <article class="ctx-tile">
+                          <small>Absents extérieur</small>
+                          <p x-text="fiche.contexte.absents_ext || '—'"></p>
+                        </article>
+                        <article class="ctx-tile wide">
+                          <small>Tendance buts</small>
+                          <p x-text="fiche.contexte.tendance_buts || '—'"></p>
+                        </article>
+                        <article class="ctx-tile wide">
+                          <small>À savoir</small>
+                          <p x-text="fiche.contexte.a_savoir || '—'"></p>
+                        </article>
+                        <article class="ctx-tile wide">
+                          <small>Confrontations</small>
+                          <p x-text="fiche.contexte.confrontations || '—'"></p>
+                        </article>
+                      </div>
+                    </div>
+                  </template>
+                </div>
+              </div>
+            </section>
+
+            <section class="bloc-card prop-card">
+              <div class="prop-card-head">
+                <span class="panel-ico" x-html="icon('users')"></span>
+                <div>
+                  <h2>Propositions de paris</h2>
+                  <p class="hint">Les inscrits votent : consensus sous la confiance affichée.</p>
+                </div>
+              </div>
+              <ul class="prop-list">
+                <template x-for="p in propositions" :key="p.id">
+                  <li class="prop-item">
+                    <div class="prop-haut">
+                      <strong x-text="p.libelle"></strong>
+                      <div class="pct-stack right">
+                        <span class="badge soft" x-text="p.confiance + ' %'"></span>
+                        <span class="opt-cons" x-text="'Consensus ' + (p.pct_likes != null ? p.pct_likes + ' %' : '—')"></span>
+                      </div>
+                    </div>
+                    <p class="prop-meta">
+                      par <span x-text="p.auteur"></span>
+                      · <span x-text="p.likes"></span> <span x-html="icon('thumbs-up','icon icon-sm')"></span>
+                      · <span x-text="p.dislikes"></span> <span x-html="icon('thumbs-down','icon icon-sm')"></span>
+                    </p>
+                    <div class="vote-row">
+                      <button type="button" class="btn-vote like" :class="p.mon_vote === 'like' ? 'on' : ''"
+                        @click="voter(p.id, 'like')">
+                        <span x-html="icon('thumbs-up')"></span> Pour
+                      </button>
+                      <button type="button" class="btn-vote dislike" :class="p.mon_vote === 'dislike' ? 'on' : ''"
+                        @click="voter(p.id, 'dislike')">
+                        <span x-html="icon('thumbs-down')"></span> Contre
+                      </button>
+                    </div>
+                    <div class="vote-bar" x-show="(p.likes + p.dislikes) > 0" aria-hidden="true">
+                      <i :style="'width:' + (p.pct_likes || 0) + '%'"></i>
+                    </div>
+                  </li>
+                </template>
+              </ul>
+              <p class="vide vide-sm" x-show="!propositions.length">Aucune proposition pour l’instant — sois le premier.</p>
+              <form class="prop-compose" @submit.prevent="proposerParis()">
+                <p class="prop-compose-label">Publier un scénario</p>
+                <div class="prop-types">
+                  <template x-for="t in TYPES_PROPOSITION" :key="t.code">
+                    <button type="button"
+                      :class="propType === t.code ? 'prop-type on' : 'prop-type'"
+                      @click="propType = t.code"
+                      x-text="t.label"></button>
+                  </template>
+                </div>
+                <label class="prop-range">Confiance <strong x-text="propConfiance + ' %'"></strong>
+                  <input type="range" min="1" max="99" x-model.number="propConfiance">
+                </label>
+                <button type="submit" class="btn btn-block">Publier</button>
+                <p class="ko" x-show="propErr" x-text="propErr" x-cloak></p>
+              </form>
+            </section>
+          </div>
+        </template>
+      </article>
+    </template>
+
+    <template x-if="page === 'historique'">
+      <div class="ecran historique">
+        <p class="lead">Bilan des compos passées : les options qui figuraient dans le compos du jour, face au résultat réel.</p>
+
+        <section class="bloc-card">
+          <h2>Filtres</h2>
+          <div class="puces" role="tablist" aria-label="Filtrer par compétition">
+            <button type="button" role="tab" :class="vComp === '' ? 'puce on' : 'puce'"
+              :aria-selected="vComp === ''" @click="setVerifComp('')">Tous</button>
+            <template x-for="c in competitionsAll" :key="'v-'+c.code">
+              <button type="button" role="tab" class="puce-comp"
+                :class="vComp === c.code ? 'puce on' : 'puce'"
+                :aria-selected="vComp === c.code"
+                :aria-label="c.nom"
+                :title="c.nom"
+                @click="setVerifComp(c.code)">
+                <span class="flag-wrap" x-html="drapeauComp(c)"></span>
+                <span x-text="c.code"></span>
+              </button>
+            </template>
+          </div>
+          <div class="filtres-date">
+            <label>Depuis <input type="date" x-model="vDepuis" @change="rechargerVerif()"></label>
+            <label>Jusqu’à <input type="date" x-model="vJusqua" @change="rechargerVerif()"></label>
+          </div>
+        </section>
+
+        <h2 class="sec-titre">Compos passés</h2>
+        <p class="vide vide-sm" x-show="!matchsPasses.length && !chargement">Aucun compos réglé pour ce filtre.</p>
+        <template x-for="m in matchsPasses" :key="'pass-'+m.id">
+          <article class="carte-match carte-passe" @click="ouvrirMatch(m.id)">
+            <div class="carte-haut">
+              <div class="avatars">
+                <span class="crest-btn static">
+                  <img class="club-logo" :src="logoUrl(m.domicile)" alt="" @error="onLogoError($event)">
+                  <span class="crest-wrap crest-fallback" x-html="crestSvg(m.domicile, 32)" style="display:none"></span>
+                </span>
+                <span class="avatars-sep" aria-hidden="true"></span>
+                <span class="crest-btn static">
+                  <img class="club-logo" :src="logoUrl(m.exterieur)" alt="" @error="onLogoError($event)">
+                  <span class="crest-wrap crest-fallback" x-html="crestSvg(m.exterieur, 32)" style="display:none"></span>
+                </span>
+              </div>
+              <div class="carte-titres">
+                <strong>
+                  <span x-text="m.domicile.nom_court"></span>
+                  <span class="sep"> – </span>
+                  <span x-text="m.exterieur.nom_court"></span>
+                </strong>
+                <p class="carte-comp" x-text="m.competition.nom"></p>
+              </div>
+              <span class="score-pill" x-text="m.score || '—'"></span>
+            </div>
+            <div class="tags">
+              <span class="tag"><span x-text="m.competition.code"></span></span>
+              <span class="tag"><span x-text="jourCourt(m.coup_denvoi)"></span></span>
+              <span class="tag tag-done">Terminé</span>
+            </div>
+            <div class="passe-recos" x-show="(m.options || []).length">
+              <template x-for="o in (m.options || [])" :key="o.id">
+                <div class="passe-reco" :class="'bilan-' + (o.resultat || 'attente')">
+                  <span class="bilan-niv" x-text="libNiveau(o.niveau)"></span>
+                  <span x-text="o.libelle"></span>
+                  <strong :class="toneProb(o.probabilite)" x-text="fmtPct(o.probabilite)"></strong>
+                  <span class="bilan-pill-sm" x-text="motResultat(o.resultat || 'attente')"></span>
+                </div>
+              </template>
+            </div>
+            <div class="carte-pied">
+              <span class="carte-meta">Voir le détail</span>
+              <span class="btn-voir">Ouvrir <span x-html="icon('arrow')"></span></span>
+            </div>
+          </article>
+        </template>
+
+        <div class="loader-wrap" x-show="chargement && !verif" x-cloak>
+          <div class="spinner" role="status" aria-label="Chargement"></div>
+          <p>Chargement de l’historique…</p>
+        </div>
+
+        <template x-if="verif">
+          <div>
+            <section class="bloc-card">
+              <h2>Par niveau</h2>
+              <p class="hint" x-show="verif.total_reglees != null"
+                x-text="verif.total_reglees + ' options réglées sur la période'"></p>
+              <div class="kpi-grid">
+                <template x-for="niv in ['prudente','equilibree','audacieuse','filet']" :key="niv">
+                  <article :class="'kpi kpi-' + niv" x-show="verif.par_niveau[niv]">
+                    <p class="kpi-label" x-text="libNiveau(niv)"></p>
+                    <p class="kpi-big" x-text="fmtTaux(verif.par_niveau[niv])"></p>
+                    <p class="kpi-meta" x-text="verif.par_niveau[niv].gagnes + ' sur ' + verif.par_niveau[niv].n"></p>
+                    <p class="kpi-attendu" x-text="verif.par_niveau[niv].attendu != null ? 'annoncé ~' + Math.round(verif.par_niveau[niv].attendu * 100) + ' %' : 'annoncé —'"></p>
+                    <div class="jauge" aria-hidden="true">
+                      <i :style="'width:' + largeurJauge(verif.par_niveau[niv]) + '%'"></i>
+                    </div>
+                  </article>
+                </template>
+              </div>
+            </section>
+
+            <section class="bloc-card">
+              <h2>Par famille</h2>
+              <template x-if="!famillesVerif.length">
+                <p class="vide vide-sm">Aucune option réglée sur cette période.</p>
+              </template>
+              <div class="kpi-grid kpi-fam">
+                <template x-for="fam in famillesVerif" :key="fam">
+                  <article class="kpi">
+                    <p class="kpi-label" x-text="fam"></p>
+                    <p class="kpi-big" x-text="fmtTaux(verif.par_famille[fam])"></p>
+                    <p class="kpi-meta" x-text="verif.par_famille[fam].gagnes + ' sur ' + verif.par_famille[fam].n"></p>
+                    <p class="kpi-attendu" x-text="verif.par_famille[fam].attendu != null ? 'annoncé ~' + Math.round(verif.par_famille[fam].attendu * 100) + ' %' : 'annoncé —'"></p>
+                    <div class="jauge" aria-hidden="true">
+                      <i :style="'width:' + largeurJauge(verif.par_famille[fam]) + '%'"></i>
+                    </div>
+                  </article>
+                </template>
+              </div>
+            </section>
+
+            <section class="bloc-card">
+              <h2>Détail des matchs</h2>
+              <div class="puces puces-niveaux">
+                <button type="button" :class="vNiveau === '' ? 'puce on' : 'puce'" @click="setVerifNiv('')">Tous</button>
+                <button type="button" :class="vNiveau === 'prudente' ? 'puce on' : 'puce'" @click="setVerifNiv('prudente')">Prudente</button>
+                <button type="button" :class="vNiveau === 'equilibree' ? 'puce on' : 'puce'" @click="setVerifNiv('equilibree')">Équilibrée</button>
+                <button type="button" :class="vNiveau === 'audacieuse' ? 'puce on' : 'puce'" @click="setVerifNiv('audacieuse')">Audacieuse</button>
+              </div>
+              <template x-if="!verifDetail.length">
+                <p class="vide vide-sm">Rien à lister pour ce filtre.</p>
+              </template>
+              <ul class="liste-detail">
+                <template x-for="l in verifDetail" :key="l.match_id + l.code">
+                  <li>
+                    <div class="detail-haut">
+                      <a :href="'/matchs/' + l.match_id" @click.prevent="ouvrirMatch(l.match_id)">
+                        <span x-text="l.libelle_match"></span>
+                      </a>
+                      <span class="badge-niv" x-text="libNiveau(l.niveau)"></span>
+                    </div>
+                    <p class="detail-opt" x-text="l.option"></p>
+                    <div class="detail-bas">
+                      <span x-text="fmtPct(l.probabilite)"></span>
+                    <span :class="l.resultat === 'gagne' ? 'pill-ok' : 'pill-ko'">
+                      <span x-html="iconResultat(l.resultat)"></span>
+                      <span x-text="motResultat(l.resultat)"></span>
+                    </span>
+                    </div>
+                  </li>
+                </template>
+              </ul>
+            </section>
+          </div>
+        </template>
+      </div>
+    </template>
+
+    <template x-if="page === 'reglages'">
+      <div class="ecran reglages">
+        <p class="lead">Compte, compétitions et cache — tout reste sur cet appareil.</p>
+
+        <section class="bloc-card">
+          <h2>Compte</h2>
+          <template x-if="authentifie">
+            <div>
+              <p>Connecté en tant que <strong x-text="username"></strong>.</p>
+              <button type="button" class="btn btn-ghost" @click="authLogout()">Se déconnecter</button>
+            </div>
+          </template>
+          <template x-if="!authentifie">
+            <form class="form-score" @submit.prevent="authSubmit()">
+              <div class="puces">
+                <button type="button" :class="authMode === 'login' ? 'puce on' : 'puce'"
+                  @click="authMode = 'login'; authErr = ''">Connexion</button>
+                <button type="button" :class="authMode === 'register' ? 'puce on' : 'puce'"
+                  @click="authMode = 'register'; authErr = ''">Inscription</button>
+              </div>
+              <label>Pseudo
+                <input type="text" autocomplete="username" name="username"
+                  minlength="3" maxlength="150" x-model="authUser" required>
+              </label>
+              <label>Mot de passe
+                <input type="password"
+                  :autocomplete="authMode === 'register' ? 'new-password' : 'current-password'"
+                  name="password" minlength="8" x-model="authPass" required>
+              </label>
+              <p class="hint" x-show="authMode === 'register'">
+                Au moins 8 caractères, évite les mots de passe trop simples.
+              </p>
+              <button type="submit" class="btn btn-block" :disabled="authBusy"
+                x-text="authBusy ? 'Patiente…' : (authMode === 'register' ? 'Créer mon compte' : 'Se connecter')"></button>
+              <p class="ko" x-show="authErr" x-text="authErr" x-cloak></p>
+            </form>
+          </template>
+        </section>
+
+        <section class="bloc-card">
+          <h2>Compétitions suivies</h2>
+          <p class="hint">Désactive un interrupteur pour retirer la ligue des puces d’accueil.</p>
+          <ul class="checks">
+            <template x-for="c in competitionsAll" :key="c.code">
+              <li>
+                <button type="button" class="switch-row" :aria-pressed="!masquees.includes(c.code)"
+                  @click="toggleComp(c.code)">
+                  <span class="switch-comp">
+                    <span class="flag-wrap" x-html="drapeauComp(c)"></span>
+                    <span>
+                      <strong x-text="c.nom"></strong>
+                      <small x-text="c.code"></small>
+                    </span>
+                  </span>
+                  <span class="switch" :class="!masquees.includes(c.code) ? 'on' : ''" aria-hidden="true"></span>
+                </button>
+              </li>
+            </template>
+          </ul>
+          <p class="vide vide-sm" x-show="!competitionsAll.length">Aucune compétition importée pour l’instant.</p>
+        </section>
+
+        <section class="bloc-card">
+          <h2>Application</h2>
+          <ul class="info-rows">
+            <li>
+              <span>Dernier rafraîchissement</span>
+              <strong x-text="dernierRafraichissement || '—'"></strong>
+            </li>
+            <li>
+              <span>Version du moteur</span>
+              <strong x-text="moteur"></strong>
+            </li>
+          </ul>
+          <button type="button" class="btn btn-block" x-show="peutInstaller" x-cloak
+            @click="installerPWA()">Installer Cleared2Bet</button>
+          <p class="hint" x-show="installePWA" x-cloak>Application déjà installée sur cet appareil.</p>
+          <p class="hint" x-show="!peutInstaller && !installePWA && installHint" x-cloak x-text="installHint"></p>
+          <button type="button" class="btn btn-ghost" @click="purgerCache()">Purger le cache</button>
+          <p class="hint" x-show="cachePurge" x-cloak>Cache vidé. Recharge si besoin.</p>
+        </section>
+      </div>
+    </template>
+  </main>
+
+  <div class="sheet-backdrop" :class="(sheetApercu || sheetClub || sheetAuth || sheetCompos) ? 'open' : ''"
+    @click="fermerSheets()" @keydown.escape.window="fermerSheets()"></div>
+
+  <div class="bottom-sheet sheet-compos"
+    :class="(sheetCompos ? 'open ' : '') + (composExpanded ? 'expanded' : '')"
+    role="dialog" aria-modal="true" aria-label="Compos du jour"
+    :aria-hidden="!sheetCompos">
+    <div class="sheet-handle-drag"
+      @click="composExpanded = !composExpanded"
+      @keydown.enter.prevent="composExpanded = !composExpanded"
+      @keydown.space.prevent="composExpanded = !composExpanded"
+      @touchstart.passive="composDragStart($event)"
+      @touchmove.passive="composDragMove($event)"
+      @touchend="composDragEnd()"
+      role="button"
+      tabindex="0"
+      aria-label="Agrandir ou réduire la feuille"
+      title="Tirer vers le haut pour agrandir"></div>
+    <div class="sheet-body compos-body">
+      <div class="compos-head">
+        <div>
+          <h2>Compos du jour</h2>
+          <p class="hint" x-text="'Prudente + filet · ' + fmtJour((jourDate || dateAujourdhui()) + 'T12:00:00')"></p>
+        </div>
+        <label class="filtre-date compos-date">
+          <input type="date" :value="jourDate" @change="setJourDate($event.target.value)">
+        </label>
+      </div>
+      <div class="compos-actions">
+        <button type="button" class="btn" :disabled="!predictionsJour.length || partageBusy"
+          @click="partagerPredictionsJour()">
+          <span x-html="icon('share','icon icon-sm')"></span> Partager
+        </button>
+        <button type="button" class="btn btn-ghost" :disabled="!predictionsJour.length"
+          @click="telechargerPdfCompos()">
+          <span x-html="icon('download','icon icon-sm')"></span> PDF
+        </button>
+      </div>
+      <p class="hint" x-show="partageMsg" x-cloak x-text="partageMsg"></p>
+      <div class="loader-wrap" x-show="chargementJour" x-cloak>
+        <div class="spinner" role="status" aria-label="Chargement"></div>
+        <p>Chargement des compos…</p>
+      </div>
+      <div class="vide vide-sm" x-show="!chargementJour && !predictionsJour.length" x-cloak>
+        <p>Aucun pari proposé pour cette date.</p>
+      </div>
+      <div class="compos-liste" x-show="!chargementJour && predictionsJour.length">
+        <template x-for="bloc in predictionsJour" :key="'compos-' + bloc.id">
+          <article class="carte-jour">
+            <header class="carte-jour-head">
+              <div>
+                <span class="badge soft" x-text="bloc.competition.code"></span>
+                <strong x-text="bloc.domicile.nom_court + ' – ' + bloc.exterieur.nom_court"></strong>
+                <p class="hint" x-text="dateHeure(bloc.coup_denvoi)"></p>
+              </div>
+            </header>
+            <div class="compos-opts">
+              <div class="compos-opt pred-prudente" x-show="bloc.prudente" x-cloak>
+                <span class="opt-niv">Prudente</span>
+                <span class="pred-lib" x-text="bloc.prudente && bloc.prudente.libelle"></span>
+                <strong class="pred-pct"
+                  x-text="bloc.prudente && fmtPct(bloc.prudente.probabilite)"></strong>
+              </div>
+              <div class="compos-opt pred-filet" x-show="bloc.filet" x-cloak>
+                <span class="opt-niv">
+                  <span x-html="icon('shield','icon icon-sm')"></span> Filet
+                </span>
+                <span class="pred-lib" x-text="bloc.filet && bloc.filet.libelle"></span>
+                <strong class="pred-pct"
+                  x-text="bloc.filet && fmtPct(bloc.filet.probabilite)"></strong>
+              </div>
+            </div>
+          </article>
+        </template>
+      </div>
+      <button type="button" class="btn btn-ghost btn-block" @click="fermerSheets()">Fermer</button>
+    </div>
+  </div>
+
+  <div class="bottom-sheet" :class="sheetApercu ? 'open' : ''"
+    role="dialog" aria-modal="true" aria-label="Aperçu du match"
+    :aria-hidden="!sheetApercu">
+    <div class="sheet-handle" aria-hidden="true"></div>
+    <div class="loader-wrap" x-show="apercuChargement" x-cloak>
+      <div class="spinner" role="status" aria-label="Chargement"></div>
+    </div>
+    <template x-if="apercu && !apercuChargement">
+      <div class="sheet-body">
+        <div class="sheet-match-head">
+          <button type="button" class="crest-btn" @click="ouvrirClub(apercu.domicile, $event)"
+            :aria-label="'Forme et classement de ' + apercu.domicile.nom_court"
+            title="Voir forme & classement">
+            <img class="club-logo" :src="logoUrl(apercu.domicile)" alt="" @error="onLogoError($event)">
+            <span class="crest-wrap crest-fallback" x-html="crestSvg(apercu.domicile, 40)" style="display:none"></span>
+          </button>
+          <div>
+            <strong x-text="apercu.domicile.nom_court + ' – ' + apercu.exterieur.nom_court"></strong>
+            <p x-text="apercu.competition.nom + ' · ' + dateHeure(apercu.coup_denvoi)"></p>
+          </div>
+          <button type="button" class="crest-btn" @click="ouvrirClub(apercu.exterieur, $event)"
+            :aria-label="'Forme et classement de ' + apercu.exterieur.nom_court"
+            title="Voir forme & classement">
+            <img class="club-logo" :src="logoUrl(apercu.exterieur)" alt="" @error="onLogoError($event)">
+            <span class="crest-wrap crest-fallback" x-html="crestSvg(apercu.exterieur, 40)" style="display:none"></span>
+          </button>
+        </div>
+        <template x-if="!optionsApercu(apercu).length">
+          <p class="hint">Pas encore d’analyse pour ce match.</p>
+        </template>
+        <template x-for="o in optionsApercu(apercu)" :key="o.code">
+          <div :class="'opt-mini opt-' + o.niveau">
+            <div class="opt-top">
+              <span class="opt-niv" x-text="libNiveau(o.niveau)"></span>
+              <div class="pct-stack right">
+                <strong x-text="fmtPct(o.probabilite)"></strong>
+                <span class="opt-cons" x-text="'Consensus ' + fmtConsensus(o)"></span>
+              </div>
+            </div>
+            <p x-text="o.libelle"></p>
+            <div class="jauge" :class="toneProb(o.probabilite)">
+              <i :style="'width:' + sur100(o.probabilite) + '%'"></i>
+            </div>
+          </div>
+        </template>
+        <button type="button" class="btn btn-block"
+          @click="ouvrirMatch(apercu.id)">Voir tous les détails</button>
+        <button type="button" class="btn btn-ghost btn-block" @click="fermerSheets()">Fermer</button>
+      </div>
+    </template>
+  </div>
+
+  <div class="bottom-sheet sheet-club" :class="sheetClub ? 'open' : ''"
+    role="dialog" aria-modal="true" aria-label="Fiche club"
+    :aria-hidden="!sheetClub">
+    <div class="sheet-handle" aria-hidden="true"></div>
+    <div class="loader-wrap" x-show="clubChargement" x-cloak>
+      <div class="spinner" role="status" aria-label="Chargement"></div>
+      <p>Infos club…</p>
+    </div>
+    <template x-if="clubInfos && !clubChargement">
+      <div class="sheet-body">
+        <div class="club-head">
+          <img class="club-logo xl" :src="logoUrl(clubEq || {id: clubInfos.equipe_id})" alt="">
+          <div>
+            <h2 x-text="clubInfos.nom"></h2>
+            <p x-text="(clubInfos.pays || '') + (clubInfos.position ? ' · #' + clubInfos.position : '')"></p>
+          </div>
+        </div>
+        <div class="forme-row" x-show="clubInfos.forme && clubInfos.forme.length">
+          <template x-for="(f, i) in clubInfos.forme" :key="i">
+            <span :class="'forme-pill forme-' + f" x-text="f"></span>
+          </template>
+        </div>
+        <template x-if="clubInfos.classement">
+          <div class="stats-table">
+            <div class="stats-row head"><span>Classement</span><span x-text="clubInfos.classement.competition || ''"></span></div>
+            <div class="stats-row"><span>Position</span><strong x-text="'#' + clubInfos.classement.position"></strong></div>
+            <div class="stats-row"><span>Points</span><strong x-text="clubInfos.classement.points"></strong></div>
+            <div class="stats-row"><span>J / G / N / P</span>
+              <strong x-text="(clubInfos.classement.joues||0)+' / '+(clubInfos.classement.gagnes||0)+' / '+(clubInfos.classement.nuls||0)+' / '+(clubInfos.classement.perdus||0)"></strong>
+            </div>
+            <div class="stats-row"><span>Buts</span>
+              <strong x-text="(clubInfos.classement.buts_pour||0)+' : '+(clubInfos.classement.buts_contre||0)"></strong>
+            </div>
+          </div>
+        </template>
+        <h3 class="sec-titre">Forme récente</h3>
+        <ul class="recents">
+          <template x-for="(m, i) in clubInfos.recents" :key="i">
+            <li>
+              <span :class="'forme-pill forme-' + m.resultat" x-text="m.resultat"></span>
+              <span x-text="(m.domicile ? 'vs ' : '@ ') + m.adversaire"></span>
+              <strong x-text="m.score"></strong>
+            </li>
+          </template>
+        </ul>
+        <p class="vide vide-sm" x-show="!(clubInfos.recents||[]).length">Aucun match récent.</p>
+        <button type="button" class="btn btn-ghost btn-block" @click="fermerSheets()">Fermer</button>
+      </div>
+    </template>
+    <p class="hint" x-show="!clubChargement && !clubInfos" x-cloak style="padding:16px">Infos indisponibles pour ce club.</p>
+  </div>
+
+  <div class="bottom-sheet sheet-auth" :class="sheetAuth ? 'open' : ''"
+    role="dialog" aria-modal="true" aria-label="Connexion"
+    :aria-hidden="!sheetAuth">
+    <div class="sheet-handle" aria-hidden="true"></div>
+    <div class="sheet-body auth-sheet-body">
+      <div class="auth-sheet-head">
+        <span class="panel-ico auth-sheet-ico" x-html="icon('users')"></span>
+        <div>
+          <h2 x-text="authMode === 'register' ? 'Créer un compte' : 'Connexion'"></h2>
+          <p class="hint" x-text="authMotif"></p>
+        </div>
+      </div>
+      <div class="puces auth-puces">
+        <button type="button" :class="authMode === 'login' ? 'puce on' : 'puce'"
+          @click="authMode = 'login'; authErr = ''">Connexion</button>
+        <button type="button" :class="authMode === 'register' ? 'puce on' : 'puce'"
+          @click="authMode = 'register'; authErr = ''">Inscription</button>
+      </div>
+      <form class="auth-sheet-form" @submit.prevent="authSubmit()">
+        <label>Pseudo
+          <input type="text" autocomplete="username" name="username"
+            minlength="3" maxlength="150" x-model="authUser" required>
+        </label>
+        <label>Mot de passe
+          <input type="password"
+            :autocomplete="authMode === 'register' ? 'new-password' : 'current-password'"
+            name="password" minlength="8" x-model="authPass" required>
+        </label>
+        <p class="hint" x-show="authMode === 'register'">Au moins 8 caractères, pas trop simple.</p>
+        <button type="submit" class="btn btn-block" :disabled="authBusy"
+          x-text="authBusy ? 'Patiente…' : (authMode === 'register' ? 'Créer mon compte' : 'Se connecter')"></button>
+        <p class="ko" x-show="authErr" x-text="authErr" x-cloak></p>
+      </form>
+      <p class="auth-switch hint">
+        <template x-if="authMode === 'login'">
+          <span>Pas encore de compte ?
+            <button type="button" class="btn-text" @click="authMode = 'register'; authErr = ''">Créer un compte</button>
+          </span>
+        </template>
+        <template x-if="authMode === 'register'">
+          <span>Déjà inscrit ?
+            <button type="button" class="btn-text" @click="authMode = 'login'; authErr = ''">Se connecter</button>
+          </span>
+        </template>
+      </p>
+      <button type="button" class="btn btn-ghost btn-block" @click="fermerSheets()">Plus tard</button>
+    </div>
+  </div>
+
+  <nav class="tabbar" :class="tabHidden ? 'tabbar-hide' : ''" aria-label="Navigation principale">
+    <a href="/" :class="page==='matchs' || page==='fiche' ? 'on' : ''" @click.prevent="go('/')">
+      <span x-html="icon('home','icon icon-md')"></span>
+      Matchs
+    </a>
+    <a href="/historique" :class="page==='historique' ? 'on' : ''" @click.prevent="go('/historique')">
+      <span x-html="icon('history','icon icon-md')"></span>
+      Historique
+    </a>
+    <a href="/reglages" :class="page==='reglages' ? 'on' : ''" @click.prevent="go('/reglages')">
+      <span x-html="icon('settings','icon icon-md')"></span>
+      Réglages
+    </a>
+  </nav>
+
+  <script defer src="/static/js/app.js?v=32"></script>
+  <script defer src="/static/vendor/alpine.min.js?v=32"></script>
+</body>
+</html>

@@ -1,0 +1,1323 @@
+const PEU_FIABLES = new Set(['BTTS', 'Une équipe marque']);
+const LS_FILTRE = 'c2b.filtre';
+const LS_MASQUEES = 'c2b.masquees';
+const LS_REFRESH = 'c2b.refresh';
+const LS_DATE = 'c2b.filtreDate';
+const SS_SCROLL = 'c2b.scroll';
+const TZ_APP = 'Europe/Paris';
+
+function csrf() {
+  const m = document.cookie.match(/(?:^|;\s*)csrftoken=([^;]+)/);
+  return m ? decodeURIComponent(m[1]) : '';
+}
+
+/** Date civile YYYY-MM-DD dans le fuseau de l’app (évite le décalage UTC). */
+function dateLocaleISO(isoOrDate) {
+  const d = isoOrDate instanceof Date ? isoOrDate : new Date(isoOrDate);
+  if (Number.isNaN(d.getTime())) return '';
+  return d.toLocaleDateString('en-CA', { timeZone: TZ_APP });
+}
+
+function fmtApiError(data, fallback) {
+  if (!data) return fallback || 'Échec.';
+  if (typeof data.detail === 'string') return data.detail;
+  if (Array.isArray(data.detail)) return data.detail.map(String).join(' ');
+  const parts = [];
+  Object.keys(data).forEach((k) => {
+    const v = data[k];
+    if (Array.isArray(v)) parts.push(v.join(' '));
+    else if (typeof v === 'string') parts.push(v);
+  });
+  return parts.filter(Boolean).join(' ') || fallback || 'Échec.';
+}
+
+/** PDF texte multi-pages (Helvetica) — sans dépendance externe. */
+function texteVersPdfBlob(titre, blocs) {
+  const pdfSafe = (s) => String(s)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[\u2019\u2018]/g, "'")
+    .replace(/[\u2013\u2014]/g, '-')
+    .replace(/[^\x20-\x7E]/g, '?');
+  const escapePdf = (s) => pdfSafe(s)
+    .replace(/\\/g, '\\\\')
+    .replace(/\(/g, '\\(')
+    .replace(/\)/g, '\\)');
+  const maxLen = 72;
+  const wrap = (s) => {
+    const out = [];
+    let rest = pdfSafe(s);
+    while (rest.length > maxLen) {
+      let cut = rest.lastIndexOf(' ', maxLen);
+      if (cut < 36) cut = maxLen;
+      out.push(rest.slice(0, cut));
+      rest = rest.slice(cut).trimStart();
+    }
+    if (rest) out.push(rest);
+    return out.length ? out : [''];
+  };
+
+  const rows = [];
+  const push = (line, style) => {
+    wrap(line).forEach((w) => rows.push({ text: w, style: style || 'body' }));
+  };
+  push(titre, 'title');
+  push('Prudente + Filet de securite', 'sub');
+  push('------------------------------------------------', 'rule');
+  blocs.forEach((b) => {
+    push(b.header, 'match');
+    (b.lines || []).forEach((l) => push('  ' + l, 'opt'));
+    push('', 'gap');
+  });
+  push('You Are Cleared to Bet - Cleared2Bet', 'foot');
+
+  const pageW = 595;
+  const pageH = 842;
+  const marginX = 48;
+  const marginTop = 52;
+  const marginBottom = 48;
+  const lineH = {
+    title: 20, sub: 14, rule: 12, match: 16, opt: 14, body: 13, gap: 8, foot: 12,
+  };
+  const fontSize = {
+    title: 15, sub: 10, rule: 9, match: 11, opt: 10, body: 10, gap: 8, foot: 9,
+  };
+
+  const pages = [];
+  let cur = [];
+  let y = pageH - marginTop;
+  rows.forEach((row) => {
+    const h = lineH[row.style] || 13;
+    if (y - h < marginBottom && cur.length) {
+      pages.push(cur);
+      cur = [];
+      y = pageH - marginTop;
+    }
+    cur.push({ ...row, y });
+    y -= h;
+  });
+  if (cur.length) pages.push(cur);
+
+  const objects = [];
+  objects.push(null);
+  objects.push(null);
+  const pageObjIds = [];
+  const fontBoldId = 3;
+  const fontRegId = 4;
+  objects.push('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>');
+  objects.push('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>');
+
+  pages.forEach((pageRows) => {
+    const ops = ['BT'];
+    let prevY = null;
+    pageRows.forEach((row) => {
+      if (prevY == null) ops.push(`${marginX} ${row.y} Td`);
+      else ops.push(`0 -${prevY - row.y} Td`);
+      prevY = row.y;
+      const size = fontSize[row.style] || 10;
+      const font = (row.style === 'title' || row.style === 'match') ? '/F1' : '/F2';
+      ops.push(`${font} ${size} Tf`);
+      ops.push(`(${escapePdf(row.text)}) Tj`);
+    });
+    ops.push('ET');
+    const stream = ops.join('\n');
+    const contentId = objects.length + 1;
+    objects.push(`<< /Length ${stream.length} >>\nstream\n${stream}\nendstream`);
+    const pageId = objects.length + 1;
+    pageObjIds.push(pageId);
+    objects.push(
+      `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pageW} ${pageH}] `
+      + `/Contents ${contentId} 0 R /Resources << /Font << /F1 ${fontBoldId} 0 R /F2 ${fontRegId} 0 R >> >> >>`,
+    );
+  });
+
+  objects[0] = '<< /Type /Catalog /Pages 2 0 R >>';
+  objects[1] = `<< /Type /Pages /Kids [${pageObjIds.map((id) => id + ' 0 R').join(' ')}] /Count ${pageObjIds.length} >>`;
+
+  let pdf = '%PDF-1.4\n';
+  const offsets = [0];
+  objects.forEach((body) => {
+    offsets.push(pdf.length);
+    pdf += `${offsets.length - 1} 0 obj\n${body}\nendobj\n`;
+  });
+  const xref = pdf.length;
+  pdf += `xref\n0 ${objects.length + 1}\n`;
+  pdf += '0000000000 65535 f \n';
+  for (let i = 1; i < offsets.length; i += 1) {
+    pdf += `${String(offsets[i]).padStart(10, '0')} 00000 n \n`;
+  }
+  pdf += `trailer<< /Size ${objects.length + 1} /Root 1 0 R >>\n`;
+  pdf += `startxref\n${xref}\n%%EOF`;
+  return new Blob([pdf], { type: 'application/pdf' });
+}
+
+function fmtJour(iso) {
+  return new Date(iso).toLocaleDateString('fr-FR', {
+    weekday: 'long', day: 'numeric', month: 'long', timeZone: TZ_APP,
+  });
+}
+
+function fmtCache(iso) {
+  const d = new Date(iso);
+  return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', timeZone: TZ_APP })
+    + ' à '
+    + d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', timeZone: TZ_APP });
+}
+
+const ICON_PATHS = {
+  home: '<path d="M4 10.5 12 3l8 7.5"/><path d="M6.5 9.5V20h11V9.5"/>',
+  history: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  settings: '<path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"/><path d="M19.4 13a7.6 7.6 0 0 0 .05-1 7.6 7.6 0 0 0-.05-1l2.11-1.65a.5.5 0 0 0 .12-.64l-2-3.46a.5.5 0 0 0-.6-.22l-2.49 1a7.3 7.3 0 0 0-1.73-1L14.5 2.5a.5.5 0 0 0-.5-.5h-4a.5.5 0 0 0-.5.5l-.38 2.53a7.3 7.3 0 0 0-1.73 1l-2.49-1a.5.5 0 0 0-.6.22l-2 3.46a.5.5 0 0 0 .12.64L4.6 11a7.6 7.6 0 0 0-.05 1 7.6 7.6 0 0 0 .05 1l-2.11 1.65a.5.5 0 0 0-.12.64l2 3.46a.5.5 0 0 0 .6.22l2.49-1a7.3 7.3 0 0 0 1.73 1l.38 2.53a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5l.38-2.53a7.3 7.3 0 0 0 1.73-1l2.49 1a.5.5 0 0 0 .6-.22l2-3.46a.5.5 0 0 0-.12-.64L19.4 13z"/>',
+  'thumbs-up': '<path d="M7 10v12"/><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"/>',
+  'thumbs-down': '<path d="M17 14V2"/><path d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22a3.13 3.13 0 0 1-3-3.88Z"/>',
+  arrow: '<path d="M5 12h12"/><path d="m13 6 6 6-6 6"/>',
+  calendar: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/>',
+  clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  check: '<path d="M5 12.5 9.5 17 19 7"/>',
+  x: '<path d="M7 7l10 10M17 7 7 17"/>',
+  trophy: '<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4z"/><path d="M7 6H5a2 2 0 0 0 0 4h2M17 6h2a2 2 0 0 1 0 4h-2"/>',
+  shield: '<path d="M12 3 5 6v6c0 5 3.5 8.5 7 9.5 3.5-1 7-4.5 7-9.5V6l-7-3z"/>',
+  chevron: '<path d="m9 6 6 6-6 6"/>',
+  layers: '<path d="m12 3 9 4.5-9 4.5L3 7.5 12 3z"/><path d="m3 12 9 4.5L21 12"/><path d="m3 16.5 9 4.5 9-4.5"/>',
+  info: '<circle cx="12" cy="12" r="9"/><path d="M12 10v6M12 7h.01"/>',
+  share: '<path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="M16 6l-4-4-4 4"/><path d="M12 2v14"/>',
+  download: '<path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/>',
+  users: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="3"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a3 3 0 0 1 0 5.74"/>',
+};
+
+function icon(name, cls) {
+  const body = ICON_PATHS[name] || '';
+  return (
+    '<svg class="' + (cls || 'icon') + '" viewBox="0 0 24 24" fill="none" '
+    + 'stroke="currentColor" stroke-width="1.75" stroke-linecap="round" '
+    + 'stroke-linejoin="round" aria-hidden="true">' + body + '</svg>'
+  );
+}
+
+/** Drapeaux SVG (hors ligne) — code ligue ou pays. */
+const FLAG_BY_CODE = {
+  UCL: 'eu', PL: 'gb', LIGA: 'es', L1: 'fr', SA: 'it',
+};
+const FLAG_BY_PAYS = {
+  Europe: 'eu', Angleterre: 'gb', Espagne: 'es', France: 'fr', Italie: 'it',
+};
+const FLAG_SVG = {
+  eu: (() => {
+    const star = (a) => {
+      const r = 7.4;
+      const x = 18 + r * Math.cos((a - 90) * Math.PI / 180);
+      const y = 18 + r * Math.sin((a - 90) * Math.PI / 180);
+      return `<path fill="#FFCC00" transform="translate(${x.toFixed(2)} ${y.toFixed(2)}) scale(0.32)" d="M0-7.2 1.6-2.3h5.2l-4.2 3 1.6 4.9L0 2.6l-4.2 3 1.6-4.9-4.2-3h5.2z"/>`;
+    };
+    let stars = '';
+    for (let i = 0; i < 12; i += 1) stars += star(i * 30);
+    return '<rect width="36" height="36" fill="#003399"/>' + stars;
+  })(),
+  gb: '<rect width="36" height="36" fill="#012169"/>'
+    + '<path d="M0 0l36 36M36 0L0 36" stroke="#fff" stroke-width="7.2"/>'
+    + '<path d="M0 0l36 36M36 0L0 36" stroke="#C8102E" stroke-width="4"/>'
+    + '<path d="M18 0v36M0 18h36" stroke="#fff" stroke-width="12"/>'
+    + '<path d="M18 0v36M0 18h36" stroke="#C8102E" stroke-width="7"/>',
+  es: '<rect width="36" height="36" fill="#AA151B"/>'
+    + '<rect y="9" width="36" height="18" fill="#F1BF00"/>'
+    + '<rect x="8" y="13.5" width="5" height="9" rx=".6" fill="#AA151B" opacity=".85"/>',
+  fr: '<rect width="12" height="36" fill="#002395"/>'
+    + '<rect x="12" width="12" height="36" fill="#fff"/>'
+    + '<rect x="24" width="12" height="36" fill="#ED2939"/>',
+  it: '<rect width="12" height="36" fill="#009246"/>'
+    + '<rect x="12" width="12" height="36" fill="#fff"/>'
+    + '<rect x="24" width="12" height="36" fill="#CE2B37"/>',
+};
+
+function flagKeyForComp(comp) {
+  if (!comp) return '';
+  const byCode = FLAG_BY_CODE[String(comp.code || '').toUpperCase()];
+  if (byCode) return byCode;
+  return FLAG_BY_PAYS[comp.pays] || '';
+}
+
+function drapeauComp(comp, cls) {
+  const key = flagKeyForComp(comp);
+  const body = FLAG_SVG[key];
+  if (!body) {
+    return '<span class="' + (cls || 'flag') + ' flag-empty" aria-hidden="true"></span>';
+  }
+  return (
+    '<svg class="' + (cls || 'flag') + '" viewBox="0 0 36 36" role="img" '
+    + 'aria-label="' + esc(comp.pays || comp.code || '') + '" focusable="false">'
+    + body + '</svg>'
+  );
+}
+
+async function getJSON(url) {
+  const res = await fetch(url, {
+    headers: { Accept: 'application/json' },
+    credentials: 'same-origin',
+  });
+  const fromCache = res.headers.get('X-SW-Cache') === '1';
+  const data = await res.json().catch(() => null);
+  return { data, fromCache, ok: res.ok, status: res.status };
+}
+
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, (c) => (
+    { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+  ));
+}
+
+const CRESTS = {
+  psg: ['#004170', '#DA291C'],
+  bayern: ['#DC052D', '#0066B2'],
+  'real-madrid': ['#FEBE10', '#00529F'],
+  'man-city': ['#6CABDD', '#1C2C5B'],
+  liverpool: ['#C8102E', '#00B2A9'],
+  arsenal: ['#EF0107', '#063672'],
+  'man-utd': ['#DA291C', '#FBE122'],
+  everton: ['#003399', '#FFFFFF'],
+  barcelone: ['#A50044', '#004D98'],
+  girona: ['#CD2534', '#FFFFFF'],
+  om: ['#2FAEE0', '#FFFFFF'],
+  monaco: ['#E31C23', '#FFFFFF'],
+  lille: ['#E01A22', '#1D1D1B'],
+  nice: ['#ED1C24', '#000000'],
+  inter: ['#010E80', '#000000'],
+  napoli: ['#12A0D7', '#FFFFFF'],
+  como: ['#1B3A6B', '#C9A227'],
+  genoa: ['#AD1919', '#0B2C5F'],
+};
+
+function hashHue(s) {
+  let h = 0;
+  for (let i = 0; i < s.length; i += 1) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+  return h % 360;
+}
+
+function crestSvg(eq, size = 42) {
+  if (!eq) return '';
+  const slug = eq.slug || '';
+  const letters = esc((eq.nom_court || eq.nom || '?').slice(0, 3).toUpperCase());
+  const pair = CRESTS[slug];
+  const hue = hashHue(slug || letters);
+  const a = pair ? pair[0] : `hsl(${hue} 58% 28%)`;
+  const b = pair ? pair[1] : `hsl(${(hue + 42) % 360} 62% 40%)`;
+  const fs = size < 50 ? 11 : 16;
+  return `<svg class="crest" viewBox="0 0 64 64" width="${size}" height="${size}" role="img" aria-hidden="true">
+    <path fill="${a}" stroke="#fff" stroke-width="2.5"
+      d="M32 4 L54 12 V30 C54 46 44 56 32 60 C20 56 10 46 10 30 V12 Z"/>
+    <circle cx="46" cy="16" r="7" fill="${b}" opacity="0.95"/>
+    <text x="32" y="38" text-anchor="middle" fill="#fff" font-size="${fs}"
+      font-weight="800" font-family="ui-rounded,Segoe UI,sans-serif">${letters}</text>
+  </svg>`;
+}
+
+const TYPES_PROPOSITION = [
+  { code: 'vainqueur_dom', label: 'Vainqueur domicile' },
+  { code: 'nul', label: 'Match nul' },
+  { code: 'vainqueur_ext', label: 'Vainqueur extérieur' },
+  { code: 'plus_25', label: 'Plus de 2,5 buts' },
+  { code: 'moins_25', label: 'Moins de 2,5 buts' },
+];
+
+function c2b() {
+  return {
+    page: 'matchs',
+    titrePage: 'Matchs',
+    get kickerPage() {
+      return {
+        fiche: 'Analyse',
+        historique: 'Passé',
+        reglages: 'Compte',
+      }[this.page] || '';
+    },
+    crestSvg,
+    icon,
+    drapeauComp,
+    TYPES_PROPOSITION,
+    logoUrl(eq) {
+      return eq && eq.id ? '/api/v1/equipes/' + eq.id + '/logo/' : '';
+    },
+    moteur: document.body.dataset.moteur,
+    chargement: false,
+    competitions: [],
+    competitionsAll: [],
+    matchs: [],
+    matchsPasses: [],
+    filtre: localStorage.getItem(LS_FILTRE) || '',
+    filtreDate: localStorage.getItem(LS_DATE) || '',
+    masquees: JSON.parse(localStorage.getItem(LS_MASQUEES) || '[]'),
+    navDir: 'forward',
+    fiche: null,
+    verif: null,
+    verifDetail: [],
+    vDepuis: '',
+    vJusqua: '',
+    vNiveau: '',
+    vComp: '',
+    cacheBanner: false,
+    cacheLabel: '',
+    dernierRafraichissement: localStorage.getItem(LS_REFRESH) ? fmtCache(localStorage.getItem(LS_REFRESH)) : '',
+    swWaiting: false,
+    _swReg: null,
+    _ptrY: null,
+    cachePurge: false,
+    _matchReq: 0,
+    authentifie: false,
+    username: null,
+    authUser: '',
+    authPass: '',
+    authMode: 'login',
+    authErr: '',
+    propositions: [],
+    propType: 'plus_25',
+    propConfiance: 60,
+    propErr: '',
+    voteErr: '',
+    optOuverte: null,
+    panelChances: false,
+    panelContexte: false,
+    tabHidden: false,
+    _lastScrollY: 0,
+    sheetApercu: false,
+    apercu: null,
+    apercuChargement: false,
+    sheetClub: false,
+    clubInfos: null,
+    clubChargement: false,
+    clubEq: null,
+    sheetAuth: false,
+    authMotif: '',
+    authPending: null,
+    authBusy: false,
+    sheetCompos: false,
+    composExpanded: false,
+    _composDragY: null,
+    jourDate: '',
+    predictionsJour: [],
+    chargementJour: false,
+    partageMsg: '',
+    partageBusy: false,
+    peutInstaller: false,
+    installePWA: false,
+    installHint: '',
+    _deferredInstall: null,
+
+    async init() {
+      this.lireRoute();
+      if (!this.jourDate) this.jourDate = this.filtreDate || dateLocaleISO(new Date());
+      window.addEventListener('popstate', () => this.lireRoute({ pop: true }));
+      window.addEventListener('scroll', () => this.onScroll(), { passive: true });
+      this.ecouterInstallPWA();
+      this.enregistrerSW();
+      await this.chargerInfo();
+      await this.chargerCompetitions();
+      await this.routeData();
+      if (this._ouvrirComposAuDemarrage) {
+        this._ouvrirComposAuDemarrage = false;
+        await this.ouvrirCompos();
+      }
+    },
+
+    onScroll() {
+      const y = window.scrollY || 0;
+      const dy = y - this._lastScrollY;
+      if (y < 24) this.tabHidden = false;
+      else if (dy > 8) this.tabHidden = true;
+      else if (dy < -8) this.tabHidden = false;
+      this._lastScrollY = y;
+    },
+
+    async chargerInfo() {
+      try {
+        const { data } = await getJSON('/api/v1/info/');
+        this.authentifie = !!(data && data.authentifie);
+        this.username = data && data.username;
+        if (data && data.version_moteur) this.moteur = data.version_moteur;
+      } catch (_) { /* hors ligne */ }
+    },
+
+    lireRoute(opts = {}) {
+      if (opts.pop) this.navDir = 'back';
+      const path = location.pathname.replace(/\/$/, '') || '/';
+      const m = path.match(/^\/matchs\/(\d+)$/);
+      if (m) {
+        this.page = 'fiche';
+        this.titrePage = 'Match';
+        this._matchId = m[1];
+      } else if (path === '/historique' || path === '/verification') {
+        this.page = 'historique';
+        this.titrePage = 'Historique';
+        if (path === '/verification') history.replaceState({}, '', '/historique');
+      } else if (path === '/jour') {
+        // Ancienne route → accueil + sheet compos
+        this.page = 'matchs';
+        this.titrePage = 'Matchs';
+        history.replaceState({}, '', '/');
+        this._ouvrirComposAuDemarrage = true;
+      } else if (path === '/reglages') {
+        this.page = 'reglages';
+        this.titrePage = 'Réglages';
+      } else {
+        this.page = 'matchs';
+        this.titrePage = 'Matchs';
+      }
+      if (opts.pop) this.routeData();
+    },
+
+    go(path) {
+      this.navDir = 'forward';
+      if (this.page === 'matchs') {
+        sessionStorage.setItem(SS_SCROLL, String(window.scrollY));
+      }
+      history.pushState({}, '', path);
+      this.lireRoute();
+      this.routeData();
+    },
+
+    retourListe() {
+      this.navDir = 'back';
+      if (history.length > 1) history.back();
+      else this.go('/');
+    },
+
+    ouvrirMatch(id) {
+      this.sheetClub = false;
+      this.sheetApercu = false;
+      this.sheetAuth = false;
+      this.sheetCompos = false;
+      this.authPending = null;
+      this.apercu = null;
+      this.clubInfos = null;
+      this.clubEq = null;
+      document.body.classList.remove('sheet-open');
+      this.go('/matchs/' + id);
+    },
+
+    async ouvrirApercu(id) {
+      this.sheetClub = false;
+      this.sheetCompos = false;
+      this.sheetApercu = true;
+      this.apercu = null;
+      this.apercuChargement = true;
+      document.body.classList.add('sheet-open');
+      const { data, ok } = await getJSON('/api/v1/matchs/' + id + '/');
+      this.apercuChargement = false;
+      if (ok) this.apercu = data;
+    },
+
+    ouvrirApercuFromCard(id, ev) {
+      if (ev && ev.target && ev.target.closest('button, a, .vote-row, .no-apercu, .carte-pied, .crest-btn')) return;
+      this.ouvrirApercu(id);
+    },
+
+    fermerSheets() {
+      if (this.sheetAuth) {
+        this.sheetAuth = false;
+        this.authPending = null;
+        this.authErr = '';
+        if (!this.sheetApercu && !this.sheetClub && !this.sheetCompos) {
+          document.body.classList.remove('sheet-open');
+        }
+        return;
+      }
+      if (this.sheetClub) {
+        this.sheetClub = false;
+        this.clubInfos = null;
+        this.clubEq = null;
+        if (!this.sheetApercu && !this.sheetAuth && !this.sheetCompos) {
+          document.body.classList.remove('sheet-open');
+        }
+        return;
+      }
+      if (this.sheetCompos) {
+        this.sheetCompos = false;
+        this.composExpanded = false;
+        this.partageMsg = '';
+        if (!this.sheetApercu && !this.sheetAuth && !this.sheetClub) {
+          document.body.classList.remove('sheet-open');
+        }
+        return;
+      }
+      this.sheetApercu = false;
+      this.apercu = null;
+      document.body.classList.remove('sheet-open');
+    },
+
+    ouvrirAuth(motif, pending) {
+      this.authMotif = motif || 'Connecte-toi pour continuer.';
+      this.authPending = typeof pending === 'function' ? pending : null;
+      this.authErr = '';
+      this.authMode = 'login';
+      this.sheetAuth = true;
+      this.voteErr = '';
+      document.body.classList.add('sheet-open');
+    },
+
+    exigerAuth(motif, pending) {
+      if (this.authentifie) {
+        if (typeof pending === 'function') return pending();
+        return true;
+      }
+      this.ouvrirAuth(motif, pending);
+      return false;
+    },
+
+    async ouvrirClub(eq, ev) {
+      if (ev) ev.stopPropagation();
+      if (!eq || !eq.id) return;
+      this.clubEq = eq;
+      this.sheetClub = true;
+      this.clubInfos = null;
+      this.clubChargement = true;
+      document.body.classList.add('sheet-open');
+      const { data, ok } = await getJSON('/api/v1/equipes/' + eq.id + '/infos/');
+      this.clubChargement = false;
+      if (ok) this.clubInfos = data;
+    },
+
+    optionsApercu(fiche) {
+      if (!fiche || !fiche.analyse) return [];
+      const ordre = { prudente: 0, equilibree: 1, audacieuse: 2 };
+      return (fiche.analyse.options || [])
+        .filter((o) => o.niveau in ordre)
+        .sort((a, b) => ordre[a.niveau] - ordre[b.niveau]);
+    },
+
+    onLogoError(ev) {
+      const img = ev.target;
+      if (!img || img.dataset.fallback === '1') return;
+      img.dataset.fallback = '1';
+      img.style.display = 'none';
+      const fallback = img.nextElementSibling;
+      if (fallback) {
+        fallback.style.display = 'grid';
+        fallback.classList.add('show');
+      }
+    },
+
+    async routeData() {
+      if (this.page === 'matchs') {
+        await this.chargerMatchs();
+        this.$nextTick(() => {
+          const y = sessionStorage.getItem(SS_SCROLL);
+          if (y) window.scrollTo(0, parseInt(y, 10) || 0);
+        });
+      } else if (this.page === 'fiche') {
+        window.scrollTo(0, 0);
+        await this.chargerFiche(this._matchId);
+        await this.chargerPropositions(this._matchId);
+        this.optOuverte = null;
+        this.panelChances = false;
+        this.panelContexte = false;
+        this.voteErr = '';
+        this.propType = 'plus_25';
+        this.propErr = '';
+      } else if (this.page === 'historique') {
+        await Promise.all([
+          this.chargerVerif(),
+          this.chargerVerifDetail(),
+          this.chargerMatchsPasses(),
+        ]);
+      } else if (this.page === 'reglages') {
+        await this.chargerInfo();
+      }
+    },
+
+    noterCache(fromCache) {
+      if (fromCache && localStorage.getItem(LS_REFRESH)) {
+        this.cacheBanner = true;
+        this.cacheLabel = fmtCache(localStorage.getItem(LS_REFRESH));
+      } else {
+        this.cacheBanner = false;
+        const now = new Date().toISOString();
+        localStorage.setItem(LS_REFRESH, now);
+        this.dernierRafraichissement = fmtCache(now);
+      }
+    },
+
+    async chargerCompetitions() {
+      const { data } = await getJSON('/api/v1/competitions/');
+      this.competitionsAll = data || [];
+      this.competitions = this.competitionsAll.filter((c) => !this.masquees.includes(c.code));
+    },
+
+    async chargerMatchs(opts = {}) {
+      const token = ++this._matchReq;
+      const filtreActif = this.filtre;
+      this.chargement = true;
+      this.matchs = [];
+      const q = new URLSearchParams();
+      q.set('statut', 'a_venir,en_cours');
+      q.set('page_size', '50');
+      if (filtreActif) q.set('competition', filtreActif);
+      if (this.filtreDate) {
+        q.set('depuis', this.filtreDate);
+        q.set('jusqu_a', this.filtreDate);
+      }
+      const { data, fromCache } = await getJSON('/api/v1/matchs/?' + q.toString());
+      if (token !== this._matchReq) return;
+      this.noterCache(fromCache);
+      let list = (data && data.results) || [];
+      list = list.filter((m) => m.statut === 'a_venir' || m.statut === 'en_cours');
+      if (filtreActif) {
+        list = list.filter((m) => m.competition && m.competition.code === filtreActif);
+      }
+      if (this.filtreDate) {
+        list = list.filter((m) => dateLocaleISO(m.coup_denvoi) === this.filtreDate);
+      }
+      this.matchs = list;
+      this.chargement = false;
+    },
+
+    async chargerMatchsPasses() {
+      const q = new URLSearchParams();
+      q.set('statut', 'termine');
+      q.set('page_size', '40');
+      if (this.vComp) q.set('competition', this.vComp);
+      if (this.vDepuis) q.set('depuis', this.vDepuis);
+      if (this.vJusqua) q.set('jusqu_a', this.vJusqua);
+      const { data } = await getJSON('/api/v1/matchs/?' + q.toString());
+      let list = (data && data.results) || [];
+      list = list.filter((m) => m.statut === 'termine');
+      list.sort((a, b) => new Date(b.coup_denvoi) - new Date(a.coup_denvoi));
+      this.matchsPasses = list;
+    },
+
+    async chargerFiche(id) {
+      this.chargement = true;
+      this.fiche = null;
+      const { data, fromCache } = await getJSON('/api/v1/matchs/' + id + '/');
+      this.noterCache(fromCache);
+      this.fiche = data;
+      this.chargement = false;
+    },
+
+    async chargerVerif() {
+      this.chargement = true;
+      const q = new URLSearchParams();
+      if (this.vDepuis) q.set('depuis', this.vDepuis);
+      if (this.vJusqua) q.set('jusqu_a', this.vJusqua);
+      if (this.vComp) q.set('competition', this.vComp);
+      const { data } = await getJSON('/api/v1/historique/?' + q.toString());
+      this.verif = data;
+      this.chargement = false;
+    },
+
+    async chargerVerifDetail() {
+      const q = new URLSearchParams();
+      if (this.vDepuis) q.set('depuis', this.vDepuis);
+      if (this.vJusqua) q.set('jusqu_a', this.vJusqua);
+      if (this.vNiveau) q.set('niveau', this.vNiveau);
+      if (this.vComp) q.set('competition', this.vComp);
+      const { data } = await getJSON('/api/v1/historique/detail/?' + q.toString());
+      this.verifDetail = (data && data.results) || [];
+    },
+
+    rechargerVerif() {
+      this.chargerVerif();
+      this.chargerVerifDetail();
+      this.chargerMatchsPasses();
+    },
+
+    setVerifComp(code) {
+      this.vComp = code;
+      this.rechargerVerif();
+    },
+
+    setVerifNiv(niv) {
+      this.vNiveau = niv;
+      this.chargerVerifDetail();
+    },
+
+    setFiltre(code) {
+      this.filtre = code || '';
+      localStorage.setItem(LS_FILTRE, this.filtre);
+      this.matchs = [];
+      this.chargerMatchs();
+    },
+
+    setFiltreDate(val) {
+      this.filtreDate = val || '';
+      if (this.filtreDate) localStorage.setItem(LS_DATE, this.filtreDate);
+      else localStorage.removeItem(LS_DATE);
+      this.matchs = [];
+      this.chargerMatchs();
+    },
+
+    dateAujourdhui() {
+      return dateLocaleISO(new Date());
+    },
+
+    allerAccueil() {
+      this.go('/');
+    },
+
+    toggleComp(code) {
+      const i = this.masquees.indexOf(code);
+      if (i >= 0) this.masquees.splice(i, 1);
+      else this.masquees.push(code);
+      localStorage.setItem(LS_MASQUEES, JSON.stringify(this.masquees));
+      this.competitions = this.competitionsAll.filter((c) => !this.masquees.includes(c.code));
+    },
+
+    get groupes() {
+      const map = new Map();
+      for (const m of this.matchs) {
+        const cle = new Date(m.coup_denvoi).toISOString().slice(0, 10);
+        if (!map.has(cle)) map.set(cle, { cle, label: fmtJour(m.coup_denvoi), matchs: [] });
+        map.get(cle).matchs.push(m);
+      }
+      return [...map.values()];
+    },
+
+    prudente(m) {
+      return (m.options || []).find((o) => o.niveau === 'prudente');
+    },
+
+    get recoFiche() {
+      if (!this.fiche || !this.fiche.analyse) return [];
+      const ordre = { prudente: 0, equilibree: 1, audacieuse: 2 };
+      return this.fiche.analyse.options
+        .filter((o) => o.niveau in ordre)
+        .sort((a, b) => ordre[a.niveau] - ordre[b.niveau]);
+    },
+
+    get filetFiche() {
+      if (!this.fiche || !this.fiche.analyse) return null;
+      return this.fiche.analyse.options.find((o) => o.niveau === 'filet') || null;
+    },
+
+    get sectionsChances() {
+      if (!this.fiche || !this.fiche.analyse) return [];
+      const opts = this.fiche.analyse.options;
+      const qui = ['1X2', 'Double chance', 'Handicap'];
+      const buts = ['Total buts', 'BTTS', 'Une équipe marque'];
+      const ht = ['Mi-temps'];
+      const pick = (fams) => opts.filter((o) => fams.includes(o.famille));
+      return [
+        { titre: 'Qui gagne', items: pick(qui) },
+        { titre: 'Les buts', items: pick(buts) },
+        { titre: 'La mi-temps', items: pick(ht) },
+      ];
+    },
+
+    peuFiable(fam) { return PEU_FIABLES.has(fam); },
+    initiales(nom) {
+      const p = String(nom || '').trim().split(/\s+/);
+      if (!p[0]) return '?';
+      if (p.length === 1) return p[0].slice(0, 2).toUpperCase();
+      return (p[0][0] + p[1][0]).toUpperCase();
+    },
+    heure(iso) {
+      return new Date(iso).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    },
+    jourCourt(iso) {
+      return new Date(iso).toLocaleDateString('fr-FR', {
+        weekday: 'short', day: 'numeric', month: 'short',
+      });
+    },
+    dateHeure(iso) {
+      return fmtJour(iso) + ' · ' + this.heure(iso);
+    },
+    sur100(p) { return Math.round(Number(p) * 100); },
+    fmtPct(p) {
+      if (p == null || Number.isNaN(Number(p))) return '—';
+      return Math.round(Number(p) * 100) + ' %';
+    },
+    fmtCote(c) { return Number(c).toFixed(2).replace('.', ','); },
+    libNiveau(n) {
+      return { prudente: 'Prudente', equilibree: 'Équilibrée', audacieuse: 'Audacieuse', filet: 'Filet' }[n] || n;
+    },
+    libProfil(p) {
+      return { equilibre: 'équilibré', moyen: 'moyen', desequilibre: 'déséquilibré' }[p] || p;
+    },
+    iconeResultat(r) {
+      if (r === 'gagne') return '✓';
+      if (r === 'perdu') return '✕';
+      return '·';
+    },
+    iconResultat(r) {
+      if (r === 'gagne') return icon('check', 'icon icon-sm');
+      if (r === 'perdu') return icon('x', 'icon icon-sm');
+      return '';
+    },
+    motResultat(r) {
+      return { gagne: 'Gagné', perdu: 'Perdu', attente: 'En attente', annule: 'Annulé' }[r] || r;
+    },
+    fmtConsensus(o) {
+      if (!o || o.pct_likes == null) return '—';
+      return o.pct_likes + ' %';
+    },
+    toneProb(p) {
+      const n = Number(p) * 100;
+      if (Number.isNaN(n)) return '';
+      if (n >= 70) return 'tone-ok';
+      if (n >= 55) return 'tone-mid';
+      return 'tone-hot';
+    },
+    toneConsensus(o) {
+      if (!o || o.pct_likes == null) return '';
+      const pred = Math.round(Number(o.probabilite) * 100);
+      const diff = Math.abs(o.pct_likes - pred);
+      if (diff <= 10) return 'tone-ok';
+      if (diff <= 25) return 'tone-mid';
+      return 'tone-hot';
+    },
+    expliquerNiveau(n) {
+      return {
+        prudente: 'Niveau Prudente : forte probabilité (70–90 %). Priorité à la stabilité.',
+        equilibree: 'Niveau Équilibrée : zone intermédiaire (55–70 %). Compromis chance / cote.',
+        audacieuse: 'Niveau Audacieuse : plus risqué (28–50 %). À manier avec une mise réduite.',
+      }[n] || '';
+    },
+    toggleOpt(id) {
+      this.optOuverte = this.optOuverte === id ? null : id;
+      this.voteErr = '';
+    },
+    fmtTaux(bloc) {
+      if (!bloc || bloc.echantillon_trop_petit) return 'échantillon trop petit';
+      return Math.round(bloc.taux * 100) + ' %';
+    },
+    largeurJauge(bloc) {
+      if (!bloc || bloc.echantillon_trop_petit || bloc.taux == null) return 0;
+      return Math.round(bloc.taux * 100);
+    },
+    get famillesVerif() {
+      return this.verif ? Object.keys(this.verif.par_famille) : [];
+    },
+
+    ptrStart(e) { this._ptrY = e.touches[0].clientY; },
+    ptrEnd(e) {
+      if (this._ptrY == null) return;
+      const dy = e.changedTouches[0].clientY - this._ptrY;
+      this._ptrY = null;
+      if (window.scrollY < 8 && dy > 60) this.chargerMatchs();
+    },
+
+    async chargerPropositions(id) {
+      const { data } = await getJSON('/api/v1/matchs/' + id + '/propositions/');
+      this.propositions = (data && data.results) || [];
+    },
+
+    async proposerParis() {
+      this.propErr = '';
+      if (!this.exigerAuth('Connecte-toi pour proposer un pari.', () => this.proposerParis())) {
+        return;
+      }
+      if (!this.propType) {
+        this.propErr = 'Choisis un type de pari.';
+        return;
+      }
+      const res = await fetch('/api/v1/matchs/' + this.fiche.id + '/propositions/', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrf(),
+        },
+        body: JSON.stringify({
+          type: this.propType,
+          confiance: this.propConfiance,
+        }),
+      });
+      if (res.ok) {
+        await this.chargerPropositions(this.fiche.id);
+      } else {
+        const err = await res.json().catch(() => ({}));
+        this.propErr = fmtApiError(err, 'Publication impossible.');
+      }
+    },
+
+    async voter(propId, choix) {
+      if (!this.exigerAuth('Connecte-toi pour voter sur cette proposition.', () => this.voter(propId, choix))) {
+        return;
+      }
+      const res = await fetch(
+        '/api/v1/matchs/' + this.fiche.id + '/propositions/' + propId + '/vote/',
+        {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrf(),
+          },
+          body: JSON.stringify({ choix }),
+        },
+      );
+      if (res.ok) {
+        const updated = await res.json();
+        this.propositions = this.propositions.map((p) => (
+          p.id === updated.id ? updated : p
+        ));
+      }
+    },
+
+    appliquerVoteOption(matchId, updated) {
+      const patch = (opts) => (opts || []).map((o) => (
+        o.id === updated.id
+          ? {
+              ...o,
+              likes: updated.likes,
+              dislikes: updated.dislikes,
+              pct_likes: updated.pct_likes,
+              mon_vote: updated.mon_vote,
+            }
+          : o
+      ));
+      this.matchs = this.matchs.map((m) => (
+        m.id === matchId ? { ...m, options: patch(m.options) } : m
+      ));
+      if (this.fiche && this.fiche.id === matchId && this.fiche.analyse) {
+        this.fiche = {
+          ...this.fiche,
+          analyse: {
+            ...this.fiche.analyse,
+            options: patch(this.fiche.analyse.options),
+          },
+        };
+      }
+      if (this.apercu && this.apercu.id === matchId && this.apercu.analyse) {
+        this.apercu = {
+          ...this.apercu,
+          analyse: {
+            ...this.apercu.analyse,
+            options: patch(this.apercu.analyse.options),
+          },
+        };
+      }
+    },
+
+    async voterOption(matchId, optId, choix, ev) {
+      if (ev) ev.stopPropagation();
+      this.voteErr = '';
+      if (!this.exigerAuth(
+        'Connecte-toi pour voter sur cette prédiction.',
+        () => this.voterOption(matchId, optId, choix),
+      )) {
+        return;
+      }
+      const res = await fetch(
+        '/api/v1/matchs/' + matchId + '/options/' + optId + '/vote/',
+        {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrf(),
+          },
+          body: JSON.stringify({ choix }),
+        },
+      );
+      if (res.ok) {
+        const updated = await res.json();
+        this.appliquerVoteOption(matchId, updated);
+      } else {
+        this.voteErr = 'Vote impossible.';
+      }
+    },
+
+    async authSubmit() {
+      this.authErr = '';
+      const user = (this.authUser || '').trim();
+      const pass = this.authPass || '';
+      if (user.length < 3) {
+        this.authErr = 'Pseudo trop court (3 caractères min.).';
+        return;
+      }
+      if (pass.length < 8) {
+        this.authErr = 'Mot de passe trop court (8 caractères min.).';
+        return;
+      }
+      this.authBusy = true;
+      const url = this.authMode === 'register'
+        ? '/api/v1/auth/register/'
+        : '/api/v1/auth/login/';
+      try {
+        const res = await fetch(url, {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+            'X-CSRFToken': csrf(),
+          },
+          body: JSON.stringify({ username: user, password: pass }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok) {
+          this.authentifie = true;
+          this.username = data.username;
+          this.authPass = '';
+          this.authErr = '';
+          const pending = this.authPending;
+          this.sheetAuth = false;
+          this.authPending = null;
+          if (!this.sheetApercu && !this.sheetClub && !this.sheetCompos) {
+            document.body.classList.remove('sheet-open');
+          }
+          await this.chargerInfo();
+          if (typeof pending === 'function') await pending();
+        } else {
+          this.authErr = fmtApiError(data, res.status === 403
+            ? 'Session expirée — recharge la page puis réessaie.'
+            : 'Échec de connexion.');
+        }
+      } catch (_) {
+        this.authErr = 'Réseau indisponible. Réessaie.';
+      } finally {
+        this.authBusy = false;
+      }
+    },
+
+    async authLogout() {
+      await fetch('/api/v1/auth/logout/', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'X-CSRFToken': csrf() },
+      });
+      this.authentifie = false;
+      this.username = null;
+    },
+
+    setJourDate(val) {
+      this.jourDate = val || dateLocaleISO(new Date());
+      this.partageMsg = '';
+      this.chargerPredictionsJour();
+    },
+
+    async ouvrirCompos() {
+      this.sheetApercu = false;
+      this.sheetClub = false;
+      this.sheetAuth = false;
+      this.apercu = null;
+      this.partageMsg = '';
+      this.composExpanded = false;
+      if (!this.jourDate) {
+        this.jourDate = this.filtreDate || dateLocaleISO(new Date());
+      }
+      this.sheetCompos = true;
+      document.body.classList.add('sheet-open');
+      await this.chargerPredictionsJour();
+    },
+
+    optCompos(bloc, niveau) {
+      if (!bloc) return null;
+      if (niveau === 'prudente') return bloc.prudente || null;
+      if (niveau === 'filet') return bloc.filet || null;
+      if (!bloc.options) return null;
+      return bloc.options.find((o) => o.niveau === niveau) || null;
+    },
+
+    composDragStart(ev) {
+      const t = ev.touches && ev.touches[0];
+      if (!t) return;
+      this._composDragY = t.clientY;
+    },
+
+    composDragMove(ev) {
+      if (this._composDragY == null) return;
+      const t = ev.touches && ev.touches[0];
+      if (!t) return;
+      const dy = this._composDragY - t.clientY;
+      if (dy > 36) this.composExpanded = true;
+      if (dy < -36) this.composExpanded = false;
+    },
+
+    composDragEnd() {
+      this._composDragY = null;
+    },
+
+    async chargerPredictionsJour() {
+      const jour = this.jourDate || dateLocaleISO(new Date());
+      this.jourDate = jour;
+      this.chargementJour = true;
+      this.predictionsJour = [];
+      const q = new URLSearchParams();
+      q.set('statut', 'a_venir,en_cours');
+      q.set('page_size', '50');
+      q.set('depuis', jour);
+      q.set('jusqu_a', jour);
+      const { data, ok } = await getJSON('/api/v1/matchs/?' + q.toString());
+      this.chargementJour = false;
+      if (!ok) return;
+      const ordre = { prudente: 0, filet: 1 };
+      const list = (data && data.results) || [];
+      this.predictionsJour = list
+        .map((m) => {
+          const options = (m.options || [])
+            .filter((o) => o.niveau === 'prudente' || o.niveau === 'filet')
+            .sort((a, b) => ordre[a.niveau] - ordre[b.niveau]);
+          const prudente = options.find((o) => o.niveau === 'prudente') || null;
+          const filet = options.find((o) => o.niveau === 'filet') || null;
+          return {
+            id: m.id,
+            competition: m.competition,
+            domicile: m.domicile,
+            exterieur: m.exterieur,
+            coup_denvoi: m.coup_denvoi,
+            options,
+            prudente,
+            filet,
+          };
+        })
+        .filter((m) => m.prudente || m.filet);
+    },
+
+    textePredictionsJour() {
+      const lignes = [];
+      this.predictionsJour.forEach((m) => {
+        lignes.push(
+          (m.competition && m.competition.code ? m.competition.code + ' · ' : '')
+          + m.domicile.nom_court + ' – ' + m.exterieur.nom_court,
+        );
+        m.options.forEach((o) => {
+          lignes.push(
+            '  ' + this.libNiveau(o.niveau) + ' : ' + o.libelle
+            + ' (' + this.fmtPct(o.probabilite) + ')',
+          );
+        });
+        lignes.push('');
+      });
+      lignes.push('You Are Cleared to Bet');
+      return lignes;
+    },
+
+    blocsPdfCompos() {
+      return this.predictionsJour.map((m) => ({
+        header: (m.competition && m.competition.code ? m.competition.code + ' | ' : '')
+          + m.domicile.nom_court + ' - ' + m.exterieur.nom_court
+          + '  (' + this.dateHeure(m.coup_denvoi) + ')',
+        lines: [
+          m.prudente
+            ? 'Prudente : ' + m.prudente.libelle + '  ·  ' + this.fmtPct(m.prudente.probabilite)
+            : null,
+          m.filet
+            ? 'Filet    : ' + m.filet.libelle + '  ·  ' + this.fmtPct(m.filet.probabilite)
+            : null,
+        ].filter(Boolean),
+      }));
+    },
+
+    async partagerPredictionsJour() {
+      this.partageMsg = '';
+      this.partageBusy = true;
+      const titre = 'Cleared2Bet — Compos du ' + fmtJour(this.jourDate + 'T12:00:00');
+      const text = [titre, 'Prudente + Filet de sécurité', '', ...this.textePredictionsJour()].join('\n');
+      const blob = texteVersPdfBlob(titre, this.blocsPdfCompos());
+      const file = new File([blob], 'compos-cleared2bet-' + (this.jourDate || 'jour') + '.pdf', {
+        type: 'application/pdf',
+      });
+      try {
+        if (navigator.share) {
+          const payload = { title: 'Compos Cleared2Bet', text };
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            payload.files = [file];
+          }
+          await navigator.share(payload);
+          this.partageMsg = 'Partage envoyé.';
+          return;
+        }
+        await navigator.clipboard.writeText(text);
+        this.partageMsg = 'Liste copiée dans le presse-papiers.';
+      } catch (e) {
+        if (e && e.name === 'AbortError') return;
+        try {
+          await navigator.clipboard.writeText(text);
+          this.partageMsg = 'Liste copiée dans le presse-papiers.';
+        } catch (_) {
+          this.partageMsg = 'Impossible de partager automatiquement.';
+        }
+      } finally {
+        this.partageBusy = false;
+      }
+    },
+
+    telechargerPdfCompos() {
+      this.partageMsg = '';
+      if (!this.predictionsJour.length) return;
+      const titre = 'Cleared2Bet — Compos du ' + fmtJour(this.jourDate + 'T12:00:00');
+      const blob = texteVersPdfBlob(titre, this.blocsPdfCompos());
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'compos-cleared2bet-' + (this.jourDate || 'jour') + '.pdf';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      this.partageMsg = 'PDF téléchargé.';
+    },
+
+    ecouterInstallPWA() {
+      const standalone = window.matchMedia('(display-mode: standalone)').matches
+        || window.navigator.standalone === true;
+      this.installePWA = !!standalone;
+      if (standalone) {
+        this.peutInstaller = false;
+        return;
+      }
+      const ua = navigator.userAgent || '';
+      const isIOS = /iPad|iPhone|iPod/.test(ua);
+      if (isIOS) {
+        this.installHint = 'Sur iPhone : Partager → Sur l’écran d’accueil.';
+      } else {
+        this.installHint = 'Utilise le menu du navigateur « Installer l’application » si le bouton n’apparaît pas.';
+      }
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        this._deferredInstall = e;
+        this.peutInstaller = true;
+      });
+      window.addEventListener('appinstalled', () => {
+        this.peutInstaller = false;
+        this.installePWA = true;
+        this._deferredInstall = null;
+      });
+    },
+
+    async installerPWA() {
+      if (!this._deferredInstall) {
+        this.installHint = this.installHint
+          || 'Ouvre le menu du navigateur pour installer Cleared2Bet.';
+        return;
+      }
+      this._deferredInstall.prompt();
+      const choice = await this._deferredInstall.userChoice;
+      this._deferredInstall = null;
+      this.peutInstaller = false;
+      if (choice && choice.outcome === 'accepted') this.installePWA = true;
+    },
+
+    async purgerCache() {
+      if (!('caches' in window)) return;
+      const keys = await caches.keys();
+      await Promise.all(keys.map((k) => caches.delete(k)));
+      this.cachePurge = true;
+    },
+
+    enregistrerSW() {
+      if (!('serviceWorker' in navigator)) return;
+      navigator.serviceWorker.register('/sw.js', { scope: '/' }).then((reg) => {
+        this._swReg = reg;
+        if (reg.waiting) this.swWaiting = true;
+        reg.addEventListener('updatefound', () => {
+          const w = reg.installing;
+          if (!w) return;
+          w.addEventListener('statechange', () => {
+            if (w.state === 'installed' && navigator.serviceWorker.controller) this.swWaiting = true;
+          });
+        });
+      });
+    },
+
+    appliquerMaj() {
+      const w = this._swReg && this._swReg.waiting;
+      if (w) w.postMessage({ type: 'SKIP_WAITING' });
+      navigator.serviceWorker.addEventListener('controllerchange', () => location.reload());
+    },
+  };
+}
+
+window.c2b = c2b;
+document.addEventListener('alpine:init', () => {
+  Alpine.data('c2b', c2b);
+});
