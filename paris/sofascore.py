@@ -60,6 +60,13 @@ def _get(path: str) -> dict[str, Any]:
     except urllib.error.HTTPError as exc:
         raise SofaScoreErreur(f'SofaScore {exc.code} sur {path}') from exc
     except urllib.error.URLError as exc:
+        reason = str(exc.reason)
+        if '403' in reason:
+            raise SofaScoreErreur(
+                'Accès SofaScore refusé (souvent whitelist PythonAnywhere free). '
+                'Passe en compte payant PA, ou lance la sync depuis un PC/VPS '
+                'puis importe les données. Détail : ' + reason
+            ) from exc
         raise SofaScoreErreur(f'SofaScore indisponible : {exc.reason}') from exc
 
 

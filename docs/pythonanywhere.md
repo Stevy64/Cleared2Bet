@@ -93,11 +93,22 @@ application = get_wsgi_application()
 - Directory : `/home/Gabomazone/Cleared2Bet/staticfiles` (après `collectstatic`)
   ou le chemin `STATIC_ROOT` de ton `settings.py`.
 
-## Cron (recommandé)
+## Sync SofaScore (important)
 
-1. `python manage.py synchroniser_sofascore`
-2. `python manage.py calculer_analyses`
-3. `python manage.py regler_options`
+Les comptes **PythonAnywhere free** ne peuvent appeler que des sites
+*whitelistés*. `api.sofascore.com` est en général **bloqué** (403 tunnel).
+
+Options :
+1. Compte PA payant (Hacker+) → `python manage.py synchroniser_sofascore`
+2. Sync depuis un PC / VPS, puis import JSON sur PA
+3. Cron local qui pousse les données
+
+Ensuite :
+
+```bash
+python manage.py calculer_analyses                 # aujourd’hui
+python manage.py calculer_analyses --journee 2026-09-08
+```
 
 ## CI
 

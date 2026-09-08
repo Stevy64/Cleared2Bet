@@ -22,13 +22,20 @@ class Command(BaseCommand):
     )
 
     def add_arguments(self, parser):
-        parser.add_argument('--journee', required=True, help='Date AAAA-MM-JJ')
+        parser.add_argument(
+            '--journee',
+            default='',
+            help='Date AAAA-MM-JJ (défaut : aujourd’hui, fuseau app)',
+        )
         parser.add_argument('--dry-run', action='store_true')
 
     def handle(self, *args, **opts):
-        jour = parse_date(opts['journee'])
+        raw = (opts.get('journee') or '').strip()
+        if not raw:
+            raw = timezone.localdate().isoformat()
+        jour = parse_date(raw)
         if jour is None:
-            raise CommandError(f'Date invalide : {opts["journee"]}')
+            raise CommandError(f'Date invalide : {raw}')
         tz = timezone.get_current_timezone()
         debut = timezone.make_aware(datetime.combine(jour, dt_time.min), tz)
         fin = timezone.make_aware(datetime.combine(jour, dt_time.max), tz)
