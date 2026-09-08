@@ -27,6 +27,7 @@ jobs:
       DJANGO_DEBUG: "0"
       DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1,testserver
       DJANGO_SSL: "0"
+      DJANGO_SECURE_SSL_REDIRECT: "0"
       PYTHONUNBUFFERED: "1"
 
     steps:
@@ -61,17 +62,19 @@ jobs:
       - name: Run pytest
         run: pytest --tb=short
 
-  pythonanywhere-smoke:
-    name: Smoke PythonAnywhere
+  vps-smoke:
+    name: Smoke VPS / OVH
     runs-on: ubuntu-latest
     needs: test
     timeout-minutes: 10
     env:
       DJANGO_SETTINGS_MODULE: config.settings
-      DJANGO_SECRET_KEY: pa-smoke-secret-key-not-for-production-use-please-rotate-locally-xx
+      DJANGO_SECRET_KEY: vps-smoke-secret-key-not-for-production-use-please-rotate-locally-xx
       DJANGO_DEBUG: "0"
-      DJANGO_ALLOWED_HOSTS: gabomazone.pythonanywhere.com,localhost,127.0.0.1,testserver
+      DJANGO_ALLOWED_HOSTS: cleared2bet.example.com,www.cleared2bet.example.com,localhost,127.0.0.1,testserver
+      DJANGO_CSRF_TRUSTED_ORIGINS: https://cleared2bet.example.com,https://www.cleared2bet.example.com
       DJANGO_SSL: "1"
+      DJANGO_SECURE_SSL_REDIRECT: "1"
       PYTHONUNBUFFERED: "1"
 
     steps:
@@ -89,7 +92,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Prod checks for PythonAnywhere host
+      - name: Prod checks for VPS host
         run: |
           python manage.py check --deploy
           python manage.py migrate --noinput
@@ -102,6 +105,8 @@ jobs:
           from django.conf import settings
           assert settings.DEBUG is False
           assert not settings.SECRET_KEY.startswith("django-insecure-")
-          assert "gabomazone.pythonanywhere.com" in settings.ALLOWED_HOSTS
-          print("PythonAnywhere prod smoke OK")
+          assert "cleared2bet.example.com" in settings.ALLOWED_HOSTS
+          assert any("cleared2bet.example.com" in o for o in settings.CSRF_TRUSTED_ORIGINS)
+          assert settings.SECURE_PROXY_SSL_HEADER == ("HTTP_X_FORWARDED_PROTO", "https")
+          print("VPS / OVH prod smoke OK")
           PY

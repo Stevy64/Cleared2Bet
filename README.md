@@ -4,16 +4,16 @@ Application web (PWA) d’aide à la décision pour les paris football. Elle aff
 
 ## Installation
 
-Python 3.10+ (3.12 recommandé). Sur PythonAnywhere, choisis **python3.10** (ou 3.12)
-pour le virtualenv — voir [docs/pythonanywhere.md](docs/pythonanywhere.md).
+Python 3.10+ (3.12 recommandé).
 
 ```bash
 python -m venv .venv
 .venv\Scripts\activate          # Windows
 # source .venv/bin/activate     # Linux / macOS
 pip install -r requirements.txt
+cp .env.example .env            # optionnel en local
 python manage.py migrate
-python manage.py createsuperuser   # pour l’admin et la saisie de scores
+python manage.py createsuperuser
 ```
 
 ## Données
@@ -26,48 +26,36 @@ python manage.py calculer_analyses
 python manage.py runserver
 ```
 
-Un fichier `exemples/journee-2026-09-08.json` existe pour les **tests unitaires uniquement**. Il contient des matchs **fictifs** (ex. Man Utd–Everton, Lille–Nice). L’API publique ignore tout match sans `sofascore_id`. Pour nettoyer une base polluée :
+Un fichier `exemples/journee-2026-09-08.json` existe pour les **tests unitaires uniquement**. L’API publique ignore tout match sans `sofascore_id`.
 
 ```bash
 python manage.py purger_matchs_fictifs
-```
-
-Import JSON démo (interdit sans confirmation explicite) :
-
-```bash
 python manage.py importer_matchs --source exemples/journee-2026-09-08.json --allow-demo
-```
-
-Les commandes acceptent `--dry-run`. Après un match, saisis le score dans l’admin (ou Réglages si tu es connecté) puis :
-
-```bash
 python manage.py regler_options
 ```
-
-Un cron peut enchaîner sync SofaScore → calcul → règlement.
 
 ## Tests
 
 ```bash
+pip install -r requirements-dev.txt
 pytest
 ```
 
-CI GitHub Actions (`.github/workflows/ci.yml`) : pytest, migrations, `collectstatic`,
-`manage.py check --deploy`, smoke PythonAnywhere (`DEBUG=0`).
+CI : pytest, migrations, `collectstatic`, `check --deploy`, smoke VPS.
 
-## Déploiement (PythonAnywhere)
+## Déploiement (VPS OVH)
 
-Voir [docs/pythonanywhere.md](docs/pythonanywhere.md).
+Guide complet : [docs/ovh-vps.md](docs/ovh-vps.md).
+
+Fichiers prêts dans `deploy/` : Gunicorn, systemd, nginx, `update.sh`.
 
 ```bash
-export DJANGO_DEBUG=0
-export DJANGO_SECRET_KEY=...
-export DJANGO_ALLOWED_HOSTS=gabomazone.pythonanywhere.com
-export DJANGO_SSL=1
+cp .env.example .env
+# Renseigne DJANGO_SECRET_KEY, ALLOWED_HOSTS, CSRF_TRUSTED_ORIGINS
+pip install -r requirements.txt
 python manage.py migrate --noinput
 python manage.py collectstatic --noinput
+gunicorn --config deploy/gunicorn.conf.py config.wsgi:application
 ```
 
-Alternative locale / VPS : `gunicorn config.wsgi:application`.
-
-Ouvre `/` sur le téléphone, installe la PWA. Hors ligne, le service worker sert la coque et les derniers matchs mis en cache.
+Ouvre `/` en HTTPS, installe la PWA. Hors ligne, le service worker sert la coque et les derniers matchs mis en cache.

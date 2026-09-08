@@ -1,0 +1,22 @@
+[Unit]
+Description=Cleared2Bet (Gunicorn)
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+RuntimeDirectory=cleared2bet
+WorkingDirectory=/var/www/cleared2bet
+EnvironmentFile=/var/www/cleared2bet/.env
+ExecStart=/var/www/cleared2bet/.venv/bin/gunicorn \
+    --config /var/www/cleared2bet/deploy/gunicorn.conf.py \
+    config.wsgi:application
+ExecReload=/bin/kill -s HUP $MAINPID
+KillMode=mixed
+TimeoutStopSec=30
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
