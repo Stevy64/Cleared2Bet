@@ -1398,23 +1398,36 @@ function c2b() {
 
     enregistrerSW() {
       if (!('serviceWorker' in navigator)) return;
-      navigator.serviceWorker.register('/sw.js', { scope: '/' }).then((reg) => {
+      let reloading = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (reloading) return;
+        reloading = true;
+        location.reload();
+      });
+      navigator.serviceWorker.register('/sw.js?v=48', { scope: '/' }).then((reg) => {
         this._swReg = reg;
-        if (reg.waiting) this.swWaiting = true;
+        const activer = (worker) => {
+          if (!worker) return;
+          worker.postMessage({ type: 'SKIP_WAITING' });
+        };
+        if (reg.waiting) activer(reg.waiting);
         reg.addEventListener('updatefound', () => {
           const w = reg.installing;
           if (!w) return;
           w.addEventListener('statechange', () => {
-            if (w.state === 'installed' && navigator.serviceWorker.controller) this.swWaiting = true;
+            if (w.state === 'installed' && navigator.serviceWorker.controller) {
+              activer(w);
+            }
           });
         });
+        reg.update().catch(() => {});
       });
     },
 
     appliquerMaj() {
       const w = this._swReg && this._swReg.waiting;
       if (w) w.postMessage({ type: 'SKIP_WAITING' });
-      navigator.serviceWorker.addEventListener('controllerchange', () => location.reload());
+      else location.reload();
     },
   };
 }

@@ -1,19 +1,17 @@
-const CACHE = 'paris-v47';
+const CACHE = 'paris-v48';
 const PRECACHE = [
-  '/',
   '/manifest.webmanifest',
-  '/static/css/app.css?v=47',
-  '/static/js/app.js?v=47',
-  '/static/vendor/alpine.min.js?v=47',
+  '/static/css/app.css?v=48',
+  '/static/js/app.js?v=48',
+  '/static/vendor/alpine.min.js?v=48',
   '/static/img/hero-accueil.jpg',
-  '/historique',
   '/static/icons/icon-192.png',
   '/static/icons/icon-512.png',
 ];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE).then((cache) => cache.addAll(PRECACHE))
+    caches.open(CACHE).then((cache) => cache.addAll(PRECACHE)).then(() => self.skipWaiting())
   );
 });
 
@@ -48,12 +46,12 @@ async function staleWhileRevalidate(request) {
   }).catch(() => cached);
   if (cached) {
     network.catch(() => {});
-    return withCacheFlag(cached);
+    return cached;
   }
   return network;
 }
 
-async function networkFirst(request) {
+async function networkFirst(request, { flagCache } = {}) {
   const cache = await caches.open(CACHE);
   try {
     const res = await fetch(request);
@@ -61,18 +59,19 @@ async function networkFirst(request) {
     return res;
   } catch (err) {
     const cached = await cache.match(request);
-    if (cached) return withCacheFlag(cached);
+    if (cached) return flagCache ? withCacheFlag(cached) : cached;
     throw err;
   }
 }
 
-async function cacheFirst(request) {
-  const cache = await caches.open(CACHE);
-  const cached = await cache.match(request);
-  if (cached) return cached;
-  const res = await fetch(request);
-  if (res && res.ok) cache.put(request, res.clone());
-  return res;
+function isAppShell(path) {
+  return (
+    path === '/'
+    || path === '/historique'
+    || path === '/verification'
+    || path === '/reglages'
+    || /^\/matchs\/\d+\/?$/.test(path)
+  );
 }
 
 self.addEventListener('fetch', (event) => {
@@ -82,25 +81,22 @@ self.addEventListener('fetch', (event) => {
   if (url.origin !== location.origin) return;
 
   const path = url.pathname;
-  if (path.startsWith('/api/v1/historique') || path.startsWith('/api/v1/verification')) {
-    event.respondWith(networkFirst(req));
+
+  // Toujours le réseau pour le SW lui-même.
+  if (path === '/sw.js') return;
+
+  if (path.startsWith('/api/')) {
+    event.respondWith(networkFirst(req, { flagCache: true }));
     return;
   }
-  if (path.startsWith('/api/v1/matchs')) {
-    event.respondWith(networkFirst(req));
+
+  // Pages HTML : réseau d’abord (évite de rester coincé sur une vieille UI).
+  if (req.mode === 'navigate' || isAppShell(path)) {
+    event.respondWith(networkFirst(req, { flagCache: false }));
     return;
   }
-  if (
-    path === '/' ||
-    path === '/sw.js' ||
-    path === '/manifest.webmanifest' ||
-    path.startsWith('/static/') ||
-    path === '/historique' ||
-    path === '/verification' ||
-    path === '/reglages' ||
-    /^\/matchs\/\d+\/?$/.test(path)
-  ) {
-    event.respondWith(cacheFirst(req));
-    return;
+
+  if (path === '/manifest.webmanifest' || path.startsWith('/static/')) {
+    event.respondWith(staleWhileRevalidate(req));
   }
 });
