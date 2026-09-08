@@ -1,4 +1,4 @@
-# Production VPS (OVH) — Python 3.10+
+# Production VPS — Oracle Cloud Free Tier (recommandé) ou OVH — Python 3.10+
 Django==5.2.6
 djangorestframework==3.18.1
 numpy==2.2.6

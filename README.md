@@ -43,11 +43,12 @@ pytest
 
 CI : pytest, migrations, `collectstatic`, `check --deploy`, smoke VPS.
 
-## Déploiement (VPS OVH)
+## Déploiement (Oracle Cloud Free Tier — recommandé)
 
-Guide complet : [docs/ovh-vps.md](docs/ovh-vps.md).
+Guide : [docs/oracle-cloud.md](docs/oracle-cloud.md).  
+Alternative VPS OVH : [docs/ovh-vps.md](docs/ovh-vps.md).
 
-Fichiers prêts dans `deploy/` : Gunicorn, systemd, nginx, `update.sh`.
+Fichiers dans `deploy/` : Gunicorn, systemd, nginx, `update.sh`.
 
 ```bash
 cp .env.example .env

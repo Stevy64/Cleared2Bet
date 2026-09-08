@@ -63,7 +63,7 @@ jobs:
         run: pytest --tb=short
 
   vps-smoke:
-    name: Smoke VPS / OVH
+    name: Smoke VPS / Oracle Cloud
     runs-on: ubuntu-latest
     needs: test
     timeout-minutes: 10
@@ -108,5 +108,5 @@ jobs:
           assert "cleared2bet.example.com" in settings.ALLOWED_HOSTS
           assert any("cleared2bet.example.com" in o for o in settings.CSRF_TRUSTED_ORIGINS)
           assert settings.SECURE_PROXY_SSL_HEADER == ("HTTP_X_FORWARDED_PROTO", "https")
-          print("VPS / OVH prod smoke OK")
+          print("VPS / Oracle Cloud prod smoke OK")
           PY
