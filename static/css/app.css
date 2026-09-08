@@ -1123,6 +1123,98 @@ button { cursor: pointer; }
 .passe-reco.bilan-perdu .bilan-pill-sm { color: var(--ko); }
 .passe-reco.bilan-attente .bilan-pill-sm { color: var(--warn); }
 
+.kpi-histo {
+  grid-template-columns: 1fr 1fr;
+}
+.kpi-filet .kpi-label { color: var(--prudente); }
+.histo-filtre-niv { margin: 0 0 12px; }
+.histo-liste {
+  display: grid;
+  gap: 12px;
+}
+.carte-histo {
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--line);
+  padding: 12px;
+  cursor: pointer;
+  transition: transform 0.15s var(--ease);
+}
+.carte-histo:active { transform: scale(0.985); }
+.carte-histo-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.carte-histo-teams {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
+}
+.carte-histo-teams .carte-titres { flex: 1; min-width: 0; }
+.histo-tips {
+  display: grid;
+  gap: 8px;
+}
+.histo-tip {
+  border-radius: 14px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  background: #f8fafc;
+}
+.histo-tip.tip-prudente { border-left: 3px solid #ea580c; }
+.histo-tip.tip-filet { border-left: 3px solid var(--prudente); }
+.histo-tip.bilan-gagne { background: var(--ok-bg); border-color: #bbf7d0; }
+.histo-tip.bilan-perdu { background: var(--ko-bg); border-color: #fecaca; }
+.histo-tip.bilan-attente { background: var(--warn-bg); border-color: #fde68a; }
+.histo-tip-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.histo-tip-niv {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+.histo-tip.tip-prudente .histo-tip-niv { color: #c2410c; }
+.histo-tip.tip-filet .histo-tip-niv { color: var(--prudente); }
+.histo-verdict {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+.verdict-gagne { color: var(--ok); }
+.verdict-perdu { color: var(--ko); }
+.verdict-attente { color: var(--warn); }
+.histo-tip-body {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+.histo-tip-lib {
+  font-size: 14px;
+  font-weight: 650;
+  color: var(--fg);
+}
+.histo-tip-body strong { font-size: 15px; flex-shrink: 0; }
+
 .sur100 { font-size: 1.15rem; margin: 4px 0; font-weight: 600; }
 .cote-juste { margin: 10px 0 0; }
 .cote-juste strong { font-size: 1.4rem; color: var(--accent); }

@@ -665,7 +665,6 @@ function c2b() {
       } else if (this.page === 'historique') {
         await Promise.all([
           this.chargerVerif(),
-          this.chargerVerifDetail(),
           this.chargerMatchsPasses(),
         ]);
       } else if (this.page === 'reglages') {
@@ -725,15 +724,29 @@ function c2b() {
     async chargerMatchsPasses() {
       const q = new URLSearchParams();
       q.set('statut', 'termine');
-      q.set('page_size', '40');
+      q.set('page_size', '60');
       if (this.vComp) q.set('competition', this.vComp);
       if (this.vDepuis) q.set('depuis', this.vDepuis);
       if (this.vJusqua) q.set('jusqu_a', this.vJusqua);
       const { data } = await getJSON('/api/v1/matchs/?' + q.toString());
       let list = (data && data.results) || [];
-      list = list.filter((m) => m.statut === 'termine');
+      list = list.filter((m) => m.statut === 'termine' && this.tipsHisto(m).length);
       list.sort((a, b) => new Date(b.coup_denvoi) - new Date(a.coup_denvoi));
       this.matchsPasses = list;
+    },
+
+    tipsHisto(m) {
+      const ordre = { prudente: 0, filet: 1 };
+      return (m.options || [])
+        .filter((o) => o.niveau === 'prudente' || o.niveau === 'filet')
+        .sort((a, b) => (ordre[a.niveau] ?? 9) - (ordre[b.niveau] ?? 9));
+    },
+
+    get matchsHistoFiltres() {
+      if (!this.vNiveau) return this.matchsPasses;
+      return this.matchsPasses.filter((m) =>
+        this.tipsHisto(m).some((o) => o.niveau === this.vNiveau)
+      );
     },
 
     async chargerFiche(id) {
@@ -768,7 +781,6 @@ function c2b() {
 
     rechargerVerif() {
       this.chargerVerif();
-      this.chargerVerifDetail();
       this.chargerMatchsPasses();
     },
 
@@ -779,7 +791,6 @@ function c2b() {
 
     setVerifNiv(niv) {
       this.vNiveau = niv;
-      this.chargerVerifDetail();
     },
 
     setFiltre(code) {
@@ -928,12 +939,14 @@ function c2b() {
       this.voteErr = '';
     },
     fmtTaux(bloc) {
-      if (!bloc || bloc.echantillon_trop_petit) return 'échantillon trop petit';
-      return Math.round(bloc.taux * 100) + ' %';
+      if (!bloc || !bloc.n) return '—';
+      const t = bloc.taux != null ? bloc.taux : (bloc.gagnes / bloc.n);
+      return Math.round(t * 100) + ' %';
     },
     largeurJauge(bloc) {
-      if (!bloc || bloc.echantillon_trop_petit || bloc.taux == null) return 0;
-      return Math.round(bloc.taux * 100);
+      if (!bloc || !bloc.n) return 0;
+      const t = bloc.taux != null ? bloc.taux : (bloc.gagnes / bloc.n);
+      return Math.round(t * 100);
     },
     get famillesVerif() {
       return this.verif ? Object.keys(this.verif.par_famille) : [];

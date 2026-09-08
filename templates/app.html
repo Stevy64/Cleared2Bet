@@ -9,7 +9,7 @@
   <title>Cleared2Bet</title>
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
-  <link rel="stylesheet" href="/static/css/app.css?v=53">
+  <link rel="stylesheet" href="/static/css/app.css?v=54">
 </head>
 <body
   x-data="c2b()"
@@ -587,7 +587,7 @@
 
     <template x-if="page === 'historique'">
       <div class="ecran historique">
-        <p class="lead">Bilan des compos passées : les options qui figuraient dans le compos du jour, face au résultat réel.</p>
+        <p class="lead">Matchs terminés : validation des tips <strong>Prudente</strong> et <strong>Filet de sécurité</strong> Cleared2Bet.</p>
 
         <section class="bloc-card">
           <h2>Filtres</h2>
@@ -612,134 +612,102 @@
           </div>
         </section>
 
-        <h2 class="sec-titre">Compos passés</h2>
-        <p class="vide vide-sm" x-show="!matchsPasses.length && !chargement">Aucun compos réglé pour ce filtre.</p>
-        <template x-for="m in matchsPasses" :key="'pass-'+m.id">
-          <article class="carte-match carte-passe" @click="ouvrirMatch(m.id)">
-            <div class="carte-haut">
-              <div class="avatars">
-                <span class="crest-btn static">
-                  <img class="club-logo" :src="logoUrl(m.domicile)" alt="" @error="onLogoError($event)">
-                  <span class="crest-wrap crest-fallback" x-html="crestSvg(m.domicile, 32)" style="display:none"></span>
-                </span>
-                <span class="avatars-sep" aria-hidden="true"></span>
-                <span class="crest-btn static">
-                  <img class="club-logo" :src="logoUrl(m.exterieur)" alt="" @error="onLogoError($event)">
-                  <span class="crest-wrap crest-fallback" x-html="crestSvg(m.exterieur, 32)" style="display:none"></span>
-                </span>
-              </div>
-              <div class="carte-titres">
-                <strong>
-                  <span x-text="m.domicile.nom_court"></span>
-                  <span class="sep"> – </span>
-                  <span x-text="m.exterieur.nom_court"></span>
-                </strong>
-                <p class="carte-comp" x-text="m.competition.nom"></p>
-              </div>
-              <span class="score-pill" x-text="m.score || '—'"></span>
-            </div>
-            <div class="tags">
-              <span class="tag"><span x-text="m.competition.code"></span></span>
-              <span class="tag"><span x-text="jourCourt(m.coup_denvoi)"></span></span>
-              <span class="tag tag-done">Terminé</span>
-            </div>
-            <div class="passe-recos" x-show="(m.options || []).length">
-              <template x-for="o in (m.options || [])" :key="o.id">
-                <div class="passe-reco" :class="'bilan-' + (o.resultat || 'attente')">
-                  <span class="bilan-niv" x-text="libNiveau(o.niveau)"></span>
-                  <span x-text="o.libelle"></span>
-                  <strong :class="toneProb(o.probabilite)" x-text="fmtPct(o.probabilite)"></strong>
-                  <span class="bilan-pill-sm" x-text="motResultat(o.resultat || 'attente')"></span>
+        <template x-if="verif">
+          <section class="bloc-card histo-kpi">
+            <h2>Bilan Cleared2Bet</h2>
+            <p class="hint" x-show="(verif.par_niveau.prudente.n + verif.par_niveau.filet.n) > 0"
+              x-text="(verif.par_niveau.prudente.n + verif.par_niveau.filet.n) + ' tips Prudente / Filet réglés sur la période'"></p>
+            <div class="kpi-grid kpi-histo">
+              <article class="kpi kpi-prudente">
+                <p class="kpi-label">Prudente</p>
+                <p class="kpi-big" x-text="fmtTaux(verif.par_niveau.prudente)"></p>
+                <p class="kpi-meta"
+                  x-text="verif.par_niveau.prudente.gagnes + ' gagnés / ' + verif.par_niveau.prudente.n"></p>
+                <div class="jauge" aria-hidden="true">
+                  <i :style="'width:' + largeurJauge(verif.par_niveau.prudente) + '%'"></i>
                 </div>
-              </template>
+              </article>
+              <article class="kpi kpi-filet">
+                <p class="kpi-label">Filet de sécurité</p>
+                <p class="kpi-big" x-text="fmtTaux(verif.par_niveau.filet)"></p>
+                <p class="kpi-meta"
+                  x-text="verif.par_niveau.filet.gagnes + ' gagnés / ' + verif.par_niveau.filet.n"></p>
+                <div class="jauge" aria-hidden="true">
+                  <i :style="'width:' + largeurJauge(verif.par_niveau.filet) + '%'"></i>
+                </div>
+              </article>
             </div>
-            <div class="carte-pied">
-              <span class="carte-meta">Voir le détail</span>
-              <span class="btn-voir">Ouvrir <span x-html="icon('arrow')"></span></span>
-            </div>
-          </article>
+          </section>
         </template>
 
-        <div class="loader-wrap" x-show="chargement && !verif" x-cloak>
+        <h2 class="sec-titre">Matchs passés</h2>
+        <div class="puces puces-niveaux histo-filtre-niv">
+          <button type="button" :class="vNiveau === '' ? 'puce on' : 'puce'" @click="setVerifNiv('')">Tous</button>
+          <button type="button" :class="vNiveau === 'prudente' ? 'puce on' : 'puce'" @click="setVerifNiv('prudente')">Prudente</button>
+          <button type="button" :class="vNiveau === 'filet' ? 'puce on' : 'puce'" @click="setVerifNiv('filet')">Filet</button>
+        </div>
+
+        <div class="loader-wrap" x-show="chargement && !matchsPasses.length" x-cloak>
           <div class="spinner" role="status" aria-label="Chargement"></div>
           <p>Chargement de l’historique…</p>
         </div>
 
-        <template x-if="verif">
-          <div>
-            <section class="bloc-card">
-              <h2>Par niveau</h2>
-              <p class="hint" x-show="verif.total_reglees != null"
-                x-text="verif.total_reglees + ' options réglées sur la période'"></p>
-              <div class="kpi-grid">
-                <template x-for="niv in ['prudente','equilibree','audacieuse','filet']" :key="niv">
-                  <article :class="'kpi kpi-' + niv" x-show="verif.par_niveau[niv]">
-                    <p class="kpi-label" x-text="libNiveau(niv)"></p>
-                    <p class="kpi-big" x-text="fmtTaux(verif.par_niveau[niv])"></p>
-                    <p class="kpi-meta" x-text="verif.par_niveau[niv].gagnes + ' sur ' + verif.par_niveau[niv].n"></p>
-                    <p class="kpi-attendu" x-text="verif.par_niveau[niv].attendu != null ? 'annoncé ~' + Math.round(verif.par_niveau[niv].attendu * 100) + ' %' : 'annoncé —'"></p>
-                    <div class="jauge" aria-hidden="true">
-                      <i :style="'width:' + largeurJauge(verif.par_niveau[niv]) + '%'"></i>
-                    </div>
-                  </article>
-                </template>
-              </div>
-            </section>
+        <p class="vide vide-sm" x-show="!chargement && !matchsHistoFiltres.length">
+          Aucun match terminé avec tip Prudente / Filet pour ce filtre.
+          Lance <code>regler_options</code> après la saisie des scores.
+        </p>
 
-            <section class="bloc-card">
-              <h2>Par famille</h2>
-              <template x-if="!famillesVerif.length">
-                <p class="vide vide-sm">Aucune option réglée sur cette période.</p>
-              </template>
-              <div class="kpi-grid kpi-fam">
-                <template x-for="fam in famillesVerif" :key="fam">
-                  <article class="kpi">
-                    <p class="kpi-label" x-text="fam"></p>
-                    <p class="kpi-big" x-text="fmtTaux(verif.par_famille[fam])"></p>
-                    <p class="kpi-meta" x-text="verif.par_famille[fam].gagnes + ' sur ' + verif.par_famille[fam].n"></p>
-                    <p class="kpi-attendu" x-text="verif.par_famille[fam].attendu != null ? 'annoncé ~' + Math.round(verif.par_famille[fam].attendu * 100) + ' %' : 'annoncé —'"></p>
-                    <div class="jauge" aria-hidden="true">
-                      <i :style="'width:' + largeurJauge(verif.par_famille[fam]) + '%'"></i>
-                    </div>
-                  </article>
-                </template>
-              </div>
-            </section>
+        <div class="histo-liste">
+          <template x-for="m in matchsHistoFiltres" :key="'pass-'+m.id">
+            <article class="carte-histo" @click="ouvrirMatch(m.id)">
+              <header class="carte-histo-head">
+                <div class="carte-histo-teams">
+                  <span class="crest-btn static">
+                    <img class="club-logo" :src="logoUrl(m.domicile)" alt="" @error="onLogoError($event)">
+                    <span class="crest-wrap crest-fallback" x-html="crestSvg(m.domicile, 32)" style="display:none"></span>
+                  </span>
+                  <div class="carte-titres">
+                    <strong>
+                      <span x-text="m.domicile.nom_court"></span>
+                      <span class="sep"> – </span>
+                      <span x-text="m.exterieur.nom_court"></span>
+                    </strong>
+                    <p class="carte-comp">
+                      <span x-text="m.competition.code"></span>
+                      · <span x-text="jourCourt(m.coup_denvoi)"></span>
+                    </p>
+                  </div>
+                  <span class="crest-btn static">
+                    <img class="club-logo" :src="logoUrl(m.exterieur)" alt="" @error="onLogoError($event)">
+                    <span class="crest-wrap crest-fallback" x-html="crestSvg(m.exterieur, 32)" style="display:none"></span>
+                  </span>
+                </div>
+                <span class="score-pill" x-text="m.score || '—'"></span>
+              </header>
 
-            <section class="bloc-card">
-              <h2>Détail des matchs</h2>
-              <div class="puces puces-niveaux">
-                <button type="button" :class="vNiveau === '' ? 'puce on' : 'puce'" @click="setVerifNiv('')">Tous</button>
-                <button type="button" :class="vNiveau === 'prudente' ? 'puce on' : 'puce'" @click="setVerifNiv('prudente')">Prudente</button>
-                <button type="button" :class="vNiveau === 'equilibree' ? 'puce on' : 'puce'" @click="setVerifNiv('equilibree')">Équilibrée</button>
-                <button type="button" :class="vNiveau === 'audacieuse' ? 'puce on' : 'puce'" @click="setVerifNiv('audacieuse')">Audacieuse</button>
-              </div>
-              <template x-if="!verifDetail.length">
-                <p class="vide vide-sm">Rien à lister pour ce filtre.</p>
-              </template>
-              <ul class="liste-detail">
-                <template x-for="l in verifDetail" :key="l.match_id + l.code">
-                  <li>
-                    <div class="detail-haut">
-                      <a :href="'/matchs/' + l.match_id" @click.prevent="ouvrirMatch(l.match_id)">
-                        <span x-text="l.libelle_match"></span>
-                      </a>
-                      <span class="badge-niv" x-text="libNiveau(l.niveau)"></span>
+              <div class="histo-tips">
+                <template x-for="o in tipsHisto(m)" :key="'ht-'+o.id">
+                  <div class="histo-tip" :class="['tip-' + o.niveau, 'bilan-' + (o.resultat || 'attente')]">
+                    <div class="histo-tip-top">
+                      <span class="histo-tip-niv">
+                        <span x-html="o.niveau === 'filet' ? icon('shield','icon icon-sm') : icon('crosshair','icon icon-sm')"></span>
+                        <span x-text="o.niveau === 'filet' ? 'Filet de sécurité' : 'Prudente'"></span>
+                      </span>
+                      <span class="histo-verdict" :class="'verdict-' + (o.resultat || 'attente')">
+                        <span x-html="iconResultat(o.resultat || 'attente')"></span>
+                        <span x-text="motResultat(o.resultat || 'attente')"></span>
+                      </span>
                     </div>
-                    <p class="detail-opt" x-text="l.option"></p>
-                    <div class="detail-bas">
-                      <span x-text="fmtPct(l.probabilite)"></span>
-                    <span :class="l.resultat === 'gagne' ? 'pill-ok' : 'pill-ko'">
-                      <span x-html="iconResultat(l.resultat)"></span>
-                      <span x-text="motResultat(l.resultat)"></span>
-                    </span>
+                    <div class="histo-tip-body">
+                      <span class="histo-tip-lib" x-text="o.libelle"></span>
+                      <strong :class="toneProb(o.probabilite)" x-text="fmtPct(o.probabilite)"></strong>
                     </div>
-                  </li>
+                  </div>
                 </template>
-              </ul>
-            </section>
-          </div>
-        </template>
+              </div>
+            </article>
+          </template>
+        </div>
       </div>
     </template>
 
@@ -1151,7 +1119,7 @@
     </a>
   </nav>
 
-  <script defer src="/static/js/app.js?v=53"></script>
-  <script defer src="/static/vendor/alpine.min.js?v=53"></script>
+  <script defer src="/static/js/app.js?v=54"></script>
+  <script defer src="/static/vendor/alpine.min.js?v=54"></script>
 </body>
 </html>
