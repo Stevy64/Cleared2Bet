@@ -70,7 +70,7 @@ jobs:
       DJANGO_SETTINGS_MODULE: config.settings
       DJANGO_SECRET_KEY: pa-smoke-secret-key-not-for-production-use-please-rotate-locally-xx
       DJANGO_DEBUG: "0"
-      DJANGO_ALLOWED_HOSTS: stevy64.pythonanywhere.com,localhost,127.0.0.1,testserver
+      DJANGO_ALLOWED_HOSTS: gabomazone.pythonanywhere.com,localhost,127.0.0.1,testserver
       DJANGO_SSL: "1"
       PYTHONUNBUFFERED: "1"
 
@@ -102,6 +102,6 @@ jobs:
           from django.conf import settings
           assert settings.DEBUG is False
           assert not settings.SECRET_KEY.startswith("django-insecure-")
-          assert "stevy64.pythonanywhere.com" in settings.ALLOWED_HOSTS
+          assert "gabomazone.pythonanywhere.com" in settings.ALLOWED_HOSTS
           print("PythonAnywhere prod smoke OK")
           PY

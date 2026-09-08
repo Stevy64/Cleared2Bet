@@ -9,7 +9,7 @@
   <title>Cleared2Bet</title>
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
-  <link rel="stylesheet" href="/static/css/app.css?v=46">
+  <link rel="stylesheet" href="/static/css/app.css?v=47">
 </head>
 <body
   x-data="c2b()"
@@ -21,6 +21,11 @@
   <nav class="topnav" :class="tabHidden ? 'topnav-hide' : ''" aria-label="Compte">
     <button type="button" class="topnav-brand" @click="allerAccueil()">Cleared2Bet</button>
     <div class="topnav-right">
+      <button type="button" class="topnav-install" x-show="!installePWA" x-cloak
+        @click="installerPWA()" title="Installer l’application">
+        <span x-html="icon('download','icon icon-sm')"></span>
+        <span class="topnav-install-label">Installer</span>
+      </button>
       <span class="badge-cat" :class="'cat-' + categorie" :title="libCategorie">
         <span class="badge-cat-ico" x-html="iconCategorie()"></span>
         <span x-text="libCategorie"></span>
@@ -52,12 +57,8 @@
   </div>
 
   <header class="page-hero" :class="page === 'matchs' ? 'page-hero-photo' : 'page-hero-accent'">
-    <div class="hero-bar">
-      <button type="button" class="btn-back" x-show="page === 'fiche'" x-cloak
-        aria-label="Retour" @click="retourListe()">‹</button>
-      <button type="button" class="brand" @click="allerAccueil()" aria-label="Accueil Cleared2Bet">
-        Cleared2Bet
-      </button>
+    <div class="hero-bar" x-show="page === 'fiche'" x-cloak>
+      <button type="button" class="btn-back" aria-label="Retour" @click="retourListe()">‹</button>
     </div>
 
     <template x-if="page === 'matchs'">
@@ -69,11 +70,14 @@
             <span x-html="icon('layers','icon icon-sm')"></span>
             Compos du jour
           </button>
+          <button type="button" class="btn btn-hero-ghost" x-show="!installePWA" x-cloak
+            @click="installerPWA()">
+            <span x-html="icon('download','icon icon-sm')"></span>
+            Installer l’app
+          </button>
           <p class="hero-access hint" x-show="estVisiteur" x-cloak>
             Accès Visiteur : consultation limitée. Connecte-toi pour les compos et les votes.
           </p>
-          <button type="button" class="btn btn-hero-ghost" x-show="peutInstaller" x-cloak
-            @click="installerPWA()">Installer l’app</button>
         </div>
       </div>
     </template>
@@ -842,10 +846,13 @@
               <strong x-text="moteur"></strong>
             </li>
           </ul>
-          <button type="button" class="btn btn-block" x-show="peutInstaller" x-cloak
-            @click="installerPWA()">Installer Cleared2Bet</button>
+          <button type="button" class="btn btn-block" x-show="!installePWA" x-cloak
+            @click="installerPWA()">
+            <span x-html="icon('download','icon icon-sm')"></span>
+            Installer Cleared2Bet
+          </button>
           <p class="hint" x-show="installePWA" x-cloak>Application déjà installée sur cet appareil.</p>
-          <p class="hint" x-show="!peutInstaller && !installePWA && installHint" x-cloak x-text="installHint"></p>
+          <p class="hint" x-show="!installePWA && installHint" x-cloak x-text="installHint"></p>
           <button type="button" class="btn btn-ghost" @click="purgerCache()">Purger le cache</button>
           <p class="hint" x-show="cachePurge" x-cloak>Cache vidé. Recharge si besoin.</p>
         </section>
@@ -853,8 +860,27 @@
     </template>
   </main>
 
-  <div class="sheet-backdrop" :class="(sheetApercu || sheetClub || sheetAuth || sheetCompos) ? 'open' : ''"
+  <div class="sheet-backdrop" :class="(sheetApercu || sheetClub || sheetAuth || sheetCompos || sheetInstall) ? 'open' : ''"
     @click="fermerSheets()" @keydown.escape.window="fermerSheets()"></div>
+
+  <div class="bottom-sheet sheet-install" :class="sheetInstall ? 'open' : ''"
+    role="dialog" aria-modal="true" aria-label="Installer l’application"
+    :aria-hidden="!sheetInstall">
+    <div class="sheet-handle" aria-hidden="true"></div>
+    <div class="sheet-body">
+      <h2 class="sheet-title">Installer Cleared2Bet</h2>
+      <p class="hint" x-text="installHint"></p>
+      <ol class="install-steps">
+        <li x-show="installIOS" x-cloak>Touche <strong>Partager</strong> dans Safari.</li>
+        <li x-show="installIOS" x-cloak>Choisis <strong>Sur l’écran d’accueil</strong>.</li>
+        <li x-show="!installIOS" x-cloak>Ouvre le menu du navigateur (⋮ ou …).</li>
+        <li x-show="!installIOS" x-cloak>Choisis <strong>Installer l’application</strong> / <strong>Ajouter à l’écran d’accueil</strong>.</li>
+      </ol>
+      <button type="button" class="btn btn-block" x-show="peutInstaller" x-cloak
+        @click="installerPWA()">Lancer l’installation</button>
+      <button type="button" class="btn btn-ghost btn-block" @click="fermerSheets()">Fermer</button>
+    </div>
+  </div>
 
   <div class="bottom-sheet sheet-compos"
     :class="(sheetCompos ? 'open ' : '') + (composExpanded ? 'expanded' : '')"
@@ -1133,7 +1159,7 @@
     </a>
   </nav>
 
-  <script defer src="/static/js/app.js?v=46"></script>
-  <script defer src="/static/vendor/alpine.min.js?v=46"></script>
+  <script defer src="/static/js/app.js?v=47"></script>
+  <script defer src="/static/vendor/alpine.min.js?v=47"></script>
 </body>
 </html>

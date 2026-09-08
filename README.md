@@ -62,7 +62,7 @@ Voir [docs/pythonanywhere.md](docs/pythonanywhere.md).
 ```bash
 export DJANGO_DEBUG=0
 export DJANGO_SECRET_KEY=...
-export DJANGO_ALLOWED_HOSTS=tonuser.pythonanywhere.com
+export DJANGO_ALLOWED_HOSTS=gabomazone.pythonanywhere.com
 export DJANGO_SSL=1
 python manage.py migrate --noinput
 python manage.py collectstatic --noinput

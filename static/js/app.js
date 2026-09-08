@@ -406,6 +406,8 @@ function c2b() {
     peutInstaller: false,
     installePWA: false,
     installHint: '',
+    installIOS: false,
+    sheetInstall: false,
     _deferredInstall: null,
 
     async init() {
@@ -514,6 +516,7 @@ function c2b() {
       this.sheetApercu = false;
       this.sheetAuth = false;
       this.sheetCompos = false;
+      this.sheetInstall = false;
       this.authPending = null;
       this.apercu = null;
       this.clubInfos = null;
@@ -540,11 +543,18 @@ function c2b() {
     },
 
     fermerSheets() {
+      if (this.sheetInstall) {
+        this.sheetInstall = false;
+        if (!this.sheetApercu && !this.sheetAuth && !this.sheetClub && !this.sheetCompos) {
+          document.body.classList.remove('sheet-open');
+        }
+        return;
+      }
       if (this.sheetAuth) {
         this.sheetAuth = false;
         this.authPending = null;
         this.authErr = '';
-        if (!this.sheetApercu && !this.sheetClub && !this.sheetCompos) {
+        if (!this.sheetApercu && !this.sheetClub && !this.sheetCompos && !this.sheetInstall) {
           document.body.classList.remove('sheet-open');
         }
         return;
@@ -553,7 +563,7 @@ function c2b() {
         this.sheetClub = false;
         this.clubInfos = null;
         this.clubEq = null;
-        if (!this.sheetApercu && !this.sheetAuth && !this.sheetCompos) {
+        if (!this.sheetApercu && !this.sheetAuth && !this.sheetCompos && !this.sheetInstall) {
           document.body.classList.remove('sheet-open');
         }
         return;
@@ -562,7 +572,7 @@ function c2b() {
         this.sheetCompos = false;
         this.composExpanded = false;
         this.partageMsg = '';
-        if (!this.sheetApercu && !this.sheetAuth && !this.sheetClub) {
+        if (!this.sheetApercu && !this.sheetAuth && !this.sheetClub && !this.sheetInstall) {
           document.body.classList.remove('sheet-open');
         }
         return;
@@ -1337,14 +1347,16 @@ function c2b() {
       this.installePWA = !!standalone;
       if (standalone) {
         this.peutInstaller = false;
+        this.sheetInstall = false;
         return;
       }
       const ua = navigator.userAgent || '';
-      const isIOS = /iPad|iPhone|iPod/.test(ua);
-      if (isIOS) {
-        this.installHint = 'Sur iPhone : Partager → Sur l’écran d’accueil.';
+      this.installIOS = /iPad|iPhone|iPod/.test(ua)
+        || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      if (this.installIOS) {
+        this.installHint = 'Sur iPhone / iPad : Partager → Sur l’écran d’accueil.';
       } else {
-        this.installHint = 'Utilise le menu du navigateur « Installer l’application » si le bouton n’apparaît pas.';
+        this.installHint = 'Clique « Installer », ou utilise le menu du navigateur « Installer l’application ».';
       }
       window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
@@ -1354,21 +1366,27 @@ function c2b() {
       window.addEventListener('appinstalled', () => {
         this.peutInstaller = false;
         this.installePWA = true;
+        this.sheetInstall = false;
         this._deferredInstall = null;
+        document.body.classList.remove('sheet-open');
       });
     },
 
     async installerPWA() {
-      if (!this._deferredInstall) {
-        this.installHint = this.installHint
-          || 'Ouvre le menu du navigateur pour installer Cleared2Bet.';
+      if (this._deferredInstall) {
+        this._deferredInstall.prompt();
+        const choice = await this._deferredInstall.userChoice;
+        this._deferredInstall = null;
+        this.peutInstaller = false;
+        if (choice && choice.outcome === 'accepted') {
+          this.installePWA = true;
+          this.sheetInstall = false;
+          document.body.classList.remove('sheet-open');
+        }
         return;
       }
-      this._deferredInstall.prompt();
-      const choice = await this._deferredInstall.userChoice;
-      this._deferredInstall = null;
-      this.peutInstaller = false;
-      if (choice && choice.outcome === 'accepted') this.installePWA = true;
+      this.sheetInstall = true;
+      document.body.classList.add('sheet-open');
     },
 
     async purgerCache() {

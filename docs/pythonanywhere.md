@@ -17,7 +17,7 @@ mkvirtualenv --python=/usr/bin/python3.10 cleared2bet
 ```bash
 export DJANGO_DEBUG=0
 export DJANGO_SECRET_KEY='…clé longue aléatoire…'
-export DJANGO_ALLOWED_HOSTS='tonuser.pythonanywhere.com'
+export DJANGO_ALLOWED_HOSTS='gabomazone.pythonanywhere.com'
 export DJANGO_SSL=1
 ```
 
@@ -42,7 +42,7 @@ Dans le fichier WSGI PythonAnywhere :
 import os
 import sys
 
-path = '/home/TONUSER/Cleared2Bet'
+path = '/home/Gabomazone/Cleared2Bet'
 if path not in sys.path:
     sys.path.append(path)
 
@@ -57,7 +57,7 @@ application = get_wsgi_application()
 ## Static
 
 - URL : `/static/`
-- Directory : `/home/TONUSER/Cleared2Bet/staticfiles` (après `collectstatic`)
+- Directory : `/home/Gabomazone/Cleared2Bet/staticfiles` (après `collectstatic`)
   ou le chemin `STATIC_ROOT` de ton `settings.py`.
 
 ## Cron (recommandé)
