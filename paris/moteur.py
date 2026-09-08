@@ -23,7 +23,6 @@ import math
 from collections import Counter, defaultdict
 
 import numpy as np
-from scipy.optimize import minimize
 
 # Correction Dixon–Coles des petits scores (voir docstring module).
 RHO = -0.06
@@ -133,6 +132,8 @@ def matrice(lh, la, rho=RHO, n=12):
 
 def ajuster(p1, pn, p2, p_over25=None):
     """Retrouve λ_h, λ_a en calant P(1/N/2) (et optionnellement P(over 2.5))."""
+    from scipy.optimize import minimize
+
     def erreur(v):
         lh, la = math.exp(v[0]), math.exp(v[1])
         M = matrice(lh, la)

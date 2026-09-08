@@ -37,13 +37,27 @@ python manage.py synchroniser_sofascore   # cron recommandé
 python manage.py calculer_analyses
 ```
 
-Si `Disk quota exceeded` :
+Si `Disk quota exceeded` ou SciPy cassé (`libscipy_openblas`) :
 
 ```bash
 pip cache purge
-# Supprime les anciens venvs inutiles, ex. :
+pip uninstall -y scipy numpy
+# Libère de la place (anciens venvs, caches) :
 # rm -rf ~/Cleared2Bet/.venv-r2b
-du -sh ~/Cleared2Bet/.* ~/Cleared2Bet/* 2>/dev/null | sort -h | tail
+# rm -rf ~/.cache/pip
+du -sh ~/* ~/Cleared2Bet/.* 2>/dev/null | sort -h | tail
+
+# Réinstalle sans remplir le cache pip
+pip install --no-cache-dir numpy==2.2.6 scipy==1.15.3
+```
+
+Puis :
+
+```bash
+git pull
+pip install -r requirements.txt
+python manage.py migrate --noinput
+python manage.py collectstatic --noinput
 ```
 
 Dans l’onglet **Web** PythonAnywhere :
