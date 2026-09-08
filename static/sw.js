@@ -1,9 +1,9 @@
-const CACHE = 'paris-v48';
+const CACHE = 'paris-v49';
 const PRECACHE = [
   '/manifest.webmanifest',
-  '/static/css/app.css?v=48',
-  '/static/js/app.js?v=48',
-  '/static/vendor/alpine.min.js?v=48',
+  '/static/css/app.css?v=49',
+  '/static/js/app.js?v=49',
+  '/static/vendor/alpine.min.js?v=49',
   '/static/img/hero-accueil.jpg',
   '/static/icons/icon-192.png',
   '/static/icons/icon-512.png',
@@ -11,7 +11,11 @@ const PRECACHE = [
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE).then((cache) => cache.addAll(PRECACHE)).then(() => self.skipWaiting())
+    caches.open(CACHE).then(async (cache) => {
+      await Promise.all(
+        PRECACHE.map((url) => cache.add(url).catch(() => undefined))
+      );
+    }).then(() => self.skipWaiting())
   );
 });
 
@@ -82,7 +86,7 @@ self.addEventListener('fetch', (event) => {
 
   const path = url.pathname;
 
-  // Toujours le réseau pour le SW lui-même.
+  // Ne pas intercepter le SW (évite les mises à jour bloquées).
   if (path === '/sw.js') return;
 
   if (path.startsWith('/api/')) {
@@ -90,7 +94,6 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Pages HTML : réseau d’abord (évite de rester coincé sur une vieille UI).
   if (req.mode === 'navigate' || isAppShell(path)) {
     event.respondWith(networkFirst(req, { flagCache: false }));
     return;

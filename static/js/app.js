@@ -1398,36 +1398,29 @@ function c2b() {
 
     enregistrerSW() {
       if (!('serviceWorker' in navigator)) return;
-      let reloading = false;
-      navigator.serviceWorker.addEventListener('controllerchange', () => {
-        if (reloading) return;
-        reloading = true;
-        location.reload();
-      });
-      navigator.serviceWorker.register('/sw.js?v=48', { scope: '/' }).then((reg) => {
+      navigator.serviceWorker.register('/sw.js', { scope: '/' }).then((reg) => {
         this._swReg = reg;
-        const activer = (worker) => {
-          if (!worker) return;
-          worker.postMessage({ type: 'SKIP_WAITING' });
-        };
-        if (reg.waiting) activer(reg.waiting);
+        if (reg.waiting) this.swWaiting = true;
         reg.addEventListener('updatefound', () => {
           const w = reg.installing;
           if (!w) return;
           w.addEventListener('statechange', () => {
             if (w.state === 'installed' && navigator.serviceWorker.controller) {
-              activer(w);
+              this.swWaiting = true;
             }
           });
         });
-        reg.update().catch(() => {});
-      });
+      }).catch(() => {});
     },
 
     appliquerMaj() {
       const w = this._swReg && this._swReg.waiting;
-      if (w) w.postMessage({ type: 'SKIP_WAITING' });
-      else location.reload();
+      if (w) {
+        w.postMessage({ type: 'SKIP_WAITING' });
+        navigator.serviceWorker.addEventListener('controllerchange', () => location.reload(), { once: true });
+        return;
+      }
+      location.reload();
     },
   };
 }
