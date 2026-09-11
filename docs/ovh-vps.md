@@ -155,8 +155,10 @@ python manage.py regler_options --apprendre
 Cron (toutes les 2 h) :
 
 ```cron
-0 */2 * * * cd /var/www/cleared2bet && . .venv/bin/activate && set -a && . ./.env && set +a && python manage.py synchroniser_sofascore && python manage.py calculer_analyses && python manage.py regler_options --apprendre && python manage.py purger_chat >> /var/log/cleared2bet-cron.log 2>&1
+0 */2 * * * cd /var/www/cleared2bet && . .venv/bin/activate && set -a && . ./.env && set +a && python manage.py synchroniser_sofascore --calculer && python manage.py regler_options --apprendre && python manage.py purger_chat >> /var/log/cleared2bet-cron.log 2>&1
 ```
+
+(`synchroniser_sofascore` n’ouvre plus de transaction pendant les appels HTTP ; le contexte H2H est opt-in via `--contexte`.)
 
 ### 6. Mises à jour
 

@@ -12,56 +12,64 @@ from paris.management.commands.apprendre_calibration import (
 from paris.moteur import CALIBRATION_DEFAUT, corriger, invalider_calibration_cache
 
 
-def test_justifier_option_structure_terrain():
+def test_justifier_option_priorise_faits_terrain():
     option = SimpleNamespace(
-        libelle='Plus de 1.5 buts',
+        libelle='Moins de 4 buts',
         niveau='prudente',
         famille='Total buts',
-        probabilite=0.78,
+        probabilite=0.75,
         origine='calcul',
-        cote_juste=1.28,
+        cote_juste=1.33,
     )
     analyse = SimpleNamespace(
         profil='moyen',
-        score_probable='2-1',
-        buts_dom_attendus=1.55,
-        buts_ext_attendus=1.12,
-        p1=0.48,
-        pn=0.26,
-        p2=0.26,
+        score_probable='1-1',
+        buts_dom_attendus=1.35,
+        buts_ext_attendus=1.10,
+        p1=0.42,
+        pn=0.28,
+        p2=0.30,
         residu=0.01,
     )
     contexte = SimpleNamespace(
-        forme_dom='OM : V–V–N–V–D — bonne dynamique — 3ᵉ au classement.',
-        forme_ext='OL : N–D–D–V–N — série compliquée.',
-        confrontations='Sur 6 confrontations récentes : OM 3 victoire(s), 2 nul(s), OL 1 — OM a dominé ce duel récemment.',
+        forme_dom='Sevilla : V–N–V–D–N — 8ᵉ au classement.',
+        forme_ext='Valencia : N–D–D–V–N — série compliquée.',
+        confrontations=(
+            'Sur 6 confrontations récentes : Sevilla 2, 3 nuls, Valencia 1 '
+            '— beaucoup de matchs serrés.'
+        ),
         absents_dom='Joueur A (blessé)',
         absents_ext='',
-        tendance_buts='Une équipe arrive mieux lancée : elle peut imposer son rythme.',
+        tendance_buts='Rythme plutôt contenu sur les derniers matchs des deux équipes.',
         a_savoir='Conditions annoncées : 14 °C, pluie fine.',
     )
     j = justifier_option(
         option=option,
         analyse=analyse,
         contexte=contexte,
-        domicile='OM',
-        exterieur='OL',
+        domicile='Sevilla',
+        exterieur='Valencia',
     )
     assert 'Prudente' in j['titre']
-    assert '78 %' in j['accroche']
+    assert '75 %' in j['accroche']
+    assert 'faits' in j['accroche'].lower() or 'formes' in j['accroche'].lower()
+    assert 'vestiaire' not in j['accroche'].lower()
     assert 'λ' not in j['accroche']
     assert 'Poisson' not in ' '.join(j['points'])
-    assert '1X2' not in ' '.join(j['points'])
-    assert 3 <= len(j['arguments']) <= 5
+    assert 2 <= len(j['arguments']) <= 3
     cles = {a['cle'] for a in j['arguments']}
     assert 'forme' in cles or 'forme_dom' in cles
-    assert 'h2h' in cles
-    assert all(a['texte'][-1] in '.!?' for a in j['arguments'])
+    assert 'h2h' in cles or 'lecture' in cles or 'absents' in cles
+    blob = ' '.join(j['points']).lower()
+    assert 'blessé' in blob or 'pluie' in blob or 'confrontations' in blob or 'serré' in blob or 'forme' in blob
+    assert 'café' not in blob
+    assert all(a['texte'][-1] in '.!?…' for a in j['arguments'])
+    assert len(j['accroche']) < 160
 
 
 def test_justifier_filet_mentionne_plan_b():
     option = SimpleNamespace(
-        libelle='Plus de 0.5 but',
+        libelle='Au moins 1 but',
         niveau='filet',
         famille='Total buts',
         probabilite=0.91,
@@ -70,7 +78,7 @@ def test_justifier_filet_mentionne_plan_b():
     )
     j = justifier_option(option=option)
     blob = (j['accroche'] + ' ' + ' '.join(j['points'])).lower()
-    assert 'filet' in blob or 'joker' in blob or 'remplacant' in blob or 'sécurité' in blob
+    assert 'filet' in blob or 'repli' in blob or 'sécurité' in blob
 
 
 def test_apprendre_ne_modifie_pas_si_echantillon_faible():

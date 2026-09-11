@@ -1,6 +1,7 @@
 # Docker — Cleared2Bet
 
-Stack alignée sur Gabomazone : **Makefile** + images `cleared2bet-dev` / `cleared2bet-prod`.
+Stack alignée Makefile + images `cleared2bet-dev` / `cleared2bet-prod` / `cleared2bet-moteur`.  
+Prise en main générale : [getting-started.md](getting-started.md).
 
 ## Prérequis
 
@@ -29,7 +30,8 @@ Admin : http://127.0.0.1:8000/admin/
 ```bash
 make superuser-dev
 make migrate-dev
-make sync-dev          # SofaScore + analyses + tips
+make sync-dev          # calendrier (sans H2H) + analyses
+make sync-full-dev     # + contexte H2H/forme (plus lent)
 make logs-dev
 make stop-dev
 ```
@@ -38,27 +40,28 @@ SQLite persisté dans le volume `cleared2bet_dev_data` (`/app/data/db.sqlite3`).
 
 ## Production (OVH Cloud / VPS Docker)
 
+Stack micro-services : **nginx · web · moteur · worker · postgres · redis**  
+→ détail [architecture.md](architecture.md)
+
 ```bash
 cp .env.example .env
 # Renseigne DJANGO_SECRET_KEY, POSTGRES_PASSWORD, ALLOWED_HOSTS, CSRF…
 
-make prod-build        # cleared2bet-prod + Postgres + nginx
+make prod-build        # autonome : le worker tourne toutes les ~2 h
 make superuser
-make sync
-make logs
+make logs-worker
 ```
 
-Services :
+| Conteneur              | Image / rôle                         |
+|------------------------|--------------------------------------|
+| `cleared2bet-web`      | `cleared2bet-prod` (Gunicorn)        |
+| `cleared2bet-moteur`   | `cleared2bet-moteur` (FastAPI)       |
+| `cleared2bet-worker`   | pipeline sync / analyse / règlement  |
+| `cleared2bet-db`       | Postgres 16                          |
+| `cleared2bet-redis`    | lock anti-chevauchement              |
+| `cleared2bet-nginx`    | reverse-proxy port 80                |
 
-| Conteneur            | Image / rôle              |
-|----------------------|---------------------------|
-| `cleared2bet-web`    | `cleared2bet-prod` (Gunicorn) |
-| `cleared2bet-db`     | Postgres 16               |
-| `cleared2bet-nginx`  | reverse-proxy port 80     |
-
-TLS : termine HTTPS devant nginx (Certbot sur l’hôte, ou Caddy, ou load-balancer OVH), puis `DJANGO_SSL=1` + `CSRF_TRUSTED_ORIGINS=https://…`.
-
-Sans Docker sur le VPS : guide classique [ovh-vps.md](ovh-vps.md) (systemd + nginx).
+Dev avec worker : `make dev-worker` (profile Compose).
 
 ## PythonAnywhere
 

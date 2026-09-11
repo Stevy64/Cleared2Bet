@@ -32,10 +32,11 @@ class SofaScoreErreur(RuntimeError):
     pass
 
 
-def _get(path: str) -> dict[str, Any]:
+def _get(path: str, *, timeout: float = 15) -> dict[str, Any]:
+    """GET JSON SofaScore. timeout court pour ne pas geler une sync entière."""
     url = BASE + path if path.startswith('/') else path
     if _cffi_requests is not None:
-        r = _cffi_requests.get(url, impersonate='chrome124', timeout=25)
+        r = _cffi_requests.get(url, impersonate='chrome124', timeout=timeout)
         if r.status_code != 200:
             raise SofaScoreErreur(f'SofaScore {r.status_code} sur {path}')
         return r.json()
@@ -53,7 +54,7 @@ def _get(path: str) -> dict[str, Any]:
         method='GET',
     )
     try:
-        with urllib.request.urlopen(req, timeout=25) as resp:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
             if getattr(resp, 'status', 200) != 200:
                 raise SofaScoreErreur(f'SofaScore {resp.status} sur {path}')
             return json.loads(resp.read().decode('utf-8'))
@@ -459,7 +460,7 @@ def slugify_nom(nom: str) -> str:
 def _http_get_bytes(url: str) -> tuple[bytes, str]:
     """GET binaire (logos) via curl_cffi ou urllib."""
     if _cffi_requests is not None:
-        r = _cffi_requests.get(url, impersonate='chrome124', timeout=25)
+        r = _cffi_requests.get(url, impersonate='chrome124', timeout=15)
         if r.status_code != 200 or not r.content:
             raise SofaScoreErreur(f'HTTP {r.status_code} sur {url}')
         ctype = (r.headers.get('content-type') or 'image/png').split(';')[0].strip()
@@ -478,7 +479,7 @@ def _http_get_bytes(url: str) -> tuple[bytes, str]:
         method='GET',
     )
     try:
-        with urllib.request.urlopen(req, timeout=25) as resp:
+        with urllib.request.urlopen(req, timeout=15) as resp:
             body = resp.read()
             if not body:
                 raise SofaScoreErreur(f'Logo vide sur {url}')

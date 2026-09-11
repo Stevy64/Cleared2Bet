@@ -107,7 +107,16 @@ def test_btts_jamais_eligible():
     assert all(not est_eligible(o) for o in btts)
 
 
-def test_1x2_au_dessus_de_62_pourcent_non_eligible():
+def test_1x2_favori_net_eligible():
+    """Victoire sèche ~60–70 % : proposée (plus bloquée à 62 %)."""
+    a = analyser((1.45, 4.20, 7.50), (1.70, 2.20))
+    un = next(o for o in a['options'] if o['code'] == '1X2_1')
+    assert 0.55 <= un['probabilite'] < P_1X2_MAX_RECO
+    assert est_eligible(un)
+
+
+def test_1x2_lock_trop_court_non_eligible():
+    """Au-delà du plafond (~75 %) : trop « lock », non recommandé."""
     a = analyser((1.25, 6.00, 11.00), (1.55, 2.45))
     un = next(o for o in a['options'] if o['code'] == '1X2_1')
     assert un['probabilite'] >= P_1X2_MAX_RECO

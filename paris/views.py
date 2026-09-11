@@ -12,6 +12,7 @@ from django.utils.cache import patch_cache_control
 from django.utils.dateparse import parse_date
 from django.views.decorators.csrf import ensure_csrf_cookie
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -36,8 +37,10 @@ from paris.serializers import (
     PropositionCreateSerializer,
     PropositionSerializer,
     ResultatSerializer,
+    TYPES_PROPOSITION,
     VoteSerializer,
 )
+from paris.presence import compter_en_ligne, marquer_en_ligne
 
 MIN_ECHANTILLON = 20
 
@@ -361,6 +364,7 @@ class Logout(APIView):
 class ChatListCreate(APIView):
     """Salon VIP : réservé aux comptes VIP, purge 24 h."""
     permission_classes = [IsAuthenticated]
+    parser_classes = [JSONParser, MultiPartParser, FormParser]
 
     def get(self, request):
         if not est_vip(request.user):
@@ -380,9 +384,11 @@ class ChatListCreate(APIView):
             except (TypeError, ValueError):
                 pass
         msgs = list(qs.order_by('created_at')[:200])
+        marquer_en_ligne(request.user.id)
         return Response({
             'results': MessageChatSerializer(msgs, many=True, context={'request': request}).data,
             'retention_heures': 24,
+            'en_ligne': compter_en_ligne(),
             'server_time': timezone.now().isoformat(),
         })
 
@@ -395,8 +401,12 @@ class ChatListCreate(APIView):
         purger_messages_expires()
         ser = MessageCreateSerializer(data=request.data)
         ser.is_valid(raise_exception=True)
-        texte = ser.validated_data['texte']
-        msg = MessageChat.objects.create(auteur=request.user, texte=texte)
+        msg = MessageChat.objects.create(
+            auteur=request.user,
+            texte=ser.validated_data.get('texte') or '',
+            image=ser.validated_data.get('image'),
+        )
+        marquer_en_ligne(request.user.id)
         return Response(
             MessageChatSerializer(msg, context={'request': request}).data,
             status=201,
@@ -415,6 +425,50 @@ def _propositions_qs(match):
     )
 
 
+def _consensus_propositions(match) -> dict:
+    """Répartition des propositions utilisateurs par type d’option."""
+    props = list(_propositions_qs(match))
+    buckets = {
+        code: {
+            'type': code,
+            'libelle': label,
+            'n': 0,
+            'confiance_sum': 0,
+            'likes': 0,
+            'dislikes': 0,
+        }
+        for code, label in TYPES_PROPOSITION.items()
+    }
+    for p in props:
+        code = next(
+            (c for c, label in TYPES_PROPOSITION.items() if p.libelle == label),
+            None,
+        )
+        if not code:
+            continue
+        b = buckets[code]
+        b['n'] += 1
+        b['confiance_sum'] += int(p.confiance or 0)
+        b['likes'] += int(getattr(p, 'likes', 0) or 0)
+        b['dislikes'] += int(getattr(p, 'dislikes', 0) or 0)
+    total = sum(b['n'] for b in buckets.values())
+    par_option = []
+    for b in buckets.values():
+        if b['n'] == 0:
+            continue
+        votes = b['likes'] + b['dislikes']
+        par_option.append({
+            'type': b['type'],
+            'libelle': b['libelle'],
+            'n': b['n'],
+            'pct': round(100 * b['n'] / total) if total else 0,
+            'confiance_moy': round(b['confiance_sum'] / b['n']),
+            'pct_likes': round(100 * b['likes'] / votes) if votes else None,
+        })
+    par_option.sort(key=lambda x: (-x['n'], -x['confiance_moy']))
+    return {'total': total, 'par_option': par_option}
+
+
 class PropositionListCreate(APIView):
     def get_permissions(self):
         if self.request.method == 'POST':
@@ -428,21 +482,27 @@ class PropositionListCreate(APIView):
             'results': PropositionSerializer(
                 qs, many=True, context={'request': request},
             ).data,
+            'consensus': _consensus_propositions(match),
         })
 
     def post(self, request, pk):
         match = get_object_or_404(Match, pk=pk)
         ser = PropositionCreateSerializer(data=request.data)
         ser.is_valid(raise_exception=True)
-        prop = PropositionParis.objects.create(
+        prop, _created = PropositionParis.objects.update_or_create(
             match=match,
             auteur=request.user,
-            libelle=ser.to_libelle(),
-            confiance=ser.validated_data.get('confiance', 50),
+            defaults={
+                'libelle': ser.to_libelle(),
+                'confiance': ser.validated_data.get('confiance', 50),
+            },
         )
         prop = _propositions_qs(match).get(pk=prop.pk)
         return Response(
-            PropositionSerializer(prop, context={'request': request}).data,
+            {
+                **PropositionSerializer(prop, context={'request': request}).data,
+                'consensus': _consensus_propositions(match),
+            },
             status=201,
         )
 
@@ -483,7 +543,7 @@ class OptionVote(APIView):
 
 
 def _sid_equipe(eq: Equipe) -> int | None:
-    """SofaScore id connu, ou résolution via recherche (sans casser l’unicité)."""
+    """Id source primaire connu, ou résolution via recherche (sans casser l’unicité)."""
     if eq.sofascore_id:
         return eq.sofascore_id
     found = sofa.chercher_equipe_id(eq.nom) or sofa.chercher_equipe_id(eq.nom_court)
@@ -495,32 +555,110 @@ def _sid_equipe(eq: Equipe) -> int | None:
     return found
 
 
+def _tsdb_id(eq: Equipe) -> int | None:
+    """Id TheSportsDB (secours logos / fiche club)."""
+    from paris import thesportsdb as tsdb
+
+    if eq.thesportsdb_id:
+        return eq.thesportsdb_id
+    found = tsdb.resoudre_id(eq.nom, eq.nom_court)
+    if not found:
+        return None
+    if not Equipe.objects.filter(thesportsdb_id=found).exclude(pk=eq.pk).exists():
+        eq.thesportsdb_id = found
+        eq.save(update_fields=['thesportsdb_id'])
+    return found
+
+
+def _infos_equipe_locale(eq: Equipe) -> dict:
+    """Forme / récents depuis la base locale si les APIs externes échouent."""
+    matchs = (
+        Match.objects
+        .filter(Q(domicile=eq) | Q(exterieur=eq), statut='termine')
+        .filter(buts_dom__isnull=False, buts_ext__isnull=False)
+        .select_related('domicile', 'exterieur', 'competition')
+        .order_by('-coup_denvoi')[:8]
+    )
+    recents = []
+    forme: list[str] = []
+    for m in matchs:
+        is_home = m.domicile_id == eq.id
+        hs, aw = int(m.buts_dom), int(m.buts_ext)
+        if is_home:
+            res = 'W' if hs > aw else ('L' if hs < aw else 'D')
+            adversaire = m.exterieur.nom_court or m.exterieur.nom
+        else:
+            res = 'W' if aw > hs else ('L' if aw < hs else 'D')
+            adversaire = m.domicile.nom_court or m.domicile.nom
+        forme.append(res)
+        recents.append({
+            'adversaire': adversaire,
+            'score': f'{hs}-{aw}',
+            'domicile': is_home,
+            'resultat': res,
+            'coup_denvoi': m.coup_denvoi.isoformat() if m.coup_denvoi else None,
+        })
+    forme_chrono = list(reversed(forme[:5]))
+    pays = None
+    m_ref = (
+        Match.objects.filter(Q(domicile=eq) | Q(exterieur=eq))
+        .select_related('competition')
+        .order_by('-coup_denvoi')
+        .first()
+    )
+    if m_ref and m_ref.competition_id:
+        pays = m_ref.competition.pays or None
+    return {
+        'id': eq.sofascore_id or eq.thesportsdb_id,
+        'nom': eq.nom,
+        'nom_court': eq.nom_court,
+        'pays': pays,
+        'forme': forme_chrono,
+        'position': None,
+        'note_moyenne': None,
+        'classement': None,
+        'recents': recents,
+    }
+
+
 class EquipeLogo(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request, pk):
         from django.core.cache import cache
         from django.http import HttpResponse
+        from paris import thesportsdb as tsdb
 
         eq = get_object_or_404(Equipe, pk=pk)
-        sid = _sid_equipe(eq)
+        cache_key = f'logo:v2:{eq.pk}'
+        cached = cache.get(cache_key)
+        if cached:
+            body, ctype = cached
+            resp = HttpResponse(body, content_type=ctype)
+            resp['Cache-Control'] = 'public, max-age=86400'
+            return resp
 
+        body = None
+        ctype = 'image/png'
+        sid = _sid_equipe(eq)
         if sid:
-            key = f'logo:{sid}'
-            cached = cache.get(key)
-            if cached:
-                body, ctype = cached
-            else:
+            try:
+                body, ctype = sofa.logo_bytes(sid)
+            except sofa.SofaScoreErreur:
+                body = None
+        if body is None:
+            tid = _tsdb_id(eq)
+            if tid:
                 try:
-                    body, ctype = sofa.logo_bytes(sid)
-                    cache.set(key, (body, ctype), 60 * 60 * 24)
-                except sofa.SofaScoreErreur:
-                    body = sofa.logo_svg_placeholder(eq.nom, eq.nom_court)
-                    ctype = 'image/svg+xml'
-                    cache.set(key + ':svg', (body, ctype), 60 * 60)
-        else:
+                    body, ctype = tsdb.logo_bytes(tid)
+                except tsdb.SportsDbErreur:
+                    body = None
+        if body is None:
             body = sofa.logo_svg_placeholder(eq.nom, eq.nom_court)
             ctype = 'image/svg+xml'
+            cache.set(cache_key, (body, ctype), 60 * 30)
+        else:
+            cache.set(cache_key, (body, ctype), 60 * 60 * 24)
 
         resp = HttpResponse(body, content_type=ctype)
         resp['Cache-Control'] = 'public, max-age=86400'
@@ -532,24 +670,51 @@ class EquipeInfos(APIView):
     cache_seconds = 600
 
     def get(self, request, pk):
+        from paris import thesportsdb as tsdb
+
         eq = get_object_or_404(Equipe, pk=pk)
-        sid = _sid_equipe(eq)
-        if not sid:
-            return Response({'detail': 'Infos indisponibles pour cette équipe.'}, status=404)
-        # compétition la plus récente liée
-        tid = None
+        data = None
         m = (
             Match.objects.filter(Q(domicile=eq) | Q(exterieur=eq))
             .select_related('competition')
             .order_by('-coup_denvoi')
             .first()
         )
-        if m and m.competition.sofascore_id:
-            tid = m.competition.sofascore_id
-        try:
-            data = sofa.infos_equipe(sid, tournament_id=tid)
-        except sofa.SofaScoreErreur as e:
-            return Response({'detail': str(e)}, status=502)
+        league_code = m.competition.code if m and m.competition_id else None
+
+        sid = _sid_equipe(eq)
+        if sid:
+            tid = None
+            if m and m.competition.sofascore_id:
+                tid = m.competition.sofascore_id
+            try:
+                data = sofa.infos_equipe(sid, tournament_id=tid)
+            except sofa.SofaScoreErreur:
+                data = None
+
+        if data is None:
+            tsid = _tsdb_id(eq)
+            if tsid:
+                try:
+                    data = tsdb.infos_equipe(tsid, league_code=league_code)
+                except tsdb.SportsDbErreur:
+                    data = None
+
+        local = _infos_equipe_locale(eq)
+        if data is None:
+            data = local
+        else:
+            # Complète avec l’historique local si plus riche.
+            if len(data.get('recents') or []) < len(local.get('recents') or []):
+                data['recents'] = local['recents']
+                if len(data.get('forme') or []) < len(local.get('forme') or []):
+                    data['forme'] = local['forme']
+            if not data.get('pays') and local.get('pays'):
+                data['pays'] = local['pays']
+
+        # Jamais exposer la provenance technique au client.
+        data.pop('source', None)
+        data.pop('badge_url', None)
         data['equipe_id'] = eq.id
         data['nom_court'] = eq.nom_court or data.get('nom_court')
         data['nom'] = eq.nom or data.get('nom')

@@ -9,7 +9,7 @@
   <title>Cleared2Bet</title>
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
-  <link rel="stylesheet" href="/static/css/app.css?v=60">
+  <link rel="stylesheet" href="/static/css/app.css?v=62">
 </head>
 <body
   x-data="c2b()"
@@ -528,9 +528,34 @@
                 <span class="panel-ico" x-html="icon('users')"></span>
                 <div>
                   <h2>Propositions de paris</h2>
-                  <p class="hint">Les inscrits votent : consensus sous la confiance affichée.</p>
+                  <p class="hint">Chaque inscrit choisit un scénario. Les % ci-dessous = part des votes.</p>
                 </div>
               </div>
+
+              <div class="prop-consensus" x-show="propConsensus && propConsensus.total > 0" x-cloak>
+                <p class="prop-consensus-label">
+                  Votes communauté
+                  <span x-text="'(' + ((propConsensus && propConsensus.total) || 0) + ')'"></span>
+                </p>
+                <ul class="prop-consensus-list">
+                  <template x-for="c in (propConsensus && propConsensus.par_option) || []" :key="'pc-' + c.type">
+                    <li>
+                      <div class="prop-consensus-row">
+                        <span x-text="c.libelle"></span>
+                        <strong x-text="c.pct + ' %'"></strong>
+                      </div>
+                      <div class="prop-consensus-bar" aria-hidden="true">
+                        <i :style="'width:' + (c.pct || 0) + '%'"></i>
+                      </div>
+                      <p class="prop-consensus-meta">
+                        <span x-text="c.n + (c.n > 1 ? ' votes' : ' vote')"></span>
+                        · conf. moy. <span x-text="c.confiance_moy + ' %'"></span>
+                      </p>
+                    </li>
+                  </template>
+                </ul>
+              </div>
+
               <ul class="prop-list">
                 <template x-for="p in propositions" :key="p.id">
                   <li class="prop-item">
@@ -538,7 +563,7 @@
                       <strong x-text="p.libelle"></strong>
                       <div class="pct-stack right">
                         <span class="badge soft" x-text="p.confiance + ' %'"></span>
-                        <span class="opt-cons" x-text="'Consensus ' + (p.pct_likes != null ? p.pct_likes + ' %' : '—')"></span>
+                        <span class="opt-cons" x-text="'Accord ' + (p.pct_likes != null ? p.pct_likes + ' %' : '—')"></span>
                       </div>
                     </div>
                     <p class="prop-meta">
@@ -564,7 +589,7 @@
               </ul>
               <p class="vide vide-sm" x-show="!propositions.length">Aucune proposition pour l’instant — sois le premier.</p>
               <form class="prop-compose" @submit.prevent="proposerParis()">
-                <p class="prop-compose-label">Publier un scénario</p>
+                <p class="prop-compose-label">Publier ton scénario (1 par match)</p>
                 <div class="prop-types">
                   <template x-for="t in TYPES_PROPOSITION" :key="t.code">
                     <button type="button"
@@ -595,9 +620,16 @@
             </h1>
             <p class="salon-sub">Réservé VIP · messages effacés après 24 h</p>
           </div>
-          <span class="salon-live" x-show="peutVip" x-cloak>
-            <i aria-hidden="true"></i> en direct
-          </span>
+          <div class="salon-head-right" x-show="peutVip" x-cloak>
+            <span class="salon-online" :title="'VIP actuellement dans le salon'">
+              <span x-html="icon('users','icon icon-sm')"></span>
+              <strong x-text="chatEnLigne || 1"></strong>
+              <span x-text="(chatEnLigne || 1) > 1 ? 'en ligne' : 'en ligne'"></span>
+            </span>
+            <span class="salon-live">
+              <i aria-hidden="true"></i> en direct
+            </span>
+          </div>
         </header>
 
         <template x-if="!peutVip">
@@ -634,8 +666,12 @@
                   <div class="chat-bubble-wrap">
                     <p class="chat-author" x-show="!msg.est_moi && chatShowMeta(msg, idx)"
                       x-text="msg.auteur"></p>
-                    <div class="chat-bubble">
-                      <p x-text="msg.texte"></p>
+                    <div class="chat-bubble" :class="{'has-image': !!msg.image_url}">
+                      <a x-show="msg.image_url" x-cloak class="chat-img-link"
+                        :href="msg.image_url" target="_blank" rel="noopener">
+                        <img class="chat-img" :src="msg.image_url" alt="Image envoyée" loading="lazy">
+                      </a>
+                      <p x-show="msg.texte" x-text="msg.texte"></p>
                     </div>
                     <time class="chat-time" x-text="fmtChatHeure(msg.created_at)"></time>
                   </div>
@@ -643,14 +679,28 @@
               </template>
             </div>
 
+            <div class="salon-preview" x-show="chatImagePreview" x-cloak>
+              <img :src="chatImagePreview" alt="Aperçu">
+              <button type="button" class="salon-preview-x" @click="clearChatImage()" aria-label="Retirer l’image">
+                <span x-html="icon('x','icon icon-sm')"></span>
+              </button>
+            </div>
             <form class="salon-compose" @submit.prevent="envoyerChat()">
+              <input type="file" accept="image/jpeg,image/png,image/webp,image/gif"
+                class="salon-file" x-ref="salonImageInput" @change="onChatImagePick($event)">
+              <button type="button" class="btn salon-attach"
+                :disabled="chatBusy"
+                @click="$refs.salonImageInput && $refs.salonImageInput.click()"
+                aria-label="Joindre une image">
+                <span x-html="icon('image','icon icon-sm')"></span>
+              </button>
               <input type="text" maxlength="400" autocomplete="off"
                 placeholder="Écrire un message…"
                 x-model="chatDraft"
                 :disabled="chatBusy"
                 @keydown.enter.prevent="envoyerChat()">
               <button type="submit" class="btn salon-send"
-                :disabled="chatBusy || !(chatDraft || '').trim()"
+                :disabled="chatBusy || (!(chatDraft || '').trim() && !chatImage)"
                 aria-label="Envoyer">
                 <span x-html="icon('send','icon icon-sm')"></span>
               </button>
@@ -979,7 +1029,7 @@
           </article>
         </template>
       </div>
-      <p class="justif-foot">Pas de maths ici — juste du foot, comme au bord du terrain.</p>
+      <p class="justif-foot">Faits match + cotes — résumé court pour décider vite.</p>
       <button type="button" class="btn btn-ghost btn-block" @click="fermerJustif()">Fermer</button>
     </div>
   </div>
@@ -1196,7 +1246,7 @@
     </a>
   </nav>
 
-  <script defer src="/static/js/app.js?v=60"></script>
+  <script defer src="/static/js/app.js?v=62"></script>
   <script defer src="/static/vendor/alpine.min.js?v=60"></script>
 </body>
 </html>

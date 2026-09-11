@@ -16,7 +16,15 @@ def seuil_expiration():
 
 
 def purger_messages_expires() -> int:
-    deleted, _ = MessageChat.objects.filter(created_at__lt=seuil_expiration()).delete()
+    anciens = list(
+        MessageChat.objects.filter(created_at__lt=seuil_expiration()).only('id', 'image')
+    )
+    for msg in anciens:
+        if msg.image:
+            msg.image.delete(save=False)
+    deleted, _ = MessageChat.objects.filter(
+        pk__in=[m.pk for m in anciens],
+    ).delete()
     return int(deleted)
 
 

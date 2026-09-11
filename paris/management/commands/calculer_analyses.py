@@ -8,7 +8,7 @@ from django.utils import timezone
 from django.utils.dateparse import parse_date
 
 from paris.models import Analyse, Match, Option
-from paris.moteur import AnalyseInvalide, VERSION_MOTEUR, analyser, classer_journee, selections_niveaux, uniformite_excessive
+from paris.moteur import AnalyseInvalide, VERSION_MOTEUR, selections_niveaux, uniformite_excessive
 
 
 # Ordre de préférence bookmaker quand plusieurs cotes existent pour le même marché.
@@ -57,25 +57,28 @@ class Command(BaseCommand):
 
         analyses = []
         ignores = 0
+        lots = []
+        match_by_ref = {}
         for match in matchs:
             cotes_1x2, cotes_ou = self._cotes(match)
             if cotes_1x2 is None:
                 ignores += 1
                 continue
-            try:
-                payload = analyser(
-                    cotes_1x2,
-                    cotes_ou,
-                    match.domicile.nom_court,
-                    match.exterieur.nom_court,
-                )
-            except AnalyseInvalide as e:
-                self.stderr.write(f'  ignore {match}: {e}')
-                ignores += 1
-                continue
-            analyses.append((match, payload))
+            ref = str(match.pk)
+            item = {
+                'c1': cotes_1x2[0],
+                'cn': cotes_1x2[1],
+                'c2': cotes_1x2[2],
+                'nom_dom': match.domicile.nom_court,
+                'nom_ext': match.exterieur.nom_court,
+                'ref': ref,
+            }
+            if cotes_ou:
+                item['o25'], item['u25'] = cotes_ou
+            lots.append(item)
+            match_by_ref[ref] = match
 
-        if not analyses:
+        if not lots:
             raise CommandError(
                 f'Aucun match avec cotes 1X2 valides le {jour.isoformat()} '
                 f'({ignores} ignorés).'
@@ -83,9 +86,22 @@ class Command(BaseCommand):
         if ignores:
             self.stdout.write(f'{ignores} match(s) sans cotes 1X2 utilisables ignorés.')
 
-        payloads = [a for _, a in analyses]
-        classer_journee(payloads)
-        sels = [selections_niveaux(p['options']) for p in payloads]
+        from paris.moteur_client import analyser_et_classer_journee
+
+        try:
+            payloads = analyser_et_classer_journee(lots)
+        except AnalyseInvalide as e:
+            raise CommandError(str(e)) from e
+
+        analyses = []
+        for payload in payloads:
+            ref = str(payload.get('ref') or '')
+            match = match_by_ref.get(ref)
+            if match is None:
+                continue
+            analyses.append((match, payload))
+
+        sels = [selections_niveaux(p['options']) for _, p in analyses]
         if uniformite_excessive(sels):
             self.stdout.write(self.style.WARNING(
                 'Uniformité élevée détectée sur la journée '

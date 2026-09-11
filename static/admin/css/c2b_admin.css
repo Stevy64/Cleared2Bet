@@ -498,34 +498,84 @@ ul.messagelist li.warning { background: var(--c2b-orange-soft); color: var(--c2b
 ul.messagelist li.error { background: #fef2f2; color: #b91c1c; }
 
 /* ——— Login ——— */
-.login { background: var(--c2b-bg) !important; }
+.login { background: transparent !important; min-height: 100vh; }
 .login #header { display: none !important; }
-.login #container { background: transparent !important; }
+.login #container {
+  background: transparent !important;
+  max-width: none !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+.login #main,
+.login .main {
+  display: block !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
 .login #content {
-  max-width: 400px;
-  margin: 4vh auto 0;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
 }
 .login #content-main {
-  background: var(--c2b-surface);
-  border: 1px solid var(--c2b-line);
-  border-radius: 24px;
-  box-shadow: var(--c2b-shadow);
-  padding: 28px 28px 20px;
+  float: none !important;
+  width: auto !important;
+  margin: 0 !important;
 }
-.login .submit-row {
-  padding: 16px 0 4px !important;
-  background: transparent !important;
-  border: 0 !important;
+
+body.login.c2b-login-page,
+body.login {
+  background: #152a45 !important;
+  min-height: 100vh;
 }
-.login .submit-row input {
+
+.c2b-login-shell {
+  display: grid;
+  grid-template-columns: 1fr;
+  place-items: center;
+  min-height: 100vh;
   width: 100%;
-  background: var(--c2b-orange) !important;
-  padding: 12px !important;
+  padding: 32px 16px;
+  box-sizing: border-box;
+}
+
+.c2b-login-aside {
+  display: none;
+}
+
+.c2b-login-panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin: auto !important;
+  width: min(100% - 32px, 420px) !important;
+  padding: 36px 32px 28px !important;
+  background: rgba(255, 255, 255, 0.97) !important;
+  border-radius: 28px !important;
+  box-shadow:
+    0 24px 60px rgba(8, 16, 28, 0.35),
+    0 0 0 1px rgba(255, 255, 255, 0.08) !important;
+  float: none !important;
 }
 
 .login .c2b-login-brand {
-  text-align: center;
-  margin: 6vh 0 18px;
+  text-align: left;
+  margin: 0 0 26px;
+}
+.login .c2b-login-badge {
+  display: inline-block;
+  margin: 0 0 14px !important;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--c2b-orange-soft);
+  color: var(--c2b-orange-deep);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 .login .c2b-login-brand .dot {
   display: inline-block;
@@ -533,19 +583,136 @@ ul.messagelist li.error { background: #fef2f2; color: #b91c1c; }
   height: 12px;
   border-radius: 50%;
   background: var(--c2b-orange);
-  box-shadow: 0 0 0 5px var(--c2b-orange-soft);
+  box-shadow: 0 0 0 6px rgba(255, 122, 47, 0.18);
   margin-bottom: 14px;
 }
 .login .c2b-login-brand h1 {
-  margin: 0 0 6px;
   font-family: var(--display);
-  font-size: 1.7rem;
+  font-size: 1.75rem;
   font-weight: 800;
+  margin: 0 0 8px;
+  color: var(--c2b-ink);
   letter-spacing: -0.03em;
 }
-.login .c2b-login-brand p {
+.login .c2b-login-brand p,
+.login .c2b-login-lead {
   margin: 0;
   color: var(--c2b-muted);
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+.login .errornote {
+  margin: 0 0 18px !important;
+  border-radius: 14px !important;
+  border: 1px solid #fecaca !important;
+  background: #fef2f2 !important;
+  color: #b91c1c !important;
+  padding: 12px 14px !important;
+  font-size: 0.88rem !important;
+}
+
+.login .c2b-field {
+  margin-bottom: 16px;
+}
+.login .c2b-field label {
+  display: block;
+  font-weight: 700;
+  font-size: 0.82rem;
+  color: var(--c2b-navy);
+  margin-bottom: 8px;
+}
+.login .c2b-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.login .c2b-input-ico {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  pointer-events: none;
+  display: flex;
+  z-index: 2;
+}
+.login .c2b-input-wrap input,
+.login #id_username,
+.login #id_password {
+  width: 100% !important;
+  box-sizing: border-box !important;
+  padding: 14px 14px 14px 46px !important;
+  border: 1.5px solid #e2e8f0 !important;
+  border-radius: 14px !important;
+  background: #f8fafc !important;
+  font-size: 1rem !important;
+  color: var(--c2b-ink) !important;
+  transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+}
+.login .c2b-input-wrap input:focus,
+.login #id_username:focus,
+.login #id_password:focus {
+  outline: none !important;
+  border-color: var(--c2b-orange) !important;
+  background: #fff !important;
+  box-shadow: 0 0 0 4px rgba(255, 122, 47, 0.18) !important;
+}
+.login .c2b-input-wrap:focus-within .c2b-input-ico {
+  color: var(--c2b-orange);
+}
+
+.login .c2b-login-hint,
+.login .c2b-login-reset {
+  margin: 0 0 14px;
+  font-size: 0.88rem;
+  color: var(--c2b-muted);
+}
+.login .c2b-login-reset a {
+  color: var(--c2b-navy);
+  font-weight: 600;
+}
+
+.login .submit-row {
+  padding: 8px 0 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  margin: 0 !important;
+}
+.login .submit-row input {
+  width: 100% !important;
+  border: none !important;
+  border-radius: 14px !important;
+  padding: 15px 18px !important;
+  background: linear-gradient(135deg, #ff7a2f, #e8631c) !important;
+  color: #fff !important;
+  font-weight: 800 !important;
+  font-size: 1rem !important;
+  font-family: var(--display) !important;
+  cursor: pointer;
+  box-shadow: 0 12px 24px rgba(255, 122, 47, 0.35) !important;
+  transition: transform 0.12s, box-shadow 0.12s, filter 0.12s;
+}
+.login .submit-row input:hover {
+  filter: brightness(1.05);
+  box-shadow: 0 14px 28px rgba(255, 122, 47, 0.42) !important;
+}
+.login .submit-row input:active {
+  transform: translateY(1px);
+}
+
+.login .c2b-login-foot {
+  margin: 22px 0 0;
+  text-align: center;
+  font-size: 0.88rem;
+}
+.login .c2b-login-foot a {
+  color: var(--c2b-muted);
+  font-weight: 600;
+  text-decoration: none;
+}
+.login .c2b-login-foot a:hover {
+  color: var(--c2b-navy);
 }
 
 /* ——— Nav sidebar (autres pages) ——— */
@@ -1409,18 +1576,15 @@ ul.messagelist li.error { background: #fef2f2; color: #b91c1c; }
     padding-left: 0 !important;
   }
 
-  .login #content {
-    max-width: calc(100% - 28px);
-    margin: 4vh auto 0;
-    padding: 0;
+  .c2b-login-shell {
+    padding: 28px 0 40px;
   }
-
-  .login #content-main {
-    padding: 22px 18px 16px;
+  .c2b-login-panel {
+    width: min(100% - 28px, 400px) !important;
+    padding: 28px 22px 22px !important;
   }
-
   .login .c2b-login-brand {
-    margin: 4vh 0 14px;
+    margin: 0 0 20px;
   }
 
   div.breadcrumbs {

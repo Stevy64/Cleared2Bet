@@ -25,6 +25,7 @@ class Equipe(models.Model):
     nom_court = models.CharField(max_length=24)            # pour l'affichage mobile
     slug = models.SlugField(unique=True)
     sofascore_id = models.PositiveIntegerField(null=True, blank=True, unique=True)
+    thesportsdb_id = models.PositiveIntegerField(null=True, blank=True, unique=True)
 
     class Meta:
         verbose_name = 'Équipe'
@@ -180,17 +181,15 @@ class PropositionParis(models.Model):
         ordering = ['-created_at']
         verbose_name = 'Proposition utilisateur'
         verbose_name_plural = 'Propositions utilisateurs'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['match', 'auteur'],
+                name='prop_unique_user_match',
+            ),
+        ]
 
     def __str__(self):
         return f"{self.libelle} ({self.match})"
-
-    @property
-    def likes(self):
-        return self.votes.filter(choix='like').count()
-
-    @property
-    def dislikes(self):
-        return self.votes.filter(choix='dislike').count()
 
 
 class Vote(models.Model):
@@ -367,7 +366,8 @@ class MessageChat(models.Model):
         on_delete=models.CASCADE,
         related_name='messages_chat',
     )
-    texte = models.CharField(max_length=400)
+    texte = models.CharField(max_length=400, blank=True, default='')
+    image = models.FileField(upload_to='salon/%Y/%m/%d/', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
 
     class Meta:
@@ -376,4 +376,5 @@ class MessageChat(models.Model):
         verbose_name_plural = 'Messages Salon VIP'
 
     def __str__(self):
-        return f'{self.auteur_id}:{self.texte[:40]}'
+        apercu = (self.texte or '').strip() or ('[image]' if self.image else '')
+        return f'{self.auteur_id}:{apercu[:40]}'

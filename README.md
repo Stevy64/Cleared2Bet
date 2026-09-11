@@ -1,65 +1,124 @@
 # Cleared2Bet
 
-Application web (PWA) d’aide à la décision pour les paris football. Elle affiche des **chances** et une **cote juste**. Elle ne promet pas de gain, ne prend pas de paris, et ne se connecte à aucun bookmaker.
+PWA d’aide à la décision pour les paris football. Affiche des **chances** et une **cote juste**.  
+Ne prend pas de paris, ne se connecte à aucun bookmaker, ne promet aucun gain.
 
-## Installation
+Stack : **Django 5 + DRF** (PWA Alpine), **moteur v3.1** (FastAPI), **Postgres / Redis** en prod Docker, worker autonome.
 
-Python 3.10+ (3.12 recommandé).
+---
+
+## Prise en main rapide (local)
+
+### Option A — Docker (recommandé)
+
+```bash
+git clone https://github.com/Stevy64/Cleared2Bet.git
+cd Cleared2Bet
+cp .env.example .env
+
+# Si pip/DNS flaky dans Docker Desktop (Windows) :
+make wheels-win          # remplit ./wheels/ (gitignore)
+
+make dev-d               # web :8000 + moteur :8001 + redis
+make migrate-dev
+make superuser-dev
+make sync-dev            # calendrier + analyses
+```
+
+- App : http://127.0.0.1:8000/  
+- Admin : http://127.0.0.1:8000/admin/  
+- Santé : http://127.0.0.1:8000/health/ et http://127.0.0.1:8001/health  
+
+Worker autonome (sync périodique) :
+
+```bash
+make dev-worker
+```
+
+### Option B — Python local
 
 ```bash
 python -m venv .venv
-.venv\Scripts\activate          # Windows
-# source .venv/bin/activate     # Linux / macOS
+# Windows : .venv\Scripts\activate
+# Linux/macOS : source .venv/bin/activate
 pip install -r requirements.txt
-cp .env.example .env            # optionnel en local
+cp .env.example .env
 python manage.py migrate
 python manage.py createsuperuser
-```
-
-## Données
-
-**Source de vérité : SofaScore** (calendrier réel). Ne jamais importer de JSON inventé en usage normal.
-
-```bash
 python manage.py synchroniser_sofascore
 python manage.py calculer_analyses
 python manage.py runserver
 ```
 
-Un fichier `exemples/journee-2026-09-08.json` existe pour les **tests unitaires uniquement**. L’API publique ignore tout match sans `sofascore_id`.
+Sans `C2B_MOTEUR_URL`, le moteur tourne **dans le process Django**.
 
-```bash
-python manage.py purger_matchs_fictifs
-python manage.py importer_matchs --source exemples/journee-2026-09-08.json --allow-demo
-python manage.py regler_options
-```
-
-## Tests
+### Tests
 
 ```bash
 pip install -r requirements-dev.txt
 pytest
 ```
 
-CI : pytest, migrations, `collectstatic`, `check --deploy`, smoke VPS.
+---
 
-## Déploiement
+## Mise en production (résumé)
 
-Feuille de route : [docs/deploy.md](docs/deploy.md)
+| Cible | Doc | Notes |
+|-------|-----|--------|
+| **VPS Docker (OVH / Oracle…)** | [docs/docker.md](docs/docker.md) + [docs/ovh-vps.md](docs/ovh-vps.md) | **Recommandé** — stack complète autonome |
+| Feuille de route | [docs/deploy.md](docs/deploy.md) | Choix d’hébergeur |
+| Architecture | [docs/architecture.md](docs/architecture.md) | web · moteur · worker · db · redis · nginx |
+| PythonAnywhere | [docs/pythonanywhere.md](docs/pythonanywhere.md) | Sans Docker ; egress calendrier souvent limité |
 
-1. **PythonAnywhere** (maintenant, sans Docker) → [docs/pythonanywhere.md](docs/pythonanywhere.md)
-2. **OVH Cloud** (proche avenir) → [docs/ovh-vps.md](docs/ovh-vps.md)  
-   - Docker : [docs/docker.md](docs/docker.md) (`make prod-build`, images `cleared2bet-prod`)  
-   - ou systemd + nginx
-
-Moteur d’analyse **v3.1** (calibration marché par marché) : [docs/moteur-v31.md](docs/moteur-v31.md).
+### Prod Docker en 5 commandes
 
 ```bash
-# Dev Docker
-make dev-build
-# → http://127.0.0.1:8000/   images : cleared2bet-dev
+cp .env.example .env
+# Éditer : DJANGO_SECRET_KEY, POSTGRES_PASSWORD, ALLOWED_HOSTS, CSRF…
 
-# Prod Docker (Postgres + Gunicorn + nginx)
-cp .env.example .env   # SECRET_KEY + POSTGRES_PASSWORD
-make prod-build
+make prod-build          # nginx + web + moteur + worker + postgres + redis
+make migrate
+make superuser
+# → http://TON_IP/  (port C2B_HTTP_PORT, défaut 80)
 ```
+
+Le **worker** enchaîne toutes les ~2 h : sync calendrier → analyses → règlement → purge chat.  
+Détail variables : `.env.example` et [docs/architecture.md](docs/architecture.md).
+
+---
+
+## Fonctionnalités produit
+
+- Matchs du jour / filtre compétition · tips **Prudente / Équilibrée / Audacieuse** + filet  
+- Fiche club (forme, classement, récents) · justifications VIP  
+- Salon VIP (messages + images, rétention 24 h, présence en ligne)  
+- Propositions utilisateurs + % de votes par scénario  
+- Admin Django (VIP, WhatsApp, sync)
+
+Moteur d’analyse : [docs/moteur-v31.md](docs/moteur-v31.md).
+
+---
+
+## Documentation
+
+| Doc | Contenu |
+|-----|---------|
+| [docs/getting-started.md](docs/getting-started.md) | Prise en main détaillée |
+| [docs/deploy.md](docs/deploy.md) | Feuille de route déploiement |
+| [docs/docker.md](docs/docker.md) | Dev & prod Docker / Makefile |
+| [docs/architecture.md](docs/architecture.md) | Micro-services |
+| [docs/ovh-vps.md](docs/ovh-vps.md) | VPS OVH |
+| [docs/oracle-cloud.md](docs/oracle-cloud.md) | Oracle Cloud Free Tier |
+| [docs/pythonanywhere.md](docs/pythonanywhere.md) | Hébergement sans Docker |
+| [docs/moteur-v31.md](docs/moteur-v31.md) | Calibration & sélection tips |
+| [docs/format_import.md](docs/format_import.md) | Format JSON (tests / démo uniquement) |
+
+```bash
+make help                # liste des commandes
+```
+
+---
+
+## Licence / usage
+
+Usage personnel / projet privé. Les données calendrier et clubs proviennent d’APIs tierces ; l’app n’affiche pas leur nom côté utilisateur.

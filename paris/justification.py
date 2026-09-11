@@ -1,4 +1,4 @@
-"""Justifications terrain — ton footeux, populaire, détendu (sans maths)."""
+"""Justifications de tips — courtes, factuelles, lisibles."""
 from __future__ import annotations
 
 from typing import Any
@@ -14,169 +14,118 @@ def _txt(val: Any) -> str:
     return (str(val) if val is not None else '').strip()
 
 
+def _court(s: str, n: int = 140) -> str:
+    s = ' '.join(_txt(s).split())
+    if len(s) <= n:
+        return s
+    coupe = s[: n - 1].rsplit(' ', 1)[0]
+    return (coupe or s[: n - 1]).rstrip('.,;:') + '…'
+
+
 def _phrase(s: str) -> str:
     s = _txt(s)
     if not s:
         return ''
-    return s if s.endswith(('.', '!', '?')) else s + '.'
+    return s if s.endswith(('.', '!', '?', '…')) else s + '.'
 
 
 def _niv_label(niveau: str) -> str:
     return {
         'prudente': 'Prudente',
-        'filet': 'Filet de sécurité',
+        'filet': 'Filet',
         'equilibree': 'Équilibrée',
         'audacieuse': 'Audacieuse',
     }.get(niveau, niveau or 'Tip')
 
 
 def _arg(cle: str, titre: str, texte: str, icon: str) -> dict[str, str] | None:
-    texte = _phrase(texte)
+    texte = _phrase(_court(texte, 160))
     if not texte:
         return None
     return {'cle': cle, 'titre': titre, 'texte': texte, 'icon': icon}
 
 
-def _accroche_terrain(
+def _accroche(
     *,
     libelle: str,
     niveau: str,
     p: float | None,
     domicile: str,
     exterieur: str,
+    contexte: Any | None,
 ) -> str:
     duo = f'{domicile} – {exterieur}'.strip(' –')
     conf = _pct(p)
     if niveau == 'filet':
-        return (
-            f'Sur {duo or "ce match"}, « {libelle} » ({conf}) : le joker du banc. '
-            f'Si le tip principal rate le cadre, celui-là est là pour rattraper le coup.'
-        )
-    if niveau == 'prudente':
-        return (
-            f'On part sur « {libelle} » ({conf}). Pas le coup de génie du vestiaire — '
-            f'juste le scénario propre, celui que tu joues sans te ronger les ongles.'
-        )
-    return (
-        f'Sur {duo or "ce match"}, Cleared2Bet retient « {libelle} » ({conf}). '
-        f'Lecture terrain, pas de blabla de plateau TV.'
+        base = f'Filet · « {libelle} » ({conf})'
+        if duo:
+            base += f' sur {duo}'
+        return base + ' — repli si le tip principal rate.'
+    base = f'« {libelle} » · {conf}'
+    if duo:
+        base += f' · {duo}'
+    has_faits = bool(contexte) and any(
+        _txt(getattr(contexte, f, ''))
+        for f in ('forme_dom', 'forme_ext', 'confrontations', 'absents_dom', 'absents_ext', 'a_savoir')
     )
+    return base + (' · faits terrain.' if has_faits else ' · lecture cotes.')
 
 
-def _lecture_profil(analyse: Any | None, domicile: str, exterieur: str) -> str:
-    if analyse is None:
-        return ''
-    profil = getattr(analyse, 'profil', '') or ''
-    score = _txt(getattr(analyse, 'score_probable', ''))
-    if profil == 'desequilibre':
-        base = (
-            f'Y’a un gros favori dans l’air ({domicile or "domicile"} vs '
-            f'{exterieur or "extérieur"}). Un camp devrait tenir le ballon et le rythme.'
-        )
-    elif profil == 'equilibre':
-        base = (
-            'Match serré au feeling : peu d’écart sur le papier. '
-            'Forme, absents et intensité peuvent tout faire basculer.'
-        )
-    elif profil == 'moyen':
-        base = (
-            f'{domicile or "L’équipe à domicile"} part un cran devant, '
-            'sans que ce soit déjà plié au coup d’envoi.'
-        )
-    else:
-        base = ''
-    if score:
-        base = (base + ' ' if base else '') + f'Score qui colle bien : autour de {score}.'
-    return base
-
-
-def _assaisonner_forme(texte: str) -> str:
-    t = _txt(texte)
-    if not t:
-        return ''
-    low = t.lower()
-    if 'bonne dynamique' in low:
-        return t.rstrip('.') + ' — ils arrivent chauds, faut en profiter.'
-    if 'série compliquée' in low:
-        return t.rstrip('.') + ' — là, attendre un festival de buts serait un peu optimiste.'
-    return t
-
-
-def _assaisonner_h2h(texte: str) -> str:
-    t = _txt(texte)
-    if not t:
-        return ''
-    low = t.lower()
-    if 'dominé' in low:
-        return t.rstrip('.') + ' L’historique parle assez fort, non ?'
-    if 'dessus' in low:
-        return t.rstrip('.') + ' Souvent le même scénario dans ce duel…'
-    if 'serré' in low or 'nul' in low:
-        return t.rstrip('.') + ' Bref : pas le soir pour jouer les héros.'
-    return t.rstrip('.') + ' Ça donne le climat du match avant même le coup d’envoi.'
-
-
-def _assaisonner_absents(texte: str) -> str:
-    t = _txt(texte)
-    if not t:
-        return ''
-    return t.rstrip('.') + ' — un forfait, et parfois le match change de visage.'
-
-
-def _assaisonner_meteo(texte: str) -> str:
-    t = _txt(texte)
-    if not t:
-        return ''
-    low = t.lower()
-    if any(k in low for k in ('pluie', 'orage', 'neige', 'brouillard')):
-        return t.rstrip('.') + ' Terrain lourd : souvent moins de folie devant le but.'
-    if any(k in low for k in ('ensoleillé', 'dégagé')):
-        return t.rstrip('.') + ' Beau ciel : les jambes n’ont plus d’excuse.'
-    return t
-
-
-def _lien_tip_contexte(
+def _pourquoi(
     *,
     libelle: str,
     famille: str,
     niveau: str,
     contexte: Any | None,
+    analyse: Any | None,
 ) -> str:
-    """Relie le tip au contexte match — ton footeux, pas savant."""
     lib = (libelle or '').lower()
     fam = (famille or '').lower()
     tendance = _txt(getattr(contexte, 'tendance_buts', None) if contexte else '')
     h2h = _txt(getattr(contexte, 'confrontations', None) if contexte else '')
+    meteo = _txt(getattr(contexte, 'a_savoir', None) if contexte else '')
 
     if 'but' in lib or 'total' in fam:
         if tendance:
-            return (
-                tendance.rstrip('.')
-                + f' Du coup « {libelle or "ce tip"} » tombe plutôt bien.'
-            )
-        if any(k in h2h.lower() for k in ('serré', 'nul', 'équilibr')):
-            return (
-                'Les derniers duels, c’était plutôt sage devant le but. '
-                f'« {libelle} » colle à cette vibe.'
-            )
-        return (
-            f'« {libelle} » : le scénario buts le plus clean. '
-            'Pas besoin d’imaginer un 5-4 de folie.'
-        )
-    if 'ne perd pas' in lib or 'double' in fam:
-        return (
-            f'« {libelle} » : tu couvres le réaliste sans exiger le carton plein. '
-            'Pratique quand le match peut basculer sur un détail.'
-        )
+            return tendance
+        if any(k in h2h.lower() for k in ('serré', 'nul', 'équilibr', 'peu de but')):
+            return 'Confrontations récentes plutôt contenues.'
+        if any(k in meteo.lower() for k in ('pluie', 'orage', 'neige', 'vent')):
+            return 'Conditions qui peuvent freiner le rythme.'
+        return f'Marché + modèle alignés sur « {libelle} ».'
+    if 'ne perd pas' in lib or 'double' in fam or 'gagne' in lib or fam == '1x2':
+        if h2h:
+            return 'Historique du duel cohérent avec ce scénario.'
+        return f'Probabilités 1X2 en faveur de « {libelle} ».'
     if niveau == 'filet':
-        return (
-            'Le filet vise un truc qui tombe souvent (genre « au moins un but »). '
-            'C’est la sécurité du jour, pas le highlight Instagram.'
-        )
-    return (
-        f'« {libelle} » résume la tendance du match — '
-        'sans te promettre le score exact comme un oracle.'
+        return 'Couverture large (souvent ≥ 1 but) pour sécuriser le ticket.'
+    score = _txt(getattr(analyse, 'score_probable', '')) if analyse else ''
+    if score:
+        return f'Score modal estimé {score}.'
+    if h2h:
+        return h2h
+    return f'Scénario retenu : « {libelle} ».'
+
+
+def _lecture_cotes(analyse: Any | None, domicile: str, exterieur: str) -> str:
+    if analyse is None:
+        return ''
+    try:
+        p1 = float(getattr(analyse, 'p1', 0) or 0)
+        pn = float(getattr(analyse, 'pn', 0) or 0)
+        p2 = float(getattr(analyse, 'p2', 0) or 0)
+    except (TypeError, ValueError):
+        return ''
+    if p1 + pn + p2 <= 0:
+        return ''
+    score = _txt(getattr(analyse, 'score_probable', ''))
+    s = (
+        f'{domicile or "Dom"} {_pct(p1)} · Nul {_pct(pn)} · '
+        f'{exterieur or "Ext"} {_pct(p2)}'
     )
+    if score:
+        s += f' · score {score}'
+    return s
 
 
 def justifier_option(
@@ -187,135 +136,121 @@ def justifier_option(
     domicile: str = '',
     exterieur: str = '',
 ) -> dict[str, Any]:
-    """Retourne titre, accroche et arguments terrain pour le popup compos."""
-    libelle = getattr(option, 'libelle', None) or (option.get('libelle') if isinstance(option, dict) else '')
-    niveau = getattr(option, 'niveau', None) or (option.get('niveau') if isinstance(option, dict) else '')
-    famille = getattr(option, 'famille', None) or (option.get('famille') if isinstance(option, dict) else '')
-    p = getattr(option, 'probabilite', None) if not isinstance(option, dict) else option.get('probabilite')
+    """Titre, accroche courte et 2–3 arguments max."""
+    libelle = getattr(option, 'libelle', None) or (
+        option.get('libelle') if isinstance(option, dict) else ''
+    )
+    niveau = getattr(option, 'niveau', None) or (
+        option.get('niveau') if isinstance(option, dict) else ''
+    )
+    famille = getattr(option, 'famille', None) or (
+        option.get('famille') if isinstance(option, dict) else ''
+    )
+    p = (
+        getattr(option, 'probabilite', None)
+        if not isinstance(option, dict)
+        else option.get('probabilite')
+    )
 
-    niv_label = _niv_label(niveau or '')
-    titre = f'{niv_label} · {libelle}'
-    accroche = _accroche_terrain(
+    titre = f'{_niv_label(niveau or "")} · {libelle}'
+    accroche = _accroche(
         libelle=libelle or 'ce tip',
         niveau=niveau or '',
         p=p,
         domicile=domicile,
         exterieur=exterieur,
+        contexte=contexte,
     )
 
     arguments: list[dict[str, str]] = []
 
     def push(item: dict[str, str] | None) -> None:
-        if item and len(arguments) < 5:
+        if item and len(arguments) < 3:
             if any(a['texte'] == item['texte'] for a in arguments):
                 return
             arguments.append(item)
 
-    push(_arg(
-        'lecture',
-        'Pourquoi ce tip',
-        _lien_tip_contexte(
-            libelle=libelle or '',
-            famille=famille or '',
-            niveau=niveau or '',
-            contexte=contexte,
-        ),
-        'crosshair',
-    ))
-
     if contexte is not None:
-        forme_d = _assaisonner_forme(getattr(contexte, 'forme_dom', ''))
-        forme_e = _assaisonner_forme(getattr(contexte, 'forme_ext', ''))
-        if forme_d and forme_e:
-            push(_arg(
-                'forme',
-                'Formes récentes',
-                f'{forme_d.rstrip(".")}. {forme_e}',
-                'activity',
-            ))
-        else:
-            push(_arg(
-                'forme_dom',
-                f'Forme · {domicile or "Domicile"}',
-                forme_d,
-                'activity',
-            ))
-            push(_arg(
-                'forme_ext',
-                f'Forme · {exterieur or "Extérieur"}',
-                forme_e,
-                'activity',
-            ))
+        forme_d = _txt(getattr(contexte, 'forme_dom', ''))
+        forme_e = _txt(getattr(contexte, 'forme_ext', ''))
+        if forme_d or forme_e:
+            if forme_d and forme_e:
+                push(_arg(
+                    'forme',
+                    'Forme',
+                    f'{_court(forme_d, 70)} · {_court(forme_e, 70)}',
+                    'activity',
+                ))
+            else:
+                push(_arg('forme', 'Forme', forme_d or forme_e, 'activity'))
+
         push(_arg(
             'h2h',
             'Confrontations',
-            _assaisonner_h2h(getattr(contexte, 'confrontations', '')),
+            getattr(contexte, 'confrontations', ''),
             'swords',
         ))
+
         abs_d = _txt(getattr(contexte, 'absents_dom', ''))
         abs_e = _txt(getattr(contexte, 'absents_ext', ''))
         if abs_d or abs_e:
             bits = []
             if abs_d:
-                bits.append(f'{domicile or "Domicile"} : {abs_d}')
+                bits.append(f'{domicile or "Dom"} : {_court(abs_d, 50)}')
             if abs_e:
-                bits.append(f'{exterieur or "Extérieur"} : {abs_e}')
+                bits.append(f'{exterieur or "Ext"} : {_court(abs_e, 50)}')
+            push(_arg('absents', 'Absents', ' · '.join(bits), 'user-x'))
+
+        if len(arguments) < 3:
             push(_arg(
-                'absents',
-                'Absents / indisponibles',
-                _assaisonner_absents(' · '.join(bits)),
-                'user-x',
+                'savoir',
+                'Conditions',
+                getattr(contexte, 'a_savoir', ''),
+                'cloud',
             ))
-        push(_arg(
-            'tendance',
-            'Tendance du match',
-            getattr(contexte, 'tendance_buts', ''),
-            'trending',
-        ))
-        push(_arg(
-            'savoir',
-            'Météo & conditions',
-            _assaisonner_meteo(getattr(contexte, 'a_savoir', '')),
-            'cloud',
-        ))
+
+    push(_arg(
+        'lecture',
+        'Pourquoi ce tip',
+        _pourquoi(
+            libelle=libelle or '',
+            famille=famille or '',
+            niveau=niveau or '',
+            contexte=contexte,
+            analyse=analyse,
+        ),
+        'crosshair',
+    ))
 
     if len(arguments) < 3:
         push(_arg(
-            'profil',
-            'Lecture du match',
-            _lecture_profil(analyse, domicile, exterieur),
+            'cotes',
+            'Cotes',
+            _lecture_cotes(analyse, domicile, exterieur),
             'info',
         ))
-    if niveau == 'filet' and len(arguments) < 4:
+
+    if niveau == 'filet' and len(arguments) < 3:
         push(_arg(
             'filet',
-            'Rôle du filet',
-            'Le filet, c’est le remplacant qui entre à la 70ᵉ : discret, utile, et tu es content qu’il soit là.',
-            'shield',
-        ))
-    elif niveau == 'prudente' and len(arguments) < 4:
-        push(_arg(
-            'prudente',
-            'Niveau Prudente',
-            'On cherche le tip « je dors cool », pas le score miracle raconté au café.',
+            'Rôle',
+            'Complément de sécurité, pas un tip audacieux.',
             'shield',
         ))
 
     if not arguments:
         push(_arg(
             'fallback',
-            'Lecture Cleared2Bet',
-            'Forme, duels, contexte : on a croisé le tout, et ce tip sort du lot sans forcer.',
+            'Données',
+            'Peu de contexte terrain : tip basé surtout sur les cotes.',
             'info',
         ))
-
-    points = [a['texte'] for a in arguments]
 
     return {
         'titre': titre,
         'accroche': accroche,
-        'arguments': arguments,
-        'points': points,
+        'arguments': arguments[:3],
+        'points': [a['texte'] for a in arguments[:3]],
         'niveau': niveau,
         'probabilite': p,
         'libelle': libelle,

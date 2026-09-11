@@ -197,6 +197,7 @@ const ICON_PATHS = {
   cloud: '<path d="M7 18h10a4 4 0 0 0 0-8 6 6 0 0 0-11.3-2A4.5 4.5 0 0 0 7 18z"/>',
   message: '<path d="M21 12a8 8 0 0 1-8 8H7l-4 3V12a8 8 0 1 1 18 0z"/>',
   send: '<path d="M4 12 20 4l-6 16-2-6-6-2z"/>',
+  image: '<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10.5" r="1.5"/><path d="m21 15-5-5L5 21"/>',
 };
 
 function icon(name, cls) {
@@ -349,12 +350,9 @@ function c2b() {
     fmtJour,
     TYPES_PROPOSITION,
     logoUrl(eq) {
-      if (!eq) return '';
-      // CDN SofaScore direct (évite le proxy serveur / cache SVG de secours).
-      if (eq.sofascore_id) {
-        return 'https://img.sofascore.com/api/v1/team/' + eq.sofascore_id + '/image';
-      }
-      return eq.id ? '/api/v1/equipes/' + eq.id + '/logo/' : '';
+      if (!eq || !eq.id) return '';
+      // Proxy serveur (chaîne de secours logos, sans exposer la source).
+      return '/api/v1/equipes/' + eq.id + '/logo/';
     },
     moteur: document.body.dataset.moteur,
     chargement: false,
@@ -388,6 +386,8 @@ function c2b() {
     chatChargement: false,
     chatErr: '',
     chatSince: null,
+    chatImage: null,
+    chatImagePreview: '',
     _chatPoll: null,
     _chatStickBottom: true,
     estVip: false,
@@ -411,12 +411,14 @@ function c2b() {
     authMode: 'login',
     authErr: '',
     propositions: [],
+    propConsensus: null,
     propType: 'plus_25',
     propConfiance: 60,
     propErr: '',
     voteErr: '',
     _voteBusy: null,
     optOuverte: null,
+    chatEnLigne: 0,
     panelChances: false,
     panelContexte: false,
     tabHidden: false,
@@ -1070,6 +1072,7 @@ function c2b() {
     async chargerPropositions(id) {
       const { data } = await getJSON('/api/v1/matchs/' + id + '/propositions/');
       this.propositions = (data && data.results) || [];
+      this.propConsensus = (data && data.consensus) || null;
     },
 
     async proposerParis() {
@@ -1086,6 +1089,7 @@ function c2b() {
         credentials: 'same-origin',
         headers: {
           'Content-Type': 'application/json',
+          Accept: 'application/json',
           'X-CSRFToken': csrf(),
         },
         body: JSON.stringify({
@@ -1095,6 +1099,7 @@ function c2b() {
       });
       if (res.ok) {
         await this.chargerPropositions(this.fiche.id);
+        this.propErr = '';
       } else {
         const err = await res.json().catch(() => ({}));
         this.propErr = fmtApiError(err, 'Publication impossible.');
@@ -1112,6 +1117,7 @@ function c2b() {
           credentials: 'same-origin',
           headers: {
             'Content-Type': 'application/json',
+            Accept: 'application/json',
             'X-CSRFToken': csrf(),
           },
           body: JSON.stringify({ choix }),
@@ -1122,6 +1128,7 @@ function c2b() {
         this.propositions = this.propositions.map((p) => (
           p.id === updated.id ? updated : p
         ));
+        await this.chargerPropositions(this.fiche.id);
       }
     },
 
@@ -1606,6 +1613,7 @@ function c2b() {
           return;
         }
         if (!ok || !data) return;
+        if (typeof data.en_ligne === 'number') this.chatEnLigne = data.en_ligne;
         const incoming = data.results || [];
         if (opts.reset || !this.chatSince) {
           this.chatMessages = incoming;
@@ -1625,7 +1633,8 @@ function c2b() {
 
     async envoyerChat() {
       const texte = (this.chatDraft || '').trim();
-      if (!texte || this.chatBusy) return;
+      const image = this.chatImage;
+      if ((!texte && !image) || this.chatBusy) return;
       if (!this.peutVip) {
         this.ouvrirVipGate('salon');
         return;
@@ -1633,22 +1642,42 @@ function c2b() {
       this.chatBusy = true;
       this.chatErr = '';
       try {
-        const res = await fetch('/api/v1/salon/', {
-          method: 'POST',
-          credentials: 'same-origin',
-          headers: {
-            'Content-Type': 'application/json',
-            Accept: 'application/json',
-            'X-CSRFToken': csrf(),
-          },
-          body: JSON.stringify({ texte }),
-        });
+        let res;
+        if (image) {
+          const fd = new FormData();
+          if (texte) fd.append('texte', texte);
+          fd.append('image', image, image.name || 'screenshot.png');
+          res = await fetch('/api/v1/salon/', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+              Accept: 'application/json',
+              'X-CSRFToken': csrf(),
+            },
+            body: fd,
+          });
+        } else {
+          res = await fetch('/api/v1/salon/', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+              'Content-Type': 'application/json',
+              Accept: 'application/json',
+              'X-CSRFToken': csrf(),
+            },
+            body: JSON.stringify({ texte }),
+          });
+        }
         const data = await res.json().catch(() => ({}));
         if (!res.ok) {
-          this.chatErr = (data && data.detail) || (data.texte && data.texte[0]) || 'Envoi impossible.';
+          this.chatErr = (data && data.detail)
+            || (data.texte && data.texte[0])
+            || (data.image && data.image[0])
+            || 'Envoi impossible.';
           return;
         }
         this.chatDraft = '';
+        this.clearChatImage();
         const seen = new Set(this.chatMessages.map((m) => m.id));
         if (!seen.has(data.id)) this.chatMessages.push(data);
         this.chatSince = data.created_at;
@@ -1659,6 +1688,30 @@ function c2b() {
       } finally {
         this.chatBusy = false;
       }
+    },
+
+    onChatImagePick(ev) {
+      const file = ev.target && ev.target.files && ev.target.files[0];
+      if (this.$refs.salonImageInput) this.$refs.salonImageInput.value = '';
+      if (!file) return;
+      if (!/^image\/(jpeg|jpg|png|webp|gif)$/i.test(file.type || '')) {
+        this.chatErr = 'Formats acceptés : JPG, PNG, WEBP, GIF.';
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        this.chatErr = 'Image trop lourde (5 Mo max).';
+        return;
+      }
+      this.chatErr = '';
+      if (this.chatImagePreview) URL.revokeObjectURL(this.chatImagePreview);
+      this.chatImage = file;
+      this.chatImagePreview = URL.createObjectURL(file);
+    },
+
+    clearChatImage() {
+      if (this.chatImagePreview) URL.revokeObjectURL(this.chatImagePreview);
+      this.chatImage = null;
+      this.chatImagePreview = '';
     },
 
     enregistrerSW() {

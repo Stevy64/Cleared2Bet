@@ -1,5 +1,5 @@
 # Cleared2Bet — build offline-friendly (wheels/ préchargés sur l’hôte)
-# make wheels  →  make dev-build
+# Targets : builder (dev) | runner (web/worker) | moteur (API analyse)
 
 FROM python:3.11-slim AS builder
 
@@ -13,7 +13,6 @@ WORKDIR /app
 COPY requirements.txt .
 COPY wheels /wheels
 
-# Préfère les wheels locales (make wheels) ; bascule PyPI si un paquet manque
 RUN pip install --no-index --find-links=/wheels -r requirements.txt \
     || pip install --find-links=/wheels --retries 15 --timeout 120 -r requirements.txt
 
@@ -36,6 +35,7 @@ COPY --chown=django:django . /app/
 
 RUN mkdir -p /app/staticfiles /app/data /app/media /app/logs \
     && chown -R django:django /app/staticfiles /app/data /app/media /app/logs \
+    && chmod +x /app/deploy/worker-loop.sh /app/deploy/docker-entrypoint.sh \
     && rm -rf /app/wheels
 
 USER django
@@ -46,3 +46,17 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=45s --retries=3 \
 
 ENTRYPOINT ["sh", "/app/deploy/docker-entrypoint.sh"]
 CMD ["gunicorn", "--config", "deploy/gunicorn.conf.py", "config.wsgi:application"]
+
+# --- Microservice moteur (FastAPI, pas de migrate) ---
+FROM runner AS moteur
+
+ENV C2B_SKIP_MIGRATE=1 \
+    C2B_SKIP_COLLECTSTATIC=1 \
+    MOTEUR_BIND=0.0.0.0:8001
+
+EXPOSE 8001
+
+HEALTHCHECK --interval=20s --timeout=5s --start-period=20s --retries=3 \
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8001/health')"
+
+CMD ["uvicorn", "moteur_service.app:app", "--host", "0.0.0.0", "--port", "8001", "--workers", "2"]

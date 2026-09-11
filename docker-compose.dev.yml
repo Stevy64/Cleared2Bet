@@ -1,10 +1,51 @@
 # ════════════════════════════════════════════
-# Cleared2Bet — développement local
-# Usage : make dev   |  docker compose -f docker-compose.dev.yml up
-# Image  : cleared2bet-dev
+# Cleared2Bet — développement micro-services
+# make dev-build  |  docker compose -f docker-compose.dev.yml up --build
 # ════════════════════════════════════════════
 
 services:
+  redis:
+    image: redis:7-alpine
+    container_name: cleared2bet-redis-dev
+    restart: unless-stopped
+    networks:
+      - cleared2bet-dev-net
+
+  moteur:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder
+    image: cleared2bet-dev:latest
+    container_name: cleared2bet-moteur-dev
+    restart: unless-stopped
+    working_dir: /app
+    volumes:
+      - .:/app
+    environment:
+      PYTHONUNBUFFERED: "1"
+      C2B_SKIP_MIGRATE: "1"
+      C2B_SKIP_COLLECTSTATIC: "1"
+    # builder n’a pas d’entrypoint django obligatoire — uvicorn direct
+    entrypoint: ["python", "-m", "uvicorn"]
+    command: ["moteur_service.app:app", "--host", "0.0.0.0", "--port", "8001", "--reload"]
+    ports:
+      - "${C2B_MOTEUR_PORT:-8001}:8001"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8001/health')",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 8
+      start_period: 30s
+    networks:
+      - cleared2bet-dev-net
+
   web:
     build:
       context: .
@@ -18,6 +59,7 @@ services:
       - .:/app
       - cleared2bet_dev_static:/app/staticfiles
       - cleared2bet_dev_data:/app/data
+      - cleared2bet_dev_media:/app/media
     ports:
       - "${C2B_DEV_PORT:-8000}:8000"
     environment:
@@ -30,6 +72,8 @@ services:
       DJANGO_SECURE_SSL_REDIRECT: "0"
       DJANGO_SQLITE_PATH: /app/data/db.sqlite3
       C2B_SKIP_COLLECTSTATIC: "1"
+      C2B_MOTEUR_URL: http://moteur:8001
+      C2B_REDIS_URL: redis://redis:6379/0
       PYTHONUNBUFFERED: "1"
     command: >
       sh -c "python manage.py migrate --noinput
@@ -46,12 +90,51 @@ services:
       timeout: 5s
       retries: 5
       start_period: 40s
+    depends_on:
+      moteur:
+        condition: service_healthy
+    networks:
+      - cleared2bet-dev-net
+
+  worker:
+    image: cleared2bet-dev:latest
+    container_name: cleared2bet-worker-dev
+    restart: unless-stopped
+    working_dir: /app
+    volumes:
+      - .:/app
+      - cleared2bet_dev_data:/app/data
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings
+      DJANGO_DEBUG: "1"
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-dev-cleared2bet-secret-local-only}
+      DJANGO_SQLITE_PATH: /app/data/db.sqlite3
+      C2B_SKIP_MIGRATE: "1"
+      C2B_SKIP_COLLECTSTATIC: "1"
+      C2B_MOTEUR_URL: http://moteur:8001
+      C2B_REDIS_URL: redis://redis:6379/0
+      C2B_WORKER_INTERVAL: ${C2B_WORKER_INTERVAL:-7200}
+      C2B_SYNC_PAGES: "1"
+      C2B_SYNC_PASSES: "1"
+      C2B_SYNC_CONTEXTE: "0"
+      PYTHONUNBUFFERED: "1"
+    entrypoint: ["sh", "/app/deploy/worker-loop.sh"]
+    depends_on:
+      web:
+        condition: service_healthy
+      moteur:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    profiles:
+      - worker
     networks:
       - cleared2bet-dev-net
 
 volumes:
   cleared2bet_dev_static:
   cleared2bet_dev_data:
+  cleared2bet_dev_media:
 
 networks:
   cleared2bet-dev-net:

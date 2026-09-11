@@ -1,7 +1,7 @@
 # ════════════════════════════════════════════
-# Cleared2Bet — production (OVH Cloud / VPS Docker)
-# Usage : make prod   |  docker compose up -d
-# Images : cleared2bet-prod, postgres, nginx
+# Cleared2Bet — production micro-services (OVH)
+# Images : cleared2bet-prod, cleared2bet-moteur
+# Services : nginx · web · moteur · worker · db · redis
 # ════════════════════════════════════════════
 
 x-django-env: &django-env
@@ -17,6 +17,8 @@ x-django-env: &django-env
   GUNICORN_WORKERS: ${GUNICORN_WORKERS:-3}
   DJANGO_LOG_LEVEL: ${DJANGO_LOG_LEVEL:-INFO}
   C2B_WHATSAPP_PHONE: ${C2B_WHATSAPP_PHONE:-}
+  C2B_MOTEUR_URL: ${C2B_MOTEUR_URL:-http://moteur:8001}
+  C2B_REDIS_URL: ${C2B_REDIS_URL:-redis://redis:6379/0}
 
 services:
   db:
@@ -34,6 +36,45 @@ services:
       interval: 10s
       timeout: 5s
       retries: 8
+    networks:
+      - cleared2bet-net
+
+  redis:
+    image: redis:7-alpine
+    container_name: cleared2bet-redis
+    restart: unless-stopped
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks:
+      - cleared2bet-net
+
+  moteur:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: moteur
+    image: cleared2bet-moteur:latest
+    container_name: cleared2bet-moteur
+    restart: unless-stopped
+    environment:
+      C2B_SKIP_MIGRATE: "1"
+      C2B_SKIP_COLLECTSTATIC: "1"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8001/health')",
+        ]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 25s
     networks:
       - cleared2bet-net
 
@@ -55,12 +96,50 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      moteur:
+        condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://127.0.0.1:8000/health/"]
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/')",
+        ]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 50s
+    networks:
+      - cleared2bet-net
+
+  worker:
+    image: cleared2bet-prod:latest
+    container_name: cleared2bet-worker
+    restart: unless-stopped
+    environment:
+      <<: *django-env
+      C2B_SKIP_COLLECTSTATIC: "1"
+      C2B_WORKER_INTERVAL: ${C2B_WORKER_INTERVAL:-7200}
+      C2B_SYNC_PAGES: ${C2B_SYNC_PAGES:-1}
+      C2B_SYNC_PASSES: ${C2B_SYNC_PASSES:-1}
+      C2B_SYNC_CONTEXTE: ${C2B_SYNC_CONTEXTE:-0}
+      C2B_REDIS_URL: ${C2B_REDIS_URL:-redis://redis:6379/0}
+    volumes:
+      - cleared2bet_data:/app/data
+      - cleared2bet_media:/app/media
+      - ./logs:/app/logs
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      moteur:
+        condition: service_healthy
+      web:
+        condition: service_started
+    entrypoint: ["sh", "/app/deploy/docker-entrypoint.sh"]
+    command: ["sh", "/app/deploy/worker-loop.sh"]
     networks:
       - cleared2bet-net
 

@@ -1,8 +1,10 @@
 """Tests VIP + Salon VIP 24 h."""
 
 from datetime import timedelta
+from io import BytesIO
 
 from django.contrib.auth.models import User
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.utils import timezone
 from rest_framework.test import APIClient
@@ -94,10 +96,46 @@ class SalonVipTests(TestCase):
         self.assertEqual(r.status_code, 201)
         self.assertEqual(r.data['texte'], 'Salut les VIP')
         self.assertTrue(r.data['est_moi'])
+        self.assertIsNone(r.data.get('image_url'))
 
         r2 = self.client.get('/api/v1/salon/')
         self.assertEqual(r2.status_code, 200)
         self.assertEqual(len(r2.data['results']), 1)
+
+    def test_vip_post_image(self):
+        self.client.force_authenticate(self.vip)
+        # PNG 1x1 minimal
+        png = (
+            b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01'
+            b'\x00\x00\x00\x01\x08\x02\x00\x00\x00\x90wS\xde\x00\x00'
+            b'\x00\x0cIDATx\x9cc\xf8\x0f\x00\x00\x01\x01\x00\x05\x18'
+            b'\xd8N\x00\x00\x00\x00IEND\xaeB`\x82'
+        )
+        image = SimpleUploadedFile('shot.png', png, content_type='image/png')
+        r = self.client.post(
+            '/api/v1/salon/',
+            {'texte': 'Capture', 'image': image},
+            format='multipart',
+        )
+        self.assertEqual(r.status_code, 201)
+        self.assertEqual(r.data['texte'], 'Capture')
+        self.assertTrue(r.data.get('image_url'))
+        msg = MessageChat.objects.get(pk=r.data['id'])
+        self.assertTrue(msg.image)
+
+    def test_vip_post_image_seule(self):
+        self.client.force_authenticate(self.vip)
+        png = (
+            b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01'
+            b'\x00\x00\x00\x01\x08\x02\x00\x00\x00\x90wS\xde\x00\x00'
+            b'\x00\x0cIDATx\x9cc\xf8\x0f\x00\x00\x01\x01\x00\x05\x18'
+            b'\xd8N\x00\x00\x00\x00IEND\xaeB`\x82'
+        )
+        image = SimpleUploadedFile('solo.png', BytesIO(png).read(), content_type='image/png')
+        r = self.client.post('/api/v1/salon/', {'image': image}, format='multipart')
+        self.assertEqual(r.status_code, 201)
+        self.assertEqual(r.data['texte'], '')
+        self.assertTrue(r.data.get('image_url'))
 
     def test_purge_apres_24h(self):
         ancien = MessageChat.objects.create(auteur=self.vip, texte='vieux')

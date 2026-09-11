@@ -1,15 +1,54 @@
 # Déploiement — feuille de route
 
-Ordre conseillé :
+Objectif : une instance **autonome** (sync + analyses + règlement) avec le moins d’étapes possible.
 
-1. **Maintenant — PythonAnywhere** : UI, admin, VIP, sans Docker.  
-   → [pythonanywhere.md](pythonanywhere.md)  
-   ⚠️ Sync SofaScore souvent impossible sur le compte gratuit (whitelist).
+## Choix recommandé
 
-2. **Proche avenir — OVH Cloud** : prod réelle.  
-   - Docker (même images `cleared2bet-*` qu’en local) → [docker.md](docker.md) + section A de [ovh-vps.md](ovh-vps.md)  
-   - ou systemd + nginx → section B de [ovh-vps.md](ovh-vps.md)
+**VPS + Docker** (OVH, Oracle Cloud Free Tier, etc.)  
+→ [docker.md](docker.md) puis [ovh-vps.md](ovh-vps.md) ou [oracle-cloud.md](oracle-cloud.md)
 
-3. **Local** : `make dev-build` → [docker.md](docker.md)
+```bash
+cp .env.example .env
+# DJANGO_SECRET_KEY, POSTGRES_PASSWORD, ALLOWED_HOSTS, CSRF_TRUSTED_ORIGINS
 
-Healthcheck partout : `GET /health/` → `{"status":"ok","app":"cleared2bet"}`.
+make prod-build
+make migrate
+make superuser
+```
+
+Services démarrés : **nginx · web · moteur · worker · postgres · redis**.  
+Le worker boucle ~toutes les 2 h (voir `C2B_WORKER_INTERVAL`).
+
+Vérifications :
+
+```bash
+curl http://127.0.0.1/health/
+make logs-worker
+make health
+```
+
+## Alternatives
+
+| Cible | Quand | Doc |
+|-------|--------|-----|
+| **OVH VPS** sans Docker | systemd + nginx + Gunicorn | [ovh-vps.md](ovh-vps.md) section B |
+| **Oracle Cloud** | Free Tier, egress OK | [oracle-cloud.md](oracle-cloud.md) |
+| **PythonAnywhere** | Prototype sans Docker | [pythonanywhere.md](pythonanywhere.md) — sync calendrier souvent limitée sur free tier |
+| **Local** | Dev | [getting-started.md](getting-started.md) |
+
+## Checklist prod
+
+- [ ] `.env` hors Git, secrets forts  
+- [ ] `DJANGO_DEBUG=0`, SSL / HSTS si HTTPS  
+- [ ] `ALLOWED_HOSTS` + `CSRF_TRUSTED_ORIGINS`  
+- [ ] Superuser créé  
+- [ ] Première sync + analyses OK (`make logs-worker` ou sync manuelle)  
+- [ ] WhatsApp VIP configuré (admin Réglages site)  
+- [ ] Sauvegarde Postgres / volume data  
+
+## Santé
+
+`GET /health/` → `{"status":"ok","app":"cleared2bet"}`  
+Moteur : `GET http://moteur:8001/health` (réseau Docker)
+
+Schéma des services : [architecture.md](architecture.md).

@@ -33,7 +33,7 @@ RHO = -0.06
 VERSION_MOTEUR = '3.1.0'
 FACTEUR_MI_TEMPS = 0.45
 RESIDU_DOUTEUX = 0.02
-P_1X2_MAX_RECO = 0.62
+P_1X2_MAX_RECO = 0.75  # au-delà ≈ « lock » trop court ; favoris 55–74 % OK
 COTE_MIN, COTE_MAX = 1.01, 100.0
 MARGE_MAX = 0.35
 PLAFOND_FORME = 3
@@ -65,19 +65,20 @@ FAMILLES_PEU_FIABLES = frozenset({
 })
 CODE_FILET = 'OV_0.5'
 
-# Bonus négatif = famille privilégiée (224 163 obs.).
+# Bonus négatif = famille privilégiée.
+# 1X2 : léger frein (pas d’interdiction) pour laisser place aux favoris nets.
 ROUTAGE = {
     'desequilibre': {
         'Handicap': -0.7, 'Ecart de buts': -0.7, 'Total buts': -0.2,
-        'Mi-temps': -0.1, 'Double chance': 0.5, '1X2': 1.0,
+        'Mi-temps': -0.1, 'Double chance': 0.5, '1X2': 0.2,
     },
     'moyen': {
         'Total buts': -0.3, 'Handicap': -0.2, 'Ecart de buts': -0.2,
-        'Mi-temps': -0.1, 'Double chance': 0.0, '1X2': 0.5,
+        'Mi-temps': -0.1, 'Double chance': 0.0, '1X2': 0.1,
     },
     'equilibre': {
         'Double chance': -0.5, 'Total buts': -0.3, 'Mi-temps': -0.1,
-        'Handicap': 0.3, 'Ecart de buts': 0.4, '1X2': 0.6,
+        'Handicap': 0.3, 'Ecart de buts': 0.4, '1X2': 0.25,
     },
 }
 

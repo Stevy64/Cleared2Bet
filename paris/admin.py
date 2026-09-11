@@ -33,6 +33,26 @@ admin.site.index_title = 'Tableau de bord'
 admin.site.enable_nav_sidebar = True
 
 
+def _admin_logout(request, extra_context=None):
+    """Après déconnexion admin → page de connexion (pas la page « Logged out »)."""
+    from django.contrib.auth.views import LogoutView
+    from django.urls import reverse
+
+    defaults = {
+        'next_page': reverse('admin:login'),
+        'extra_context': {
+            **admin.site.each_context(request),
+            'has_permission': False,
+            **(extra_context or {}),
+        },
+    }
+    request.current_app = admin.site.name
+    return LogoutView.as_view(**defaults)(request)
+
+
+admin.site.logout = _admin_logout
+
+
 @admin.register(Competition)
 class CompetitionAdmin(admin.ModelAdmin):
     list_display = ('code', 'nom', 'pays', 'ordre', 'actif')
@@ -43,7 +63,7 @@ class CompetitionAdmin(admin.ModelAdmin):
 
 @admin.register(Equipe)
 class EquipeAdmin(admin.ModelAdmin):
-    list_display = ('nom', 'nom_court', 'slug', 'sofascore_id')
+    list_display = ('nom', 'nom_court', 'slug', 'sofascore_id', 'thesportsdb_id')
     search_fields = ('nom', 'nom_court', 'slug')
     prepopulated_fields = {'slug': ('nom',)}
 
@@ -278,7 +298,7 @@ class ReglageSiteAdmin(admin.ModelAdmin):
 
 @admin.register(MessageChat)
 class MessageChatAdmin(admin.ModelAdmin):
-    list_display = ('quand', 'auteur', 'texte_court')
+    list_display = ('quand', 'auteur', 'texte_court', 'a_image')
     list_filter = ()
     search_fields = ('texte', 'auteur__username')
     autocomplete_fields = ('auteur',)
@@ -292,4 +312,10 @@ class MessageChatAdmin(admin.ModelAdmin):
     @admin.display(description='Message')
     def texte_court(self, obj):
         t = obj.texte or ''
+        if not t and obj.image:
+            return '[image]'
         return t if len(t) <= 48 else t[:45] + '…'
+
+    @admin.display(description='Image', boolean=True)
+    def a_image(self, obj):
+        return bool(obj.image)

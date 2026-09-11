@@ -7,32 +7,21 @@
 COMPOSE_DEV  = docker compose -f docker-compose.dev.yml
 COMPOSE_PROD = docker compose -f docker-compose.yml
 
-.PHONY: help wheels wheels-win dev dev-build dev-d prod prod-build build stop stop-dev \
+.PHONY: help wheels wheels-win dev dev-build dev-d dev-worker prod prod-build build stop stop-dev \
 	migrate migrate-dev shell shell-dev superuser superuser-dev \
-	logs logs-dev logs-web clean test collectstatic sync sync-dev \
-	psql health
+	logs logs-dev logs-web logs-worker logs-moteur clean test collectstatic sync sync-dev \
+	sync-full-dev psql health
 
 help:
 	@echo "Commandes Cleared2Bet :"
-	@echo "  make wheels         - Prefetch manylinux wheels (offline Docker build)"
-	@echo "  make wheels-win     - Prefetch wheels via .venv (Windows)"
-	@echo "  make dev            - Lance le stack de développement (cleared2bet-dev)"
-	@echo "  make dev-build      - Rebuild + lance le développement"
-	@echo "  make dev-d          - Dev en arrière-plan"
-	@echo "  make prod           - Lance le stack production (cleared2bet-prod)"
-	@echo "  make prod-build     - Rebuild + lance la production"
-	@echo "  make build          - Rebuild les images (dev + prod)"
-	@echo "  make stop / stop-dev- Stoppe prod / dev"
-	@echo "  make migrate[-dev]  - Migrations Django"
-	@echo "  make shell[-dev]    - Shell Django"
-	@echo "  make superuser[-dev]- Crée un superutilisateur"
-	@echo "  make logs[-dev]     - Logs temps réel"
-	@echo "  make sync[-dev]     - Sync SofaScore + analyses + règlement"
-	@echo "  make test           - Tests Django (dev)"
-	@echo "  make collectstatic  - Collecte les static (prod)"
-	@echo "  make psql           - Shell PostgreSQL (prod)"
-	@echo "  make health         - Ping /health/"
-	@echo "  make clean          - Stoppe et supprime volumes"
+	@echo "  make wheels / wheels-win - Prefetch wheels Docker"
+	@echo "  make dev-build      - web + moteur (+ redis)"
+	@echo "  make dev-worker     - active le worker autonome (profile)"
+	@echo "  make prod-build     - stack prod (web/moteur/worker/db/redis/nginx)"
+	@echo "  make logs-moteur / logs-worker"
+	@echo "  make sync[-dev]     - pipeline manuel"
+	@echo "  make health / clean"
+	@echo "  Doc : docs/architecture.md"
 
 # Wheels Linux pour build Docker (évite DNS/pip flaky dans le daemon)
 wheels:
@@ -61,6 +50,9 @@ dev-build:
 
 dev-d:
 	$(COMPOSE_DEV) up -d --build
+
+dev-worker:
+	$(COMPOSE_DEV) --profile worker up -d --build
 
 prod:
 	$(COMPOSE_PROD) up -d
@@ -105,24 +97,30 @@ logs-dev:
 logs-web:
 	$(COMPOSE_PROD) logs -f web
 
+logs-worker:
+	$(COMPOSE_PROD) logs -f worker
+
+logs-moteur:
+	$(COMPOSE_PROD) logs -f moteur
+
 collectstatic:
 	$(COMPOSE_PROD) exec web python manage.py collectstatic --noinput --clear
 
 sync:
 	$(COMPOSE_PROD) exec web sh -c "\
-		python manage.py synchroniser_sofascore --sans-contexte --calculer && \
+		python manage.py synchroniser_sofascore --calculer && \
 		python manage.py regler_options --apprendre && \
 		python manage.py purger_chat"
 
 sync-dev:
 	$(COMPOSE_DEV) exec web sh -c "\
-		python manage.py synchroniser_sofascore --pages 1 --passes 1 --sans-contexte --calculer && \
+		python manage.py synchroniser_sofascore --pages 1 --passes 1 --calculer && \
 		python manage.py regler_options --apprendre && \
 		python manage.py purger_chat"
 
 sync-full-dev:
 	$(COMPOSE_DEV) exec web sh -c "\
-		python manage.py synchroniser_sofascore --calculer && \
+		python manage.py synchroniser_sofascore --contexte --calculer && \
 		python manage.py regler_options --apprendre && \
 		python manage.py purger_chat"
 

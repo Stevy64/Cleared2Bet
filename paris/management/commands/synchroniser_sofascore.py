@@ -1,23 +1,32 @@
-"""Synchronise matchs, cotes 1X2/OU2.5, scores et H2H depuis SofaScore."""
+"""Synchronise matchs, cotes 1X2/OU2.5, scores et H2H depuis SofaScore.
+
+Règle anti-blocage : **aucun appel HTTP à l’intérieur d’une transaction**.
+Les cotes / le contexte sont récupérés d’abord ; seule l’écriture DB est atomic.
+"""
+
+from __future__ import annotations
+
+from datetime import timezone as dt_tz
+from typing import Any
 
 from django.core.management.base import BaseCommand
-from django.db import transaction
+from django.db import close_old_connections, transaction
 from django.utils import timezone
-from datetime import timezone as dt_tz
 
+from paris import sofascore as sofa
 from paris.models import Competition, Contexte, Cote, Equipe, Match
 from paris.reglement import regler_match
-from paris import sofascore as sofa
 
 
 class Command(BaseCommand):
     help = (
-        'Synchronise les matchs à venir / récents (cotes, scores, H2H) depuis '
-        'SofaScore pour PL, LIGA, L1, SA, UCL.'
+        'Synchronise les matchs à venir / récents (cotes, scores) depuis '
+        'SofaScore pour PL, LIGA, L1, SA, UCL. '
+        'Les transactions DB restent courtes (pas de HTTP dedans).'
     )
 
     def add_arguments(self, parser):
-        parser.add_argument('--pages', type=int, default=2, help='Pages next/last')
+        parser.add_argument('--pages', type=int, default=2, help='Pages next')
         parser.add_argument('--dry-run', action='store_true')
         parser.add_argument(
             '--calculer',
@@ -31,21 +40,29 @@ class Command(BaseCommand):
             help='Pages d’événements terminés (last) à récupérer',
         )
         parser.add_argument(
+            '--contexte',
+            action='store_true',
+            help='Inclut H2H/forme/météo (lent : plusieurs HTTP par match)',
+        )
+        parser.add_argument(
             '--sans-contexte',
             action='store_true',
-            help='Skip H2H/forme/météo (beaucoup plus rapide)',
+            help='(Deprecated, défaut) Ignore le contexte terrain',
         )
 
     def handle(self, *args, **opts):
         pages = opts['pages']
         dry = opts['dry_run']
-        sans_contexte = opts['sans_contexte']
-        n_new = n_upd = n_skip = n_regles = 0
+        # Contexte opt-in : par défaut off pour ne jamais bloquer cron / make sync.
+        avec_contexte = bool(opts['contexte']) and not opts['sans_contexte']
+        n_new = n_upd = n_skip = n_regles = n_err = 0
         jours = set()
 
         for tid, meta in sofa.TOURNOIS.items():
             self.stdout.write(f'- {meta["code"]}...')
             self.stdout.flush()
+            close_old_connections()
+
             events: list[dict] = []
             try:
                 events.extend(sofa.evenements_suivants(tid, pages=pages))
@@ -56,7 +73,6 @@ class Command(BaseCommand):
             except sofa.SofaScoreErreur as e:
                 self.stderr.write(self.style.ERROR(f'  last: {e}'))
 
-            # Déduplique par id event (next + last peuvent se chevaucher).
             by_id: dict[int, dict] = {}
             for ev in events:
                 eid = ev.get('id')
@@ -67,21 +83,30 @@ class Command(BaseCommand):
             self.stdout.flush()
 
             if dry:
-                self.stdout.write(f'  dry-run : {len(events)} événements')
                 continue
 
-            # Un commit par match : une transaction géante bloquait tout
-            # jusqu’à la fin d’un tournoi (plusieurs minutes sans match visible).
-            comp = self._competition(tid, meta)
+            try:
+                comp = self._competition(tid, meta)
+            except Exception as e:  # noqa: BLE001
+                self.stderr.write(self.style.ERROR(f'  competition: {e}'))
+                continue
+
             for i, ev in enumerate(events, 1):
+                close_old_connections()
+                eid = ev.get('id')
                 try:
+                    # 1) Réseau hors transaction (ne doit jamais tenir un lock SQL).
+                    remote = self._fetch_remote(ev, avec_contexte=avec_contexte)
+                    # 2) Écriture courte.
                     with transaction.atomic():
-                        created, updated, regle = self._upsert_event(
-                            comp, ev, avec_contexte=not sans_contexte,
+                        created, updated, regle = self._persist_event(
+                            comp, ev, remote,
                         )
                 except Exception as e:  # noqa: BLE001
-                    self.stderr.write(f'  event {ev.get("id")}: {e}')
+                    n_err += 1
+                    self.stderr.write(f'  event {eid}: {e}')
                     continue
+
                 if created:
                     n_new += 1
                 elif updated:
@@ -102,28 +127,69 @@ class Command(BaseCommand):
 
         self.stdout.write(self.style.SUCCESS(
             f'Sync : {n_new} créés, {n_upd} mis à jour, {n_skip} inchangés, '
-            f'{n_regles} options réglées.'
+            f'{n_regles} options réglées'
+            + (f', {n_err} erreurs' if n_err else '')
+            + '.'
         ))
 
         if opts['calculer'] and not dry and jours:
             from django.core.management import call_command
             for jour in sorted(jours):
+                close_old_connections()
                 try:
                     call_command('calculer_analyses', journee=jour.isoformat())
-                except Exception as e:  # noqa: BLE001 — commande métier
+                except Exception as e:  # noqa: BLE001
                     self.stderr.write(f'Calcul {jour} : {e}')
 
+    def _fetch_remote(self, ev: dict, *, avec_contexte: bool) -> dict[str, Any]:
+        """Appels SofaScore uniquement — zéro écriture DB."""
+        eid = ev.get('id')
+        out: dict[str, Any] = {
+            'odds_1x2': None,
+            'odds_ou25': None,
+            'contexte': None,
+        }
+        if not eid:
+            return out
+        try:
+            out['odds_1x2'] = sofa.cotes_1x2(int(eid))
+        except sofa.SofaScoreErreur as e:
+            self.stderr.write(f'  cotes 1X2 {eid}: {e}')
+        try:
+            out['odds_ou25'] = sofa.cotes_ou25(int(eid))
+        except sofa.SofaScoreErreur as e:
+            self.stderr.write(f'  cotes OU {eid}: {e}')
+
+        if avec_contexte:
+            home = ev.get('homeTeam') or {}
+            away = ev.get('awayTeam') or {}
+            try:
+                out['contexte'] = sofa.collecter_contexte_match(
+                    int(eid),
+                    home_team_id=home.get('id'),
+                    away_team_id=away.get('id'),
+                    nom_dom=home.get('shortName') or home.get('name') or 'Dom',
+                    nom_ext=away.get('shortName') or away.get('name') or 'Ext',
+                    event=ev,
+                    tournament_id=(ev.get('tournament') or {}).get('uniqueId')
+                    or (ev.get('uniqueTournament') or {}).get('id'),
+                )
+            except Exception as e:  # noqa: BLE001
+                self.stderr.write(f'  contexte {eid}: {e}')
+        return out
+
     def _competition(self, tid: int, meta: dict) -> Competition:
-        comp, _ = Competition.objects.update_or_create(
-            code=meta['code'],
-            defaults={
-                'nom': meta['nom'],
-                'pays': meta['pays'],
-                'ordre': meta['ordre'],
-                'actif': True,
-                'sofascore_id': tid,
-            },
-        )
+        with transaction.atomic():
+            comp, _ = Competition.objects.update_or_create(
+                code=meta['code'],
+                defaults={
+                    'nom': meta['nom'],
+                    'pays': meta['pays'],
+                    'ordre': meta['ordre'],
+                    'actif': True,
+                    'sofascore_id': tid,
+                },
+            )
         return comp
 
     def _equipe(self, team: dict) -> Equipe:
@@ -146,7 +212,6 @@ class Command(BaseCommand):
         eq = Equipe.objects.filter(nom=nom).first()
         if eq:
             if sid and not eq.sofascore_id:
-                # Ne pas écraser un id déjà pris par un doublon.
                 if not Equipe.objects.filter(sofascore_id=sid).exclude(pk=eq.pk).exists():
                     eq.sofascore_id = sid
                     eq.save(update_fields=['sofascore_id'])
@@ -161,13 +226,13 @@ class Command(BaseCommand):
             nom=nom, nom_court=court, slug=slug, sofascore_id=sid,
         )
 
-    def _upsert_event(
+    def _persist_event(
         self,
         comp: Competition,
         ev: dict,
-        *,
-        avec_contexte: bool = True,
+        remote: dict[str, Any],
     ) -> tuple[bool, bool, int]:
+        """Écriture DB pure — à appeler sous transaction.atomic()."""
         eid = ev.get('id')
         ts = ev.get('startTimestamp')
         if not eid or not ts:
@@ -196,7 +261,6 @@ class Command(BaseCommand):
                 },
             )
         else:
-            # Ne pas rétrograder un match déjà réglé/terminé vers a_venir.
             if match.statut == 'termine' and statut == 'a_venir':
                 statut = 'termine'
             match.competition = comp
@@ -223,9 +287,8 @@ class Command(BaseCommand):
                 match.save(update_fields=fields)
                 n_regle = regler_match(match)
 
-        # Cotes 1X2 + OU 2.5 (entrées du moteur).
         now = timezone.now()
-        odds = sofa.cotes_1x2(eid)
+        odds = remote.get('odds_1x2')
         if odds:
             for sel, val in zip(('1', 'N', '2'), odds):
                 Cote.objects.update_or_create(
@@ -235,7 +298,7 @@ class Command(BaseCommand):
                     selection=sel,
                     defaults={'valeur': round(val, 3), 'nb_sources': 1, 'releve_le': now},
                 )
-        ou = sofa.cotes_ou25(eid)
+        ou = remote.get('odds_ou25')
         if ou:
             for sel, val in zip(('over', 'under'), ou):
                 Cote.objects.update_or_create(
@@ -246,28 +309,15 @@ class Command(BaseCommand):
                     defaults={'valeur': round(val, 3), 'nb_sources': 1, 'releve_le': now},
                 )
 
-        # Contexte terrain (H2H, forme, absents, météo) — best-effort.
-        if avec_contexte:
-            try:
-                ctx = sofa.collecter_contexte_match(
-                    eid,
-                    home_team_id=dom.sofascore_id,
-                    away_team_id=ext.sofascore_id,
-                    nom_dom=dom.nom_court,
-                    nom_ext=ext.nom_court,
-                    event=ev,
-                    tournament_id=comp.sofascore_id,
-                )
-                if any(ctx.values()):
-                    Contexte.objects.update_or_create(
-                        match=match,
-                        defaults={
-                            **{k: v for k, v in ctx.items() if v},
-                            'source': 'SofaScore',
-                            'fiabilite': 'bonne',
-                        },
-                    )
-            except Exception:  # noqa: BLE001 — ne jamais casser la sync
-                pass
+        ctx = remote.get('contexte') or {}
+        if any(ctx.values()):
+            Contexte.objects.update_or_create(
+                match=match,
+                defaults={
+                    **{k: v for k, v in ctx.items() if v},
+                    'source': '',
+                    'fiabilite': 'bonne',
+                },
+            )
 
         return created, not created, n_regle

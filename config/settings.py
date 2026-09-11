@@ -164,6 +164,8 @@ USE_TZ = True
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 STORAGES = {
     'default': {
         'BACKEND': 'django.core.files.storage.FileSystemStorage',
@@ -200,3 +202,7 @@ LOGGING = {
         'level': os.environ.get('DJANGO_LOG_LEVEL', 'INFO'),
     },
 }
+
+# Microservice moteur (vide = calcul local dans le process Django)
+C2B_MOTEUR_URL = os.environ.get('C2B_MOTEUR_URL', '').strip()
+C2B_REDIS_URL = os.environ.get('C2B_REDIS_URL', '').strip()

@@ -52,7 +52,6 @@ class EquipeCourtSerializer(serializers.Serializer):
     nom = serializers.CharField()
     nom_court = serializers.CharField()
     slug = serializers.CharField()
-    sofascore_id = serializers.IntegerField(allow_null=True)
 
 
 class OptionListeSerializer(serializers.ModelSerializer):
@@ -208,7 +207,7 @@ class ContexteSerializer(serializers.ModelSerializer):
         fields = (
             'forme_dom', 'forme_ext', 'absents_dom', 'absents_ext',
             'tendance_buts', 'a_savoir', 'confrontations',
-            'fiabilite', 'source',
+            'fiabilite',
         )
 
 
@@ -332,10 +331,14 @@ class MessageChatSerializer(serializers.ModelSerializer):
     auteur = serializers.CharField(source='auteur.username', read_only=True)
     est_moi = serializers.SerializerMethodField()
     initiale = serializers.SerializerMethodField()
+    image_url = serializers.SerializerMethodField()
 
     class Meta:
         model = MessageChat
-        fields = ('id', 'auteur', 'texte', 'created_at', 'est_moi', 'initiale')
+        fields = (
+            'id', 'auteur', 'texte', 'image_url',
+            'created_at', 'est_moi', 'initiale',
+        )
 
     def get_est_moi(self, obj):
         request = self.context.get('request')
@@ -347,14 +350,48 @@ class MessageChatSerializer(serializers.ModelSerializer):
         nom = (obj.auteur.username or '?').strip()
         return (nom[0] if nom else '?').upper()
 
+    def get_image_url(self, obj):
+        if not obj.image:
+            return None
+        request = self.context.get('request')
+        url = obj.image.url
+        if request is not None:
+            return request.build_absolute_uri(url)
+        return url
+
 
 class MessageCreateSerializer(serializers.Serializer):
-    texte = serializers.CharField(min_length=1, max_length=400)
+    texte = serializers.CharField(required=False, allow_blank=True, max_length=400)
+    image = serializers.FileField(required=False, allow_null=True)
+
+    _IMAGE_TYPES = frozenset({
+        'image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif',
+    })
+    _IMAGE_EXT = ('.jpg', '.jpeg', '.png', '.webp', '.gif')
+    _IMAGE_MAX = 5 * 1024 * 1024
 
     def validate_texte(self, value):
-        texte = ' '.join((value or '').split())
-        if not texte:
-            raise serializers.ValidationError('Message vide.')
+        return ' '.join((value or '').split())
+
+    def validate_image(self, value):
+        if not value:
+            return None
+        if getattr(value, 'size', 0) > self._IMAGE_MAX:
+            raise serializers.ValidationError('Image trop lourde (5 Mo max).')
+        name = (getattr(value, 'name', '') or '').lower()
+        if not name.endswith(self._IMAGE_EXT):
+            raise serializers.ValidationError('Formats : JPG, PNG, WEBP, GIF.')
+        ctype = (getattr(value, 'content_type', '') or '').lower()
+        if ctype and ctype not in self._IMAGE_TYPES:
+            raise serializers.ValidationError('Fichier image invalide.')
+        return value
+
+    def validate(self, attrs):
+        texte = attrs.get('texte') or ''
+        image = attrs.get('image')
+        if not texte and not image:
+            raise serializers.ValidationError({'texte': 'Message vide.'})
         if len(texte) > 400:
-            raise serializers.ValidationError('Message trop long (400 car. max).')
-        return texte
+            raise serializers.ValidationError({'texte': 'Message trop long (400 car. max).'})
+        attrs['texte'] = texte
+        return attrs
