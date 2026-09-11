@@ -31,9 +31,9 @@ def _phrase(s: str) -> str:
 
 def _niv_label(niveau: str) -> str:
     return {
-        'prudente': 'Prudente',
-        'recommandee': 'Recommandée',
-        'filet': 'Filet',
+        'prudente': 'Prudent',
+        'recommandee': 'Recommandé',
+        'filet': 'Sécurité',
         'equilibree': 'Équilibrée',
         'audacieuse': 'Audacieuse',
     }.get(niveau, niveau or 'Tip')
@@ -58,7 +58,7 @@ def _accroche(
     duo = f'{domicile} – {exterieur}'.strip(' –')
     conf = _pct(p)
     if niveau == 'filet':
-        base = f'Filet · « {libelle} » ({conf})'
+        base = f'Sécurité · « {libelle} » ({conf})'
         if duo:
             base += f' sur {duo}'
         return base + ' — repli si le tip principal rate.'

@@ -9,7 +9,7 @@
   <title>Cleared2Bet</title>
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
-  <link rel="stylesheet" href="/static/css/app.css?v=70">
+  <link rel="stylesheet" href="/static/css/app.css?v=73">
 </head>
 <body
   x-data="c2b()"
@@ -434,7 +434,7 @@
             <aside class="filet-card" x-show="filetFiche" x-cloak>
               <div class="filet-ico" x-html="icon('shield','icon icon-md')"></div>
               <div class="filet-body">
-                <p class="filet-label">Filet de sécurité</p>
+                <p class="filet-label">Sécurité</p>
                 <strong x-text="filetFiche && filetFiche.libelle"></strong>
                 <p class="filet-hint">Plan B si ta mise principale flanche — à garder en tête.</p>
               </div>
@@ -675,10 +675,11 @@
                     <p class="chat-author" x-show="!msg.est_moi && chatShowMeta(msg, idx)"
                       x-text="msg.auteur"></p>
                     <div class="chat-bubble" :class="{'has-image': !!msg.image_url}">
-                      <a x-show="msg.image_url" x-cloak class="chat-img-link"
-                        :href="msg.image_url" target="_blank" rel="noopener">
+                      <button type="button" x-show="msg.image_url" x-cloak class="chat-img-btn"
+                        @click="ouvrirChatImage(msg.image_url)"
+                        :aria-label="'Voir l’image'">
                         <img class="chat-img" :src="msg.image_url" alt="Image envoyée" loading="lazy">
-                      </a>
+                      </button>
                       <p x-show="msg.texte" x-text="msg.texte"></p>
                     </div>
                     <time class="chat-time" x-text="fmtChatHeure(msg.created_at)"></time>
@@ -869,8 +870,17 @@
     </template>
   </main>
 
-  <div class="sheet-backdrop" :class="(sheetApercu || sheetClub || sheetAuth || sheetCompos || sheetInstall || sheetJustif || sheetVip || sheetCgu) ? 'open' : ''"
+  <div class="sheet-backdrop" :class="(sheetApercu || sheetClub || sheetAuth || sheetCompos || sheetInstall || sheetJustif || sheetVip || sheetCgu || chatLightboxUrl) ? 'open' : ''"
     @click="fermerSheets()" @keydown.escape.window="fermerSheets()"></div>
+
+  <div class="chat-lightbox" x-show="chatLightboxUrl" x-cloak
+    role="dialog" aria-modal="true" aria-label="Image du salon"
+    @click="fermerChatImage()">
+    <button type="button" class="chat-lightbox-close" @click.stop="fermerChatImage()" aria-label="Fermer">
+      <span x-html="icon('x','icon icon-sm')"></span>
+    </button>
+    <img class="chat-lightbox-img" :src="chatLightboxUrl" alt="Image du salon" @click.stop>
+  </div>
 
   <div class="bottom-sheet sheet-install" :class="sheetInstall ? 'open' : ''"
     role="dialog" aria-modal="true" aria-label="Installer l’application"
@@ -979,7 +989,7 @@
                   <span class="pred-mark" aria-hidden="true" x-html="icon('crosshair')"></span>
                   <div class="pred-copy">
                     <span class="opt-niv">
-                      Prudente
+                      Prudent
                       <span class="vip-lock-pill" x-show="!peutVip" x-cloak>
                         <span x-html="icon('crown','icon icon-sm')"></span> VIP
                       </span>
@@ -997,7 +1007,7 @@
                   <span class="pred-mark" aria-hidden="true" x-html="icon('trending')"></span>
                   <div class="pred-copy">
                     <span class="opt-niv">
-                      Recommandée
+                      Recommandé
                       <span class="vip-lock-pill" x-show="!peutVip" x-cloak>
                         <span x-html="icon('crown','icon icon-sm')"></span> VIP
                       </span>
@@ -1015,7 +1025,7 @@
                   <span class="pred-mark" aria-hidden="true" x-html="icon('shield')"></span>
                   <div class="pred-copy">
                     <span class="opt-niv">
-                      Filet
+                      Sécurité
                       <span class="vip-lock-pill" x-show="!peutVip" x-cloak>
                         <span x-html="icon('crown','icon icon-sm')"></span> VIP
                       </span>
@@ -1376,16 +1386,22 @@
         <li><span x-html="icon('badge-check','icon icon-sm')"></span> Statut couronne visible sur ton compte</li>
       </ul>
       <p class="hint vip-hint">
-        Envoie ta demande sur WhatsApp. Après paiement, l’admin active ton badge VIP.
+        Réservé aux comptes membres : envoie ta demande sur WhatsApp avec ton pseudo.
+        Après paiement, l’admin active ton badge VIP.
       </p>
       <a class="btn btn-block btn-whatsapp"
-        x-show="whatsappVipUrl" x-cloak
+        x-show="authentifie && whatsappVipUrl" x-cloak
         :href="whatsappVipUrl" target="_blank" rel="noopener">
         Demander sur WhatsApp
       </a>
-      <p class="ko" x-show="!whatsappVipUrl" x-cloak>
+      <p class="ko" x-show="authentifie && !whatsappVipUrl" x-cloak>
         Lien WhatsApp pas encore configuré — reviens un peu plus tard.
       </p>
+      <button type="button" class="btn btn-block"
+        x-show="!authentifie" x-cloak
+        @click="ouvrirAuth('Connecte-toi ou crée un compte pour demander le VIP via WhatsApp.', () => ouvrirVipGate('auth'))">
+        Se connecter pour demander le VIP
+      </button>
       <button type="button" class="btn btn-ghost btn-block" @click="fermerVipGate()">Plus tard</button>
     </div>
   </div>
@@ -1469,7 +1485,12 @@
       Matchs
     </a>
     <a href="/salon" :class="page==='salon' ? 'on' : ''" @click.prevent="go('/salon')">
-      <span x-html="icon('crown','icon icon-md')"></span>
+      <span class="tab-ico-wrap">
+        <span x-html="icon('crown','icon icon-md')"></span>
+        <span class="tab-badge" x-show="peutVip && chatUnread > 0 && page !== 'salon'" x-cloak
+          x-text="chatUnread > 9 ? '9+' : chatUnread"
+          :aria-label="chatUnread + ' messages non lus'"></span>
+      </span>
       Salon VIP
     </a>
     <a href="/reglages" :class="page==='reglages' ? 'on' : ''" @click.prevent="go('/reglages')">
@@ -1478,7 +1499,7 @@
     </a>
   </nav>
 
-  <script defer src="/static/js/app.js?v=63"></script>
+  <script defer src="/static/js/app.js?v=67"></script>
   <script defer src="/static/vendor/alpine.min.js?v=60"></script>
 </body>
 </html>

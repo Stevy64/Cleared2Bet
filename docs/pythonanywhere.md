@@ -147,8 +147,27 @@ from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()
 ```
 
-5. Static `/static/` → `…/staticfiles` ; Media `/media/` → `…/media`  
-6. **Reload** — health : `/health/`
+5. **Static files** (Web → Static files) — **obligatoire** pour CSS/JS et fortement recommandé pour les images salon :
+
+   Dans le dashboard PythonAnywhere → ton Web app → section **Static files** → **Enter URL** / **Enter path** :
+
+   | URL | Directory |
+   |-----|-----------|
+   | `/static/` | `/home/TONUSER/Cleared2Bet/staticfiles` |
+   | `/media/` | `/home/TONUSER/Cleared2Bet/media` |
+
+   Puis clique **Reload** en haut de la page Web.
+
+6. Créer le dossier media si besoin :
+
+```bash
+mkdir -p ~/Cleared2Bet/media
+```
+
+7. **Reload** — health : `/health/`
+
+> Les images du Salon VIP sont stockées dans `media/salon/…`.
+> Sans mapping `/media/` (ou sans le fallback Django `/media/`), les vignettes renvoient 404 en prod.
 
 ---
 

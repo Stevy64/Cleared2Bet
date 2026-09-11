@@ -40,7 +40,15 @@ urlpatterns = [
     re_path(r'^(?:matchs/\d+|historique|verification|salon|chat|reglages|jour)/?$', views.app),
 ]
 
-if settings.DEBUG:
-    from django.conf.urls.static import static
+# Media uploads (salon VIP, etc.) — requis en prod si le reverse-proxy
+# ne mappe pas /media/ (ex. PythonAnywhere sans entrée « Static files »).
+from django.views.static import serve as _media_serve
 
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+_media_prefix = (settings.MEDIA_URL or '/media/').lstrip('/')
+urlpatterns += [
+    re_path(
+        rf'^{_media_prefix}(?P<path>.*)$',
+        _media_serve,
+        {'document_root': str(settings.MEDIA_ROOT)},
+    ),
+]

@@ -120,9 +120,9 @@ class Analyse(models.Model):
 
 class Option(models.Model):
     """Une option de pari proposée pour un match."""
-    NIVEAU = [('prudente', 'Prudente'), ('recommandee', 'Recommandée'),
+    NIVEAU = [('prudente', 'Prudent'), ('recommandee', 'Recommandé'),
               ('equilibree', 'Équilibrée'), ('audacieuse', 'Audacieuse'),
-              ('filet', 'Filet de sécurité'), ('detail', 'Détail')]
+              ('filet', 'Sécurité'), ('detail', 'Détail')]
     ORIGINE = [('marche', 'Marché'), ('calcul', 'Calculé')]
     RESULTAT = [('attente', 'En attente'), ('gagne', 'Gagné'),
                 ('perdu', 'Perdu'), ('annule', 'Annulé')]

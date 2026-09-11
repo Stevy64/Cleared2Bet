@@ -1897,7 +1897,31 @@ input, select {
   font-size: 10px;
   font-weight: 700;
   border-radius: 14px;
+  position: relative;
   transition: color 0.2s, background 0.2s, transform 0.15s var(--ease);
+}
+.tab-ico-wrap {
+  position: relative;
+  display: grid;
+  place-items: center;
+  line-height: 0;
+}
+.tab-badge {
+  position: absolute;
+  top: -7px;
+  right: -11px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: #e8631c;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 800;
+  line-height: 16px;
+  text-align: center;
+  box-shadow: 0 0 0 2px var(--navy);
+  pointer-events: none;
 }
 .tabbar a svg,
 .tabbar a .icon {
@@ -3466,10 +3490,15 @@ button.compos-opt:active {
   padding: 6px;
   max-width: min(72vw, 280px);
 }
-.chat-img-link {
+.chat-img-btn {
   display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
   border-radius: 12px;
   overflow: hidden;
+  cursor: zoom-in;
 }
 .chat-img {
   display: block;
@@ -3477,6 +3506,37 @@ button.compos-opt:active {
   max-height: 240px;
   object-fit: cover;
   vertical-align: middle;
+}
+.chat-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 96;
+  display: grid;
+  place-items: center;
+  padding: 24px 16px;
+  background: rgba(8, 16, 28, 0.82);
+}
+.chat-lightbox-img {
+  max-width: min(100%, 560px);
+  max-height: min(82vh, 720px);
+  border-radius: 14px;
+  object-fit: contain;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.45);
+  background: #0b1728;
+}
+.chat-lightbox-close {
+  position: absolute;
+  top: calc(12px + env(safe-area-inset-top, 0px));
+  right: 14px;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
 }
 .chat-bubble.has-image p {
   padding: 6px 8px 4px;

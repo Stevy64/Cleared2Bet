@@ -3,6 +3,7 @@ const LS_FILTRE = 'c2b.filtre';
 const LS_MASQUEES = 'c2b.masquees';
 const LS_REFRESH = 'c2b.refresh';
 const LS_DATE = 'c2b.filtreDate';
+const LS_SALON_READ = 'c2b.salon.lastReadAt';
 const SS_SCROLL = 'c2b.scroll';
 const TZ_APP = 'Europe/Paris';
 
@@ -62,7 +63,7 @@ function texteVersPdfBlob(titre, blocs) {
     wrap(line).forEach((w) => rows.push({ text: w, style: style || 'body' }));
   };
   push(titre, 'title');
-  push('Prudente + Recommandee + Filet de securite', 'sub');
+  push('Prudent + Recommande + Securite', 'sub');
   push('------------------------------------------------', 'rule');
   blocs.forEach((b) => {
     push(b.header, 'match');
@@ -391,6 +392,7 @@ function c2b() {
     chatSince: null,
     chatImage: null,
     chatImagePreview: '',
+    chatLightboxUrl: '',
     _chatPoll: null,
     _chatStickBottom: true,
     estVip: false,
@@ -422,6 +424,8 @@ function c2b() {
     _voteBusy: null,
     optOuverte: null,
     chatEnLigne: 0,
+    chatUnread: 0,
+    _unreadPoll: null,
     panelChances: false,
     panelContexte: false,
     tabHidden: false,
@@ -466,6 +470,7 @@ function c2b() {
       await this.chargerInfo();
       await this.chargerCompetitions();
       await this.routeData();
+      this.demarrerUnreadPoll();
       if (this._ouvrirComposAuDemarrage) {
         this._ouvrirComposAuDemarrage = false;
         await this.ouvrirCompos();
@@ -517,6 +522,7 @@ function c2b() {
         this.whatsappVipUrl = (data && data.whatsapp_vip_url) || '';
         this.vipTarifLibelle = (data && data.vip_tarif_libelle) || 'VIP Cleared2Bet';
         if (data && data.version_moteur) this.moteur = data.version_moteur;
+        this.demarrerUnreadPoll();
       } catch (_) { /* hors ligne */ }
     },
 
@@ -604,6 +610,10 @@ function c2b() {
     },
 
     fermerSheets() {
+      if (this.chatLightboxUrl) {
+        this.fermerChatImage();
+        return;
+      }
       if (this.sheetCgu) {
         this.fermerCgu();
         return;
@@ -697,6 +707,13 @@ function c2b() {
     },
 
     ouvrirVipGate(motif) {
+      if (!this.authentifie) {
+        this.ouvrirAuth(
+          'Connecte-toi ou crée un compte pour demander le VIP via WhatsApp.',
+          () => this.ouvrirVipGate(motif),
+        );
+        return;
+      }
       this.sheetVip = true;
       document.body.classList.add('sheet-open');
       if (!this.whatsappVipUrl) this.chargerInfo();
@@ -1021,11 +1038,11 @@ function c2b() {
     fmtCote(c) { return Number(c).toFixed(2).replace('.', ','); },
     libNiveau(n) {
       return {
-        prudente: 'Prudente',
-        recommandee: 'Recommandée',
+        prudente: 'Prudent',
+        recommandee: 'Recommandé',
         equilibree: 'Équilibrée',
         audacieuse: 'Audacieuse',
-        filet: 'Filet',
+        filet: 'Sécurité',
       }[n] || n;
     },
     libProfil(p) {
@@ -1065,10 +1082,11 @@ function c2b() {
     },
     expliquerNiveau(n) {
       return {
-        prudente: 'Niveau Prudente : forte probabilité (70–90 %). Priorité à la stabilité.',
-        recommandee: 'Niveau Recommandée : même famille que la prudente, probabilité la plus élevée hors tip principale.',
+        prudente: 'Niveau Prudent : forte probabilité (70–90 %). Priorité à la stabilité.',
+        recommandee: 'Niveau Recommandé : même famille que le tip prudent, probabilité la plus élevée hors tip principale.',
         equilibree: 'Niveau Équilibrée : zone intermédiaire (55–70 %). Compromis chance / cote.',
         audacieuse: 'Niveau Audacieuse : plus risqué (28–50 %). À manier avec une mise réduite.',
+        filet: 'Niveau Sécurité : repli sûr si le tip principal rate.',
       }[n] || '';
     },
     toggleOpt(id) {
@@ -1318,6 +1336,7 @@ function c2b() {
             document.body.classList.remove('sheet-open');
           }
           await this.chargerInfo();
+          this.demarrerUnreadPoll();
           if (typeof pending === 'function') await pending();
         } else {
           this.authErr = fmtApiError(data, res.status === 403
@@ -1341,7 +1360,9 @@ function c2b() {
       this.username = null;
       this.categorie = 'visiteur';
       this.estVip = false;
+      this.chatUnread = 0;
       this.stopChatPoll();
+      this.stopUnreadPoll();
     },
 
     setJourDate(val) {
@@ -1468,13 +1489,13 @@ function c2b() {
           + '  (' + this.dateHeure(m.coup_denvoi) + ')',
         lines: [
           m.prudente
-            ? 'Prudente : ' + m.prudente.libelle + '  ·  ' + this.fmtPct(m.prudente.probabilite)
+            ? 'Prudent : ' + m.prudente.libelle + '  ·  ' + this.fmtPct(m.prudente.probabilite)
             : null,
           m.recommandee
-            ? 'Recommandee : ' + m.recommandee.libelle + '  ·  ' + this.fmtPct(m.recommandee.probabilite)
+            ? 'Recommande : ' + m.recommandee.libelle + '  ·  ' + this.fmtPct(m.recommandee.probabilite)
             : null,
           m.filet
-            ? 'Filet    : ' + m.filet.libelle + '  ·  ' + this.fmtPct(m.filet.probabilite)
+            ? 'Securite : ' + m.filet.libelle + '  ·  ' + this.fmtPct(m.filet.probabilite)
             : null,
         ].filter(Boolean),
       }));
@@ -1586,6 +1607,20 @@ function c2b() {
       this.cachePurge = true;
     },
 
+    ouvrirChatImage(url) {
+      if (!url) return;
+      this.chatLightboxUrl = url;
+      document.body.classList.add('sheet-open');
+    },
+
+    fermerChatImage() {
+      this.chatLightboxUrl = '';
+      if (!this.sheetCompos && !this.sheetApercu && !this.sheetAuth && !this.sheetClub
+        && !this.sheetInstall && !this.sheetJustif && !this.sheetCgu && !this.sheetVip) {
+        document.body.classList.remove('sheet-open');
+      }
+    },
+
     stopChatPoll() {
       if (this._chatPoll) {
         clearInterval(this._chatPoll);
@@ -1593,16 +1628,79 @@ function c2b() {
       }
     },
 
+    stopUnreadPoll() {
+      if (this._unreadPoll) {
+        clearInterval(this._unreadPoll);
+        this._unreadPoll = null;
+      }
+    },
+
+    demarrerUnreadPoll() {
+      this.stopUnreadPoll();
+      if (!this.peutVip) {
+        this.chatUnread = 0;
+        return;
+      }
+      this.rafraichirSalonUnread();
+      this._unreadPoll = setInterval(() => this.rafraichirSalonUnread(), 20000);
+    },
+
+    salonLastReadAt() {
+      return localStorage.getItem(LS_SALON_READ) || '';
+    },
+
+    marquerSalonLu() {
+      let stamp = '';
+      if (this.chatMessages.length) {
+        stamp = this.chatMessages[this.chatMessages.length - 1].created_at || '';
+      }
+      if (!stamp) stamp = new Date().toISOString();
+      localStorage.setItem(LS_SALON_READ, stamp);
+      this.chatUnread = 0;
+    },
+
+    async rafraichirSalonUnread() {
+      if (!this.peutVip) {
+        this.chatUnread = 0;
+        return;
+      }
+      if (this.page === 'salon') {
+        this.chatUnread = 0;
+        return;
+      }
+      let since = this.salonLastReadAt();
+      if (!since) {
+        // Première visite VIP : ne pas exploser le badge avec tout l’historique.
+        localStorage.setItem(LS_SALON_READ, new Date().toISOString());
+        this.chatUnread = 0;
+        return;
+      }
+      try {
+        const q = new URLSearchParams();
+        q.set('since', since);
+        const { data, ok, status } = await getJSON('/api/v1/salon/?' + q.toString());
+        if (status === 401 || status === 403 || !ok || !data) {
+          if (status === 401 || status === 403) this.chatUnread = 0;
+          return;
+        }
+        if (typeof data.en_ligne === 'number') this.chatEnLigne = data.en_ligne;
+        const incoming = data.results || [];
+        this.chatUnread = incoming.filter((m) => m && !m.est_moi).length;
+      } catch (_) { /* hors ligne */ }
+    },
+
     async ouvrirSalon() {
       this.stopChatPoll();
       if (!this.peutVip) {
         this.chatMessages = [];
+        this.chatUnread = 0;
         return;
       }
       this.chatErr = '';
       this.chatSince = null;
       this._chatStickBottom = true;
       await this.chargerChat({ reset: true });
+      this.marquerSalonLu();
       this._chatPoll = setInterval(() => {
         if (this.page === 'salon' && this.peutVip) this.chargerChat({ silent: true });
       }, 3500);
@@ -1668,6 +1766,7 @@ function c2b() {
         if (this.chatMessages.length) {
           this.chatSince = this.chatMessages[this.chatMessages.length - 1].created_at;
         }
+        if (this.page === 'salon') this.marquerSalonLu();
         this.scrollSalonBas(!!opts.reset);
       } finally {
         this.chatChargement = false;

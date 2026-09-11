@@ -359,11 +359,8 @@ class MessageChatSerializer(serializers.ModelSerializer):
     def get_image_url(self, obj):
         if not obj.image:
             return None
-        request = self.context.get('request')
-        url = obj.image.url
-        if request is not None:
-            return request.build_absolute_uri(url)
-        return url
+        # URL relative (/media/...) : même origine, fiable en local et sur PA.
+        return obj.image.url
 
 
 class MessageCreateSerializer(serializers.Serializer):

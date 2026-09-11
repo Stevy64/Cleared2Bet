@@ -50,7 +50,7 @@ def test_justifier_option_priorise_faits_terrain():
         domicile='Sevilla',
         exterieur='Valencia',
     )
-    assert 'Prudente' in j['titre']
+    assert 'Prudent' in j['titre']
     assert '75 %' in j['accroche']
     assert 'faits' in j['accroche'].lower() or 'formes' in j['accroche'].lower()
     assert 'vestiaire' not in j['accroche'].lower()
