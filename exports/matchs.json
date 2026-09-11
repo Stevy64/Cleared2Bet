@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "exporte_le": "2026-09-11T09:30:47.823924+00:00",
+  "exporte_le": "2026-09-11T13:49:25.187287+00:00",
   "competitions": [
     {
       "code": "UCL",
@@ -232,49 +232,85 @@
       "thesportsdb_id": 133601,
       "logo_externe": "https://img.sofascore.com/api/v1/team/40/image",
       "fiche_club": {
-        "id": 40,
         "nom": "Aston Villa",
         "nom_court": "Aston Villa",
-        "pays": "Europe",
+        "pays": "England",
         "forme": [
           "L",
           "L",
-          "D",
-          "W"
+          "D"
         ],
-        "position": null,
-        "note_moyenne": null,
-        "classement": null,
+        "position": 18,
+        "classement": {
+          "position": 9,
+          "points": 3,
+          "joues": 1,
+          "gagnes": 1,
+          "nuls": 0,
+          "perdus": 0,
+          "buts_pour": 3,
+          "buts_contre": 2,
+          "competition": "UEFA Champions League"
+        },
         "recents": [
           {
-            "adversaire": "Club Brugge",
-            "score": "2-3",
-            "domicile": false,
-            "resultat": "W",
-            "coup_denvoi": "2026-09-08T16:45:00+00:00"
-          },
-          {
-            "adversaire": "Hull",
-            "score": "0-0",
-            "domicile": false,
-            "resultat": "D",
-            "coup_denvoi": "2026-09-05T16:30:00+00:00"
-          },
-          {
-            "adversaire": "Arsenal",
-            "score": "0-1",
+            "adversaire": "Chelsea",
+            "score": "1-4",
             "domicile": true,
             "resultat": "L",
-            "coup_denvoi": "2026-08-31T19:00:00+00:00"
+            "coup_denvoi": "2026-03-04T19:30:00+00:00"
           },
           {
-            "adversaire": "Brighton",
-            "score": "4-0",
+            "adversaire": "Lille",
+            "score": "0-1",
+            "domicile": false,
+            "resultat": "W",
+            "coup_denvoi": "2026-03-12T17:45:00+00:00"
+          },
+          {
+            "adversaire": "Man Utd",
+            "score": "3-1",
             "domicile": false,
             "resultat": "L",
-            "coup_denvoi": "2026-08-23T13:00:00+00:00"
+            "coup_denvoi": "2026-03-15T14:00:00+00:00"
+          },
+          {
+            "adversaire": "Lille",
+            "score": "2-0",
+            "domicile": true,
+            "resultat": "W",
+            "coup_denvoi": "2026-03-19T20:00:00+00:00"
+          },
+          {
+            "adversaire": "West Ham",
+            "score": "2-0",
+            "domicile": true,
+            "resultat": "W",
+            "coup_denvoi": "2026-03-22T14:15:00+00:00"
+          },
+          {
+            "adversaire": "Elche",
+            "score": "2-1",
+            "domicile": false,
+            "resultat": "L",
+            "coup_denvoi": "2026-03-27T10:30:00+00:00"
+          },
+          {
+            "adversaire": "Bologna",
+            "score": "1-3",
+            "domicile": false,
+            "resultat": "W",
+            "coup_denvoi": "2026-04-09T19:00:00+00:00"
+          },
+          {
+            "adversaire": "Forest",
+            "score": "1-1",
+            "domicile": false,
+            "resultat": "D",
+            "coup_denvoi": "2026-04-12T13:00:00+00:00"
           }
-        ]
+        ],
+        "note_moyenne": "6.70"
       }
     },
     {
@@ -2955,7 +2991,6 @@
       "thesportsdb_id": null,
       "logo_externe": "https://img.sofascore.com/api/v1/team/1641/image",
       "fiche_club": {
-        "id": 1641,
         "nom": "Olympique de Marseille",
         "nom_court": "Marseille",
         "pays": "France",
@@ -2964,32 +2999,77 @@
           "L",
           "L"
         ],
-        "position": null,
-        "note_moyenne": null,
-        "classement": null,
+        "position": 11,
+        "classement": {
+          "position": 11,
+          "points": 3,
+          "joues": 3,
+          "gagnes": 1,
+          "nuls": 0,
+          "perdus": 2,
+          "buts_pour": 6,
+          "buts_contre": 5,
+          "competition": "Ligue 1"
+        },
         "recents": [
           {
-            "adversaire": "Paris",
-            "score": "2-3",
-            "domicile": true,
-            "resultat": "L",
-            "coup_denvoi": "2026-09-06T18:45:00+00:00"
+            "adversaire": "Angers",
+            "score": "2-5",
+            "domicile": false,
+            "resultat": "W",
+            "coup_denvoi": "2026-01-17T20:05:00+00:00"
           },
           {
-            "adversaire": "AS Monaco",
-            "score": "2-0",
+            "adversaire": "Liverpool",
+            "score": "0-3",
+            "domicile": true,
+            "resultat": "L",
+            "coup_denvoi": "2026-01-21T20:00:00+00:00"
+          },
+          {
+            "adversaire": "Lens",
+            "score": "3-1",
+            "domicile": true,
+            "resultat": "W",
+            "coup_denvoi": "2026-01-24T20:05:00+00:00"
+          },
+          {
+            "adversaire": "Club Brugge",
+            "score": "3-0",
             "domicile": false,
             "resultat": "L",
-            "coup_denvoi": "2026-08-30T18:45:00+00:00"
+            "coup_denvoi": "2026-01-28T20:00:00+00:00"
+          },
+          {
+            "adversaire": "Paris",
+            "score": "2-2",
+            "domicile": false,
+            "resultat": "D",
+            "coup_denvoi": "2026-01-31T16:00:00+00:00"
+          },
+          {
+            "adversaire": "Rennes",
+            "score": "3-0",
+            "domicile": true,
+            "resultat": "W",
+            "coup_denvoi": "2026-02-03T20:10:00+00:00"
+          },
+          {
+            "adversaire": "PSG",
+            "score": "5-0",
+            "domicile": false,
+            "resultat": "L",
+            "coup_denvoi": "2026-02-08T19:45:00+00:00"
           },
           {
             "adversaire": "Strasbourg",
-            "score": "4-0",
+            "score": "2-2",
             "domicile": true,
-            "resultat": "W",
-            "coup_denvoi": "2026-08-21T18:45:00+00:00"
+            "resultat": "D",
+            "coup_denvoi": "2026-02-14T16:00:00+00:00"
           }
-        ]
+        ],
+        "note_moyenne": "7.50"
       }
     },
     {
@@ -6633,7 +6713,7 @@
             "libelle": "Au moins 2 buts",
             "probabilite": 0.794182858264775,
             "cote_juste": 1.2591558601314043,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "calcul",
             "resultat": "attente"
           },
@@ -7128,7 +7208,7 @@
             "libelle": "Au moins 2 buts",
             "probabilite": 0.8257012676700889,
             "cote_juste": 1.211091758187239,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "calcul",
             "resultat": "attente"
           },
@@ -7614,7 +7694,7 @@
             "libelle": "Au moins 2 buts",
             "probabilite": 0.7682074402776993,
             "cote_juste": 1.3017317296985695,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "calcul",
             "resultat": "attente"
           },
@@ -14114,7 +14194,7 @@
             "libelle": "Au moins 2 buts",
             "probabilite": 0.8060766914748541,
             "cote_juste": 1.2405767473195761,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "calcul",
             "resultat": "attente"
           },
@@ -14584,7 +14664,7 @@
             "libelle": "Moins de 5 buts",
             "probabilite": 0.844442255620193,
             "cote_juste": 1.184213595831439,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "calcul",
             "resultat": "attente"
           },
@@ -15004,7 +15084,7 @@
             "libelle": "Moins de 5 buts",
             "probabilite": 0.8932263222934842,
             "cote_juste": 1.1195370927184047,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "calcul",
             "resultat": "attente"
           },
@@ -15574,7 +15654,7 @@
             "libelle": "Moins de 1,5 but avant la pause",
             "probabilite": 0.6341370861010758,
             "cote_juste": 1.5769460924425558,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "calcul",
             "resultat": "attente"
           },
@@ -15744,7 +15824,7 @@
             "libelle": "Genoa ne perd pas",
             "probabilite": 0.7410536152134503,
             "cote_juste": 1.3494300270189814,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "marche",
             "resultat": "attente"
           },
@@ -16234,7 +16314,7 @@
             "libelle": "Au moins 2 buts",
             "probabilite": 0.8301050287288535,
             "cote_juste": 1.2046668377991976,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "calcul",
             "resultat": "attente"
           },
@@ -16654,7 +16734,7 @@
             "libelle": "Au moins 2 buts",
             "probabilite": 0.8390170978417544,
             "cote_juste": 1.1918708242923177,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "calcul",
             "resultat": "attente"
           },
@@ -17024,7 +17104,7 @@
             "libelle": "Pas de match nul",
             "probabilite": 0.7245673065200361,
             "cote_juste": 1.3801340344802702,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "marche",
             "resultat": "attente"
           },
@@ -17544,7 +17624,7 @@
             "libelle": "Moins de 5 buts",
             "probabilite": 0.839371351097109,
             "cote_juste": 1.19136780007197,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "calcul",
             "resultat": "attente"
           },
@@ -18114,7 +18194,7 @@
             "libelle": "Moins de 1,5 but avant la pause",
             "probabilite": 0.6075458751058584,
             "cote_juste": 1.6459662405341169,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "calcul",
             "resultat": "attente"
           },
@@ -18404,7 +18484,7 @@
             "libelle": "Moins de 5 buts",
             "probabilite": 0.888642903455156,
             "cote_juste": 1.1253114114925957,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "calcul",
             "resultat": "attente"
           },
@@ -18714,7 +18794,7 @@
             "libelle": "AS Monaco ne perd pas",
             "probabilite": 0.6958739616444081,
             "cote_juste": 1.4370418425154416,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "marche",
             "resultat": "attente"
           },
@@ -19144,7 +19224,7 @@
             "libelle": "Pas de match nul",
             "probabilite": 0.7042782964187345,
             "cote_juste": 1.4198932511267417,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "marche",
             "resultat": "attente"
           },
@@ -19664,7 +19744,7 @@
             "libelle": "Moins de 5 buts",
             "probabilite": 0.8521788072289453,
             "cote_juste": 1.1734626483516166,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "calcul",
             "resultat": "attente"
           },
@@ -20034,7 +20114,7 @@
             "libelle": "Au moins 2 buts",
             "probabilite": 0.7933464799437366,
             "cote_juste": 1.2604833137608666,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "calcul",
             "resultat": "attente"
           },
@@ -20654,7 +20734,7 @@
             "libelle": "Moins de 1,5 but avant la pause",
             "probabilite": 0.6176925490723751,
             "cote_juste": 1.6189283835489974,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "calcul",
             "resultat": "attente"
           },
@@ -20944,7 +21024,7 @@
             "libelle": "Moins de 5 buts",
             "probabilite": 0.8546030777165525,
             "cote_juste": 1.1701338622275257,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "calcul",
             "resultat": "attente"
           },
@@ -21384,7 +21464,7 @@
             "libelle": "Moins de 5 buts",
             "probabilite": 0.8552641355376801,
             "cote_juste": 1.1692294326960508,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "calcul",
             "resultat": "attente"
           },
@@ -21824,7 +21904,7 @@
             "libelle": "Moins de 5 buts",
             "probabilite": 0.8776745585220947,
             "cote_juste": 1.139374487149186,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "calcul",
             "resultat": "attente"
           },
@@ -22244,7 +22324,7 @@
             "libelle": "Moins de 5 buts",
             "probabilite": 0.8528418074251218,
             "cote_juste": 1.1725503971471267,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "calcul",
             "resultat": "attente"
           },
@@ -22664,7 +22744,7 @@
             "libelle": "Moins de 5 buts",
             "probabilite": 0.8756908434856803,
             "cote_juste": 1.1419555285282055,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "calcul",
             "resultat": "attente"
           },
@@ -23034,7 +23114,7 @@
             "libelle": "Au moins 2 buts",
             "probabilite": 0.8581,
             "cote_juste": 1.1653653420347279,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "calcul",
             "resultat": "attente"
           },
@@ -23354,7 +23434,7 @@
             "libelle": "Celta gagne",
             "probabilite": 0.5724034496394367,
             "cote_juste": 1.747019520287502,
-            "niveau": "detail",
+            "niveau": "equilibree",
             "origine": "marche",
             "resultat": "attente"
           },
@@ -23394,7 +23474,7 @@
             "libelle": "Málaga ne perd pas",
             "probabilite": 0.4275965503605634,
             "cote_juste": 2.3386531045602856,
-            "niveau": "audacieuse",
+            "niveau": "detail",
             "origine": "marche",
             "resultat": "attente"
           },
@@ -23504,7 +23584,7 @@
             "libelle": "Moins de 5 buts",
             "probabilite": 0.8653681138242686,
             "cote_juste": 1.1555775906518684,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "calcul",
             "resultat": "attente"
           },
@@ -23574,7 +23654,7 @@
             "libelle": "Celta mène à la pause",
             "probabilite": 0.4308400371290798,
             "cote_juste": 2.32104705649814,
-            "niveau": "detail",
+            "niveau": "audacieuse",
             "origine": "calcul",
             "resultat": "attente"
           },
@@ -23604,7 +23684,7 @@
             "libelle": "Au moins 1 but avant la pause",
             "probabilite": 0.6889766880785329,
             "cote_juste": 1.4514279181039798,
-            "niveau": "equilibree",
+            "niveau": "detail",
             "origine": "calcul",
             "resultat": "attente"
           },
@@ -23924,7 +24004,7 @@
             "libelle": "Moins de 5 buts",
             "probabilite": 0.8270039403614593,
             "cote_juste": 1.2091840814723678,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "calcul",
             "resultat": "attente"
           },
@@ -24294,7 +24374,7 @@
             "libelle": "Au moins 2 buts",
             "probabilite": 0.7933464799437366,
             "cote_juste": 1.2604833137608666,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "calcul",
             "resultat": "attente"
           },
@@ -24644,7 +24724,7 @@
             "libelle": "Lecce ne perd pas",
             "probabilite": 0.6596029370388297,
             "cote_juste": 1.5160635950005354,
-            "niveau": "detail",
+            "niveau": "equilibree",
             "origine": "marche",
             "resultat": "attente"
           },
@@ -24664,7 +24744,7 @@
             "libelle": "Pas de match nul",
             "probabilite": 0.6940007145553906,
             "cote_juste": 1.4409207066027978,
-            "niveau": "equilibree",
+            "niveau": "detail",
             "origine": "marche",
             "resultat": "attente"
           },
@@ -24764,7 +24844,7 @@
             "libelle": "Moins de 5 buts",
             "probabilite": 0.8949952676651428,
             "cote_juste": 1.1173243436345677,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "calcul",
             "resultat": "attente"
           },
@@ -25124,7 +25204,7 @@
             "libelle": "Au moins 2 buts",
             "probabilite": 0.8581,
             "cote_juste": 1.1653653420347279,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "calcul",
             "resultat": "attente"
           },
@@ -25544,7 +25624,7 @@
             "libelle": "Au moins 2 buts",
             "probabilite": 0.7929360049127703,
             "cote_juste": 1.2611358215597848,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "calcul",
             "resultat": "attente"
           },
@@ -26154,7 +26234,7 @@
             "libelle": "Moins de 1,5 but avant la pause",
             "probabilite": 0.5811843474780714,
             "cote_juste": 1.720624453048834,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "calcul",
             "resultat": "attente"
           },
@@ -26294,7 +26374,7 @@
             "libelle": "Napoli gagne",
             "probabilite": 0.5554160599858985,
             "cote_juste": 1.8004520791591605,
-            "niveau": "detail",
+            "niveau": "equilibree",
             "origine": "marche",
             "resultat": "attente"
           },
@@ -26444,7 +26524,7 @@
             "libelle": "Moins de 5 buts",
             "probabilite": 0.8762610398958618,
             "cote_juste": 1.1412124406659045,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "calcul",
             "resultat": "attente"
           },
@@ -26574,7 +26654,7 @@
             "libelle": "Moins de 1,5 but avant la pause",
             "probabilite": 0.679426689527344,
             "cote_juste": 1.4718291397938297,
-            "niveau": "equilibree",
+            "niveau": "detail",
             "origine": "calcul",
             "resultat": "attente"
           },
@@ -26864,7 +26944,7 @@
             "libelle": "Moins de 5 buts",
             "probabilite": 0.8956009296998662,
             "cote_juste": 1.116568738193606,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "calcul",
             "resultat": "attente"
           },
@@ -27234,7 +27314,7 @@
             "libelle": "Au moins 2 buts",
             "probabilite": 0.8287113479450128,
             "cote_juste": 1.2066927796750198,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "calcul",
             "resultat": "attente"
           },
@@ -27704,7 +27784,7 @@
             "libelle": "Moins de 5 buts",
             "probabilite": 0.840418978637349,
             "cote_juste": 1.1898826959160236,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "calcul",
             "resultat": "attente"
           },
@@ -28024,7 +28104,7 @@
             "libelle": "Atl. Madrid ne perd pas",
             "probabilite": 0.672498763846537,
             "cote_juste": 1.4869915808918843,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "marche",
             "resultat": "attente"
           },
@@ -28574,7 +28654,7 @@
             "libelle": "Moins de 5 buts",
             "probabilite": 0.8416629435460946,
             "cote_juste": 1.1881240675593958,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "calcul",
             "resultat": "attente"
           },
@@ -28994,7 +29074,7 @@
             "libelle": "Moins de 5 buts",
             "probabilite": 0.8214009722301977,
             "cote_juste": 1.2174322088819611,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "calcul",
             "resultat": "attente"
           },
@@ -29414,7 +29494,7 @@
             "libelle": "Moins de 5 buts",
             "probabilite": 0.7877755388934204,
             "cote_juste": 1.2693971196474174,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "calcul",
             "resultat": "attente"
           },
@@ -29714,7 +29794,7 @@
             "libelle": "Leeds ne perd pas",
             "probabilite": 0.6706793488790321,
             "cote_juste": 1.4910254828501752,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "marche",
             "resultat": "attente"
           },
@@ -30324,7 +30404,7 @@
             "libelle": "Real Betis +1 (ne perd pas de plus d’un but)",
             "probabilite": 0.7064882941533108,
             "cote_juste": 1.4154516193342561,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "calcul",
             "resultat": "attente"
           },
@@ -30684,7 +30764,7 @@
             "libelle": "Moins de 5 buts",
             "probabilite": 0.8539935008840022,
             "cote_juste": 1.1709690986697918,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "calcul",
             "resultat": "attente"
           },
@@ -31104,7 +31184,7 @@
             "libelle": "Moins de 5 buts",
             "probabilite": 0.895412282129271,
             "cote_juste": 1.1168039795277562,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "calcul",
             "resultat": "attente"
           },
@@ -31474,7 +31554,7 @@
             "libelle": "Au moins 2 buts",
             "probabilite": 0.8383644296042774,
             "cote_juste": 1.1927986979027931,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "calcul",
             "resultat": "attente"
           },
@@ -31944,7 +32024,7 @@
             "libelle": "Moins de 5 buts",
             "probabilite": 0.8294899069416344,
             "cote_juste": 1.2055601781666565,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "calcul",
             "resultat": "attente"
           },
@@ -32364,7 +32444,7 @@
             "libelle": "Moins de 5 buts",
             "probabilite": 0.8861421369481717,
             "cote_juste": 1.1284871335020237,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "calcul",
             "resultat": "attente"
           },
@@ -32734,7 +32814,7 @@
             "libelle": "Au moins 2 buts",
             "probabilite": 0.8581,
             "cote_juste": 1.1653653420347279,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "calcul",
             "resultat": "attente"
           },
@@ -33104,7 +33184,7 @@
             "libelle": "Pas de match nul",
             "probabilite": 0.7261355016472684,
             "cote_juste": 1.3771534344918528,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "marche",
             "resultat": "attente"
           },
@@ -33624,7 +33704,7 @@
             "libelle": "Moins de 5 buts",
             "probabilite": 0.8926421395644936,
             "cote_juste": 1.1202697650907278,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "calcul",
             "resultat": "attente"
           },
@@ -33994,7 +34074,7 @@
             "libelle": "Au moins 2 buts",
             "probabilite": 0.7933728083272041,
             "cote_juste": 1.2604414841346294,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "calcul",
             "resultat": "attente"
           },
@@ -34448,7 +34528,7 @@
             "libelle": "Moins de 5 buts",
             "probabilite": 0.8765701636684532,
             "cote_juste": 1.140809990400531,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "calcul",
             "resultat": "attente"
           },
@@ -34802,7 +34882,7 @@
             "libelle": "Au moins 2 buts",
             "probabilite": 0.7904545348074504,
             "cote_juste": 1.2650948991564626,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "calcul",
             "resultat": "attente"
           },
@@ -35422,7 +35502,7 @@
             "libelle": "Moins de 1,5 but avant la pause",
             "probabilite": 0.6497428485991561,
             "cote_juste": 1.5390704217152946,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "calcul",
             "resultat": "attente"
           },
@@ -35712,7 +35792,7 @@
             "libelle": "Moins de 5 buts",
             "probabilite": 0.8612724422669371,
             "cote_juste": 1.161072792910825,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "calcul",
             "resultat": "attente"
           },
@@ -36116,7 +36196,7 @@
             "libelle": "Moins de 5 buts",
             "probabilite": 0.8964968368549631,
             "cote_juste": 1.115452903892155,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "calcul",
             "resultat": "attente"
           },
@@ -36520,7 +36600,7 @@
             "libelle": "Moins de 5 buts",
             "probabilite": 0.8486696280212607,
             "cote_juste": 1.1783148200219888,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "calcul",
             "resultat": "attente"
           },
@@ -36874,7 +36954,7 @@
             "libelle": "Au moins 2 buts",
             "probabilite": 0.8413228326274907,
             "cote_juste": 1.1886043754178797,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "calcul",
             "resultat": "attente"
           },
@@ -37288,7 +37368,7 @@
             "libelle": "Au moins 2 buts",
             "probabilite": 0.7736749734081498,
             "cote_juste": 1.2925324385185368,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "calcul",
             "resultat": "attente"
           },
@@ -37758,7 +37838,7 @@
             "libelle": "Moins de 5 buts",
             "probabilite": 0.8346918447068737,
             "cote_juste": 1.1980469275474699,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "calcul",
             "resultat": "attente"
           },
@@ -38182,7 +38262,7 @@
             "libelle": "Moins de 5 buts",
             "probabilite": 0.8470896927623297,
             "cote_juste": 1.180512534320935,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "calcul",
             "resultat": "attente"
           },
@@ -38602,7 +38682,7 @@
             "libelle": "Moins de 5 buts",
             "probabilite": 0.8735235882655803,
             "cote_juste": 1.1447887766666316,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "calcul",
             "resultat": "attente"
           },
@@ -38896,7 +38976,7 @@
             "libelle": "Lazio ne perd pas",
             "probabilite": 0.6991511402075195,
             "cote_juste": 1.4303058988120705,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "marche",
             "resultat": "attente"
           },
@@ -39306,7 +39386,7 @@
             "libelle": "AS Monaco ne perd pas",
             "probabilite": 0.6738152675186949,
             "cote_juste": 1.484086289232464,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "marche",
             "resultat": "attente"
           },
@@ -39800,7 +39880,7 @@
             "libelle": "Au moins 2 buts",
             "probabilite": 0.7893462287453847,
             "cote_juste": 1.2668711948993991,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "calcul",
             "resultat": "attente"
           },
@@ -40170,7 +40250,7 @@
             "libelle": "Pas de match nul",
             "probabilite": 0.7498689514726284,
             "cote_juste": 1.333566349208288,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "marche",
             "resultat": "attente"
           },
@@ -40674,7 +40754,7 @@
             "libelle": "Moins de 5 buts",
             "probabilite": 0.850341774611906,
             "cote_juste": 1.1759977339186913,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "calcul",
             "resultat": "attente"
           },
@@ -40978,7 +41058,7 @@
             "libelle": "Angers ne perd pas",
             "probabilite": 0.7227756648415457,
             "cote_juste": 1.3835551591505648,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "marche",
             "resultat": "attente"
           },
@@ -41502,7 +41582,7 @@
             "libelle": "Moins de 5 buts",
             "probabilite": 0.8719930928282372,
             "cote_juste": 1.1467980746918338,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "calcul",
             "resultat": "attente"
           },
@@ -41806,7 +41886,7 @@
             "libelle": "Pas de match nul",
             "probabilite": 0.7273847889371052,
             "cote_juste": 1.3747881660561738,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "marche",
             "resultat": "attente"
           },
@@ -42276,7 +42356,7 @@
             "libelle": "Au moins 2 buts",
             "probabilite": 0.8112824799188408,
             "cote_juste": 1.2326162893349282,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "calcul",
             "resultat": "attente"
           },
@@ -42860,7 +42940,7 @@
             "libelle": "Moins de 1,5 but avant la pause",
             "probabilite": 0.5868219741528655,
             "cote_juste": 1.704094331919995,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "calcul",
             "resultat": "attente"
           },
@@ -43264,7 +43344,7 @@
             "libelle": "Moins de 1,5 but avant la pause",
             "probabilite": 0.6541181512711665,
             "cote_juste": 1.5287757999937344,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "calcul",
             "resultat": "attente"
           },
@@ -43488,7 +43568,7 @@
             "libelle": "Au moins 2 buts",
             "probabilite": 0.7961204298329416,
             "cote_juste": 1.256091368249199,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "calcul",
             "resultat": "attente"
           },
@@ -43842,7 +43922,7 @@
             "libelle": "Genoa ne perd pas",
             "probabilite": 0.6862296035355682,
             "cote_juste": 1.4572382113039644,
-            "niveau": "detail",
+            "niveau": "equilibree",
             "origine": "marche",
             "resultat": "attente"
           },
@@ -43852,7 +43932,7 @@
             "libelle": "Pas de match nul",
             "probabilite": 0.6862296035355682,
             "cote_juste": 1.4572382113039644,
-            "niveau": "equilibree",
+            "niveau": "detail",
             "origine": "marche",
             "resultat": "attente"
           },
@@ -43952,7 +44032,7 @@
             "libelle": "Moins de 5 buts",
             "probabilite": 0.8973744442489026,
             "cote_juste": 1.114362021794586,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "calcul",
             "resultat": "attente"
           },
@@ -44362,7 +44442,7 @@
             "libelle": "Moins de 5 buts",
             "probabilite": 0.8200917089391359,
             "cote_juste": 1.21937581992335,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "calcul",
             "resultat": "attente"
           },
@@ -44766,7 +44846,7 @@
             "libelle": "Moins de 5 buts",
             "probabilite": 0.8258118804972447,
             "cote_juste": 1.2109295393012167,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "calcul",
             "resultat": "attente"
           },
@@ -45082,7 +45162,7 @@
             "libelle": "PSG gagne",
             "probabilite": 0.596496237280628,
             "cote_juste": 1.676456509698886,
-            "niveau": "detail",
+            "niveau": "equilibree",
             "origine": "marche",
             "resultat": "attente"
           },
@@ -45092,7 +45172,7 @@
             "libelle": "Marseille ne perd pas",
             "probabilite": 0.40350376271937205,
             "cote_juste": 2.478291635400381,
-            "niveau": "audacieuse",
+            "niveau": "detail",
             "origine": "marche",
             "resultat": "attente"
           },
@@ -45162,7 +45242,7 @@
             "libelle": "Au moins 2 buts",
             "probabilite": 0.8152959509712321,
             "cote_juste": 1.2265484684533718,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "calcul",
             "resultat": "attente"
           },
@@ -45312,7 +45392,7 @@
             "libelle": "PSG mène à la pause",
             "probabilite": 0.44031106422784483,
             "cote_juste": 2.271121671115983,
-            "niveau": "detail",
+            "niveau": "audacieuse",
             "origine": "calcul",
             "resultat": "attente"
           },
@@ -45352,7 +45432,7 @@
             "libelle": "Moins de 1,5 but avant la pause",
             "probabilite": 0.5697573775804867,
             "cote_juste": 1.7551330432026484,
-            "niveau": "equilibree",
+            "niveau": "detail",
             "origine": "calcul",
             "resultat": "attente"
           },
@@ -45626,7 +45706,7 @@
             "libelle": "Moins de 5 buts",
             "probabilite": 0.8340118924826996,
             "cote_juste": 1.1990236698222425,
-            "niveau": "detail",
+            "niveau": "recommandee",
             "origine": "calcul",
             "resultat": "attente"
           },
