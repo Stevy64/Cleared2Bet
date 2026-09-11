@@ -109,7 +109,7 @@ Moteur d’analyse : [docs/moteur-v31.md](docs/moteur-v31.md).
 | [docs/architecture.md](docs/architecture.md) | Micro-services |
 | [docs/ovh-vps.md](docs/ovh-vps.md) | VPS OVH |
 | [docs/oracle-cloud.md](docs/oracle-cloud.md) | Oracle Cloud Free Tier |
-| [docs/pythonanywhere.md](docs/pythonanywhere.md) | Hébergement sans Docker |
+| [docs/pythonanywhere.md](docs/pythonanywhere.md) | Hébergement sans Docker + **snapshot Git** des matchs |
 | [docs/moteur-v31.md](docs/moteur-v31.md) | Calibration & sélection tips |
 | [docs/format_import.md](docs/format_import.md) | Format JSON (tests / démo uniquement) |
 

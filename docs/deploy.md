@@ -33,7 +33,7 @@ make health
 |-------|--------|-----|
 | **OVH VPS** sans Docker | systemd + nginx + Gunicorn | [ovh-vps.md](ovh-vps.md) section B |
 | **Oracle Cloud** | Free Tier, egress OK | [oracle-cloud.md](oracle-cloud.md) |
-| **PythonAnywhere** | Prototype sans Docker | [pythonanywhere.md](pythonanywhere.md) — sync calendrier souvent limitée sur free tier |
+| **PythonAnywhere** | Prototype sans Docker | [pythonanywhere.md](pythonanywhere.md) — sync live souvent bloquée ; **snapshot Git** (`exporter_snapshot` / `importer_snapshot`) |
 | **Local** | Dev | [getting-started.md](getting-started.md) |
 
 ## Checklist prod

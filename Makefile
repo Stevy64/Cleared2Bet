@@ -19,9 +19,10 @@ help:
 	@echo "  make dev-worker     - active le worker autonome (profile)"
 	@echo "  make prod-build     - stack prod (web/moteur/worker/db/redis/nginx)"
 	@echo "  make logs-moteur / logs-worker"
+	@echo "  make snapshot-export-dev / snapshot-import-dev"
 	@echo "  make sync[-dev]     - pipeline manuel"
 	@echo "  make health / clean"
-	@echo "  Doc : docs/architecture.md"
+	@echo "  Doc : docs/architecture.md / docs/pythonanywhere.md"
 
 # Wheels Linux pour build Docker (évite DNS/pip flaky dans le daemon)
 wheels:
@@ -123,6 +124,12 @@ sync-full-dev:
 		python manage.py synchroniser_sofascore --contexte --calculer && \
 		python manage.py regler_options --apprendre && \
 		python manage.py purger_chat"
+
+snapshot-export-dev:
+	$(COMPOSE_DEV) exec web python manage.py exporter_snapshot --out exports/matchs.json --jours 21
+
+snapshot-import-dev:
+	$(COMPOSE_DEV) exec web python manage.py importer_snapshot --source exports/matchs.json
 
 test:
 	$(COMPOSE_DEV) exec web python manage.py test --verbosity=2

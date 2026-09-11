@@ -19,6 +19,9 @@ Thumbs.db
 data/*.sqlite3
 data/calibration.json
 !data/.gitkeep
+!data/snapshots/
+!data/snapshots/.gitkeep
+!data/snapshots/*.json
 logs/
 wheels/
 *.whl
