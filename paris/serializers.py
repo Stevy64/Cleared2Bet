@@ -6,7 +6,7 @@ from paris.models import (
 from paris.moteur import RESIDU_DOUTEUX
 
 NIVEAUX_LISTE = ('prudente', 'equilibree', 'audacieuse')
-# Compos du jour / historique : tips + recommandée + filet de sécurité
+# Analyse du jour / historique : tips + recommandée + filet de sécurité
 NIVEAUX_COMPOS = ('prudente', 'recommandee', 'equilibree', 'audacieuse', 'filet')
 
 
@@ -14,6 +14,35 @@ def _est_vip_request(request) -> bool:
     from paris.roles import est_vip
     user = getattr(request, 'user', None) if request else None
     return est_vip(user)
+
+
+def _justifier_si_tip(option, *, analyse=None, match=None, request=None):
+    """Justifications VIP uniquement pour les tips (évite timeout détail match)."""
+    if not _est_vip_request(request):
+        return None
+    if getattr(option, 'niveau', None) not in NIVEAUX_COMPOS:
+        return None
+    from paris.justification import justifier_option
+    if match is None and analyse is not None:
+        match = getattr(analyse, 'match', None)
+    if analyse is None and match is not None:
+        analyse = getattr(match, 'analyse', None)
+    contexte = None
+    if match is not None:
+        try:
+            contexte = match.contexte
+        except Exception:  # noqa: BLE001 — Contexte.DoesNotExist
+            contexte = None
+    try:
+        return justifier_option(
+            option=option,
+            analyse=analyse,
+            contexte=contexte,
+            domicile=match.domicile.nom_court if match else '',
+            exterieur=match.exterieur.nom_court if match else '',
+        )
+    except Exception:  # noqa: BLE001 — ne pas faire échouer toute la fiche
+        return None
 
 
 def _consensus(option, request):
@@ -91,25 +120,13 @@ class OptionListeSerializer(serializers.ModelSerializer):
         return self._c(obj)['mon_vote']
 
     def get_justification(self, obj):
-        if not _est_vip_request(self.context.get('request')):
-            return None
-        from paris.justification import justifier_option
         match = getattr(obj, '_parent_match', None)
         analyse = getattr(match, 'analyse', None) if match else getattr(obj, 'analyse', None)
-        if match is None and analyse is not None:
-            match = getattr(analyse, 'match', None)
-        contexte = None
-        if match is not None:
-            try:
-                contexte = match.contexte
-            except Exception:  # noqa: BLE001 — Contexte.DoesNotExist
-                contexte = None
-        return justifier_option(
-            option=obj,
+        return _justifier_si_tip(
+            obj,
             analyse=analyse,
-            contexte=contexte,
-            domicile=match.domicile.nom_court if match else '',
-            exterieur=match.exterieur.nom_court if match else '',
+            match=match,
+            request=self.context.get('request'),
         )
 
 
@@ -170,23 +187,13 @@ class OptionDetailSerializer(serializers.ModelSerializer):
         return self._c(obj)['mon_vote']
 
     def get_justification(self, obj):
-        if not _est_vip_request(self.context.get('request')):
-            return None
-        from paris.justification import justifier_option
         analyse = getattr(obj, 'analyse', None)
         match = getattr(analyse, 'match', None) if analyse else None
-        contexte = None
-        if match is not None:
-            try:
-                contexte = match.contexte
-            except Exception:  # noqa: BLE001
-                contexte = None
-        return justifier_option(
-            option=obj,
+        return _justifier_si_tip(
+            obj,
             analyse=analyse,
-            contexte=contexte,
-            domicile=match.domicile.nom_court if match else '',
-            exterieur=match.exterieur.nom_court if match else '',
+            match=match,
+            request=self.context.get('request'),
         )
 
 

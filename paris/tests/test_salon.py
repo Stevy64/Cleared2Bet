@@ -61,6 +61,19 @@ class RolesVipTests(TestCase):
         self.assertEqual(profil.vip_expire_le, ajouter_mois(fin1, 1))
         self.assertTrue(est_vip(u))
 
+    def test_staff_et_superuser_sont_vip(self):
+        staff = User.objects.create_user('adminstaff', password='motdepasse123', is_staff=True)
+        self.assertEqual(categorie_user(staff), 'vip')
+        self.assertTrue(est_vip(staff))
+        self.assertTrue(payload_auth(staff)['est_vip'])
+        profil = Profil.objects.get(user=staff)
+        self.assertEqual(profil.categorie, 'vip')
+        self.assertIsNone(profil.vip_expire_le)
+
+        su = User.objects.create_superuser('rootadmin', 'root@example.com', 'motdepasse123')
+        self.assertEqual(categorie_user(su), 'vip')
+        self.assertTrue(est_vip(su))
+
 
 class SalonVipTests(TestCase):
     def setUp(self):

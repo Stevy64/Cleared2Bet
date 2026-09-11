@@ -200,6 +200,7 @@ const ICON_PATHS = {
   message: '<path d="M21 12a8 8 0 0 1-8 8H7l-4 3V12a8 8 0 1 1 18 0z"/>',
   send: '<path d="M4 12 20 4l-6 16-2-6-6-2z"/>',
   image: '<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10.5" r="1.5"/><path d="m21 15-5-5L5 21"/>',
+  'log-out': '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/>',
 };
 
 function icon(name, cls) {
@@ -433,6 +434,7 @@ function c2b() {
     sheetApercu: false,
     apercu: null,
     apercuChargement: false,
+    apercuErr: '',
     sheetClub: false,
     clubInfos: null,
     clubChargement: false,
@@ -493,7 +495,7 @@ function c2b() {
       return this.authentifie && (this.categorie === 'membre' || this.categorie === 'vip');
     },
     get peutCompos() {
-      return this.authentifie && (this.categorie === 'membre' || this.categorie === 'vip');
+      return this.peutVip;
     },
     get peutVip() {
       return this.authentifie && (this.categorie === 'vip' || this.estVip);
@@ -597,11 +599,13 @@ function c2b() {
       this.sheetCompos = false;
       this.sheetApercu = true;
       this.apercu = null;
+      this.apercuErr = '';
       this.apercuChargement = true;
       document.body.classList.add('sheet-open');
       const { data, ok } = await getJSON('/api/v1/matchs/' + id + '/');
       this.apercuChargement = false;
       if (ok) this.apercu = data;
+      else this.apercuErr = 'Détails indisponibles pour le moment. Réessaie.';
     },
 
     ouvrirApercuFromCard(id, ev) {
@@ -664,6 +668,7 @@ function c2b() {
       }
       this.sheetApercu = false;
       this.apercu = null;
+      this.apercuErr = '';
       document.body.classList.remove('sheet-open');
     },
 
@@ -777,7 +782,7 @@ function c2b() {
 
     optionsApercu(fiche) {
       if (!fiche || !fiche.analyse) return [];
-      const ordre = { prudente: 0, equilibree: 1, audacieuse: 2 };
+      const ordre = { prudente: 0, recommandee: 1, equilibree: 2, audacieuse: 3, filet: 4 };
       return (fiche.analyse.options || [])
         .filter((o) => o.niveau in ordre)
         .sort((a, b) => ordre[a.niveau] - ordre[b.niveau]);
@@ -963,6 +968,17 @@ function c2b() {
       this.go('/');
     },
 
+    sortirSalon() {
+      this.stopChatPoll();
+      this.go('/');
+    },
+
+    libSalonEnLigne() {
+      const n = Math.max(1, Number(this.chatEnLigne) || 1);
+      if (n <= 1) return 'Vous êtes seul en ligne';
+      return 'Vous êtes ' + n + ' en ligne';
+    },
+
     toggleComp(code) {
       const i = this.masquees.indexOf(code);
       if (i >= 0) this.masquees.splice(i, 1);
@@ -987,7 +1003,7 @@ function c2b() {
 
     get recoFiche() {
       if (!this.fiche || !this.fiche.analyse) return [];
-      const ordre = { prudente: 0, equilibree: 1, audacieuse: 2 };
+      const ordre = { prudente: 0, recommandee: 1, equilibree: 2, audacieuse: 3 };
       return this.fiche.analyse.options
         .filter((o) => o.niveau in ordre)
         .sort((a, b) => ordre[a.niveau] - ordre[b.niveau]);
@@ -1372,11 +1388,15 @@ function c2b() {
     },
 
     async ouvrirCompos() {
-      if (!this.peutCompos) {
+      if (!this.authentifie) {
         this.ouvrirAuth(
-          'Compte Membre requis pour ouvrir les compos du jour.',
+          'Connecte-toi pour ouvrir l’Analyse du jour.',
           () => this.ouvrirCompos(),
         );
+        return;
+      }
+      if (!this.peutVip) {
+        this.ouvrirVipGate('analyse');
         return;
       }
       this.sheetApercu = false;
@@ -1504,7 +1524,7 @@ function c2b() {
     async partagerPredictionsJour() {
       this.partageMsg = '';
       this.partageBusy = true;
-      const titre = 'Cleared2Bet — Compos du ' + fmtJour(this.jourDate + 'T12:00:00');
+      const titre = 'Cleared2Bet — Analyse du ' + fmtJour(this.jourDate + 'T12:00:00');
       const text = [
         titre,
         'Voici notre sélection du jour, tirée de notre moteur de prédiction C2B',
@@ -1513,7 +1533,7 @@ function c2b() {
       ].join('\n');
       try {
         if (navigator.share) {
-          await navigator.share({ title: 'Compos Cleared2Bet', text });
+          await navigator.share({ title: 'Analyse Cleared2Bet', text });
           this.partageMsg = 'Partage envoyé.';
           return;
         }

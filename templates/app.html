@@ -9,12 +9,13 @@
   <title>Cleared2Bet</title>
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
-  <link rel="stylesheet" href="/static/css/app.css?v=73">
+  <link rel="stylesheet" href="/static/css/app.css?v=76">
 </head>
 <body
   x-data="c2b()"
   x-init="init()"
   data-moteur="{{ version_moteur }}"
+  :class="{ 'salon-mode': page === 'salon' }"
 >
   <a class="skip" href="#contenu">Aller au contenu</a>
 
@@ -72,7 +73,7 @@
         <div class="hero-actions">
           <button type="button" class="btn btn-hero btn-hero-glass" @click="ouvrirCompos()">
             <span x-html="icon('layers','icon icon-sm')"></span>
-            Compos du jour
+            Analyse du jour
           </button>
         </div>
       </div>
@@ -621,22 +622,21 @@
     <template x-if="page === 'salon'">
       <div class="ecran salon" :class="peutVip ? 'salon-vip' : 'salon-locked'">
         <header class="salon-head">
-          <div>
+          <div class="salon-head-main">
             <h1 class="salon-title">
               <span class="salon-crown" x-html="icon('crown','icon icon-sm')"></span>
               Salon VIP
             </h1>
             <p class="salon-sub">Réservé VIP · messages effacés après 24 h</p>
           </div>
-          <div class="salon-head-right" x-show="peutVip" x-cloak>
-            <span class="salon-online" :title="'VIP actuellement dans le salon'">
-              <span x-html="icon('users','icon icon-sm')"></span>
-              <strong x-text="chatEnLigne || 1"></strong>
-              <span x-text="(chatEnLigne || 1) > 1 ? 'en ligne' : 'en ligne'"></span>
-            </span>
-            <span class="salon-live">
-              <i aria-hidden="true"></i> en direct
-            </span>
+          <div class="salon-head-right">
+            <span class="salon-online" x-show="peutVip" x-cloak
+              :title="libSalonEnLigne()"
+              x-text="libSalonEnLigne()"></span>
+            <button type="button" class="btn salon-exit" @click="sortirSalon()" aria-label="Sortir du salon">
+              <span x-html="icon('log-out','icon icon-sm')"></span>
+              <span>Sortir</span>
+            </button>
           </div>
         </header>
 
@@ -736,11 +736,11 @@
                 </span>
               </p>
               <p class="hint" x-show="categorie === 'membre'" x-cloak>
-                Accès Membre : matchs, compos du jour, likes / dislikes.
-                Justifications + Salon VIP = badge VIP.
+                Accès Membre : matchs, likes / dislikes.
+                Analyse du jour, justifications + Salon VIP = badge VIP.
               </p>
               <p class="hint" x-show="categorie === 'vip'" x-cloak>
-                Statut VIP : justifications complètes + Salon VIP.
+                Statut VIP : Analyse du jour, justifications complètes + Salon VIP.
               </p>
               <button type="button" class="btn btn-vip" x-show="categorie === 'membre'" x-cloak
                 @click="ouvrirVipGate('reglages')">
@@ -903,7 +903,7 @@
 
   <div class="bottom-sheet sheet-compos"
     :class="(sheetCompos ? 'open ' : '') + (composExpanded ? 'expanded' : '')"
-    role="dialog" aria-modal="true" aria-label="Compos du jour"
+    role="dialog" aria-modal="true" aria-label="Analyse du jour"
     :aria-hidden="!sheetCompos">
     <div class="sheet-handle-drag"
       @click="composExpanded = !composExpanded"
@@ -935,7 +935,7 @@
       <p class="hint no-print" x-show="partageMsg" x-cloak x-text="partageMsg"></p>
       <div class="loader-wrap no-print" x-show="chargementJour" x-cloak>
         <div class="spinner" role="status" aria-label="Chargement"></div>
-        <p>Chargement des compos…</p>
+        <p>Chargement de l’analyse…</p>
       </div>
       <div class="vide vide-sm no-print" x-show="!chargementJour && !predictionsJour.length" x-cloak>
         <p>Aucun pari proposé pour cette date.</p>
@@ -944,7 +944,7 @@
       <div id="compos-print" class="compos-print" x-show="!chargementJour && predictionsJour.length">
         <header class="compos-head">
           <div>
-            <h2>Compos du jour</h2>
+            <h2>Analyse du jour</h2>
             <p class="hint">Voici notre sélection du jour, tirée de notre moteur de prédiction C2B</p>
           </div>
           <span class="compos-print-date" x-text="fmtJour((jourDate || dateAujourdhui()) + 'T12:00:00')"></span>
@@ -1131,7 +1131,7 @@
         <section>
           <h3>3. Absence de garantie — estimations uniquement</h3>
           <p>
-            Toute information affichée (probabilités, cotes justes, tips, compos,
+            Toute information affichée (probabilités, cotes justes, tips, analyses,
             justifications, scores probables, contextes) constitue une
             <strong>estimation indicative</strong>, fondée sur des modèles et des
             données susceptibles d’être incomplètes, erronées, retardées ou obsolètes.
@@ -1273,6 +1273,7 @@
     <div class="loader-wrap" x-show="apercuChargement" x-cloak>
       <div class="spinner" role="status" aria-label="Chargement"></div>
     </div>
+    <p class="hint" x-show="!apercuChargement && apercuErr" x-cloak style="padding:16px" x-text="apercuErr"></p>
     <template x-if="apercu && !apercuChargement">
       <div class="sheet-body">
         <div class="sheet-match-head">
@@ -1381,6 +1382,7 @@
         <p class="vip-tarif" x-text="vipTarifLibelle || 'VIP Cleared2Bet'"></p>
       </div>
       <ul class="vip-perks">
+        <li><span x-html="icon('layers','icon icon-sm')"></span> Analyse du jour (sélection tips)</li>
         <li><span x-html="icon('crosshair','icon icon-sm')"></span> Justifications complètes des tips</li>
         <li><span x-html="icon('message','icon icon-sm')"></span> Accès au Salon VIP</li>
         <li><span x-html="icon('badge-check','icon icon-sm')"></span> Statut couronne visible sur ton compte</li>
@@ -1479,7 +1481,8 @@
     </div>
   </div>
 
-  <nav class="tabbar" :class="tabHidden ? 'tabbar-hide' : ''" aria-label="Navigation principale">
+  <nav class="tabbar" x-show="page !== 'salon'" x-cloak
+    :class="tabHidden ? 'tabbar-hide' : ''" aria-label="Navigation principale">
     <a href="/" :class="page==='matchs' || page==='fiche' ? 'on' : ''" @click.prevent="go('/')">
       <span x-html="icon('home','icon icon-md')"></span>
       Matchs
@@ -1499,7 +1502,7 @@
     </a>
   </nav>
 
-  <script defer src="/static/js/app.js?v=67"></script>
+  <script defer src="/static/js/app.js?v=71"></script>
   <script defer src="/static/vendor/alpine.min.js?v=60"></script>
 </body>
 </html>

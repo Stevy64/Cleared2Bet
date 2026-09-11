@@ -8,6 +8,9 @@ def categorie_user(user) -> str:
     """visiteur | membre | vip (abonnement encore valide)."""
     if not user or not getattr(user, 'is_authenticated', False):
         return 'visiteur'
+    # Staff / superuser : VIP permanent (accès admin + app).
+    if getattr(user, 'is_superuser', False) or getattr(user, 'is_staff', False):
+        return 'vip'
     from paris.models import Profil
     profil, _ = Profil.objects.get_or_create(user=user)
     if profil.abonnement_vip_actif:

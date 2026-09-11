@@ -9,14 +9,28 @@ class ParisConfig(AppConfig):
     def ready(self):
         from django.contrib.auth import get_user_model
         from django.db.models.signals import post_save
+        from django.utils import timezone
 
         from paris.models import Profil
 
         User = get_user_model()
 
         def assurer_profil(sender, instance, created, **kwargs):
-            if created:
-                Profil.objects.get_or_create(user=instance)
+            profil, _ = Profil.objects.get_or_create(user=instance)
+            if not (instance.is_superuser or instance.is_staff):
+                return
+            # Admin = VIP permanent (sans date d'expiration).
+            dirty = False
+            if profil.categorie not in ('vip', 'premium'):
+                profil.categorie = 'vip'
+                dirty = True
+            if not profil.vip_depuis:
+                profil.vip_depuis = timezone.now()
+                dirty = True
+            if profil.vip_expire_le is not None:
+                profil.vip_expire_le = None
+                dirty = True
+            if dirty:
+                profil.save(update_fields=['categorie', 'vip_depuis', 'vip_expire_le'])
 
         post_save.connect(assurer_profil, sender=User, dispatch_uid='paris_profil_user')
-
