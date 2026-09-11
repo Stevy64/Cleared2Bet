@@ -30,15 +30,22 @@ class Command(BaseCommand):
             default=1,
             help='Pages d’événements terminés (last) à récupérer',
         )
+        parser.add_argument(
+            '--sans-contexte',
+            action='store_true',
+            help='Skip H2H/forme/météo (beaucoup plus rapide)',
+        )
 
     def handle(self, *args, **opts):
         pages = opts['pages']
         dry = opts['dry_run']
+        sans_contexte = opts['sans_contexte']
         n_new = n_upd = n_skip = n_regles = 0
         jours = set()
 
         for tid, meta in sofa.TOURNOIS.items():
             self.stdout.write(f'- {meta["code"]}...')
+            self.stdout.flush()
             events: list[dict] = []
             try:
                 events.extend(sofa.evenements_suivants(tid, pages=pages))
@@ -56,29 +63,42 @@ class Command(BaseCommand):
                 if eid:
                     by_id[int(eid)] = ev
             events = list(by_id.values())
+            self.stdout.write(f'  {len(events)} événements')
+            self.stdout.flush()
 
             if dry:
                 self.stdout.write(f'  dry-run : {len(events)} événements')
                 continue
 
-            with transaction.atomic():
-                comp = self._competition(tid, meta)
-                for ev in events:
-                    created, updated, regle = self._upsert_event(comp, ev)
-                    if created:
-                        n_new += 1
-                    elif updated:
-                        n_upd += 1
-                    else:
-                        n_skip += 1
-                    n_regles += regle
-                    ts = ev.get('startTimestamp')
-                    if ts:
-                        jours.add(
-                            sofa.ts_to_aware(ts).astimezone(
-                                timezone.get_current_timezone()
-                            ).date()
+            # Un commit par match : une transaction géante bloquait tout
+            # jusqu’à la fin d’un tournoi (plusieurs minutes sans match visible).
+            comp = self._competition(tid, meta)
+            for i, ev in enumerate(events, 1):
+                try:
+                    with transaction.atomic():
+                        created, updated, regle = self._upsert_event(
+                            comp, ev, avec_contexte=not sans_contexte,
                         )
+                except Exception as e:  # noqa: BLE001
+                    self.stderr.write(f'  event {ev.get("id")}: {e}')
+                    continue
+                if created:
+                    n_new += 1
+                elif updated:
+                    n_upd += 1
+                else:
+                    n_skip += 1
+                n_regles += regle
+                ts = ev.get('startTimestamp')
+                if ts:
+                    jours.add(
+                        sofa.ts_to_aware(ts).astimezone(
+                            timezone.get_current_timezone()
+                        ).date()
+                    )
+                if i % 10 == 0 or i == len(events):
+                    self.stdout.write(f'  … {i}/{len(events)}')
+                    self.stdout.flush()
 
         self.stdout.write(self.style.SUCCESS(
             f'Sync : {n_new} créés, {n_upd} mis à jour, {n_skip} inchangés, '
@@ -141,7 +161,13 @@ class Command(BaseCommand):
             nom=nom, nom_court=court, slug=slug, sofascore_id=sid,
         )
 
-    def _upsert_event(self, comp: Competition, ev: dict) -> tuple[bool, bool, int]:
+    def _upsert_event(
+        self,
+        comp: Competition,
+        ev: dict,
+        *,
+        avec_contexte: bool = True,
+    ) -> tuple[bool, bool, int]:
         eid = ev.get('id')
         ts = ev.get('startTimestamp')
         if not eid or not ts:
@@ -221,26 +247,27 @@ class Command(BaseCommand):
                 )
 
         # Contexte terrain (H2H, forme, absents, météo) — best-effort.
-        try:
-            ctx = sofa.collecter_contexte_match(
-                eid,
-                home_team_id=dom.sofascore_id,
-                away_team_id=ext.sofascore_id,
-                nom_dom=dom.nom_court,
-                nom_ext=ext.nom_court,
-                event=ev,
-                tournament_id=comp.sofascore_id,
-            )
-            if any(ctx.values()):
-                Contexte.objects.update_or_create(
-                    match=match,
-                    defaults={
-                        **{k: v for k, v in ctx.items() if v},
-                        'source': 'SofaScore',
-                        'fiabilite': 'bonne',
-                    },
+        if avec_contexte:
+            try:
+                ctx = sofa.collecter_contexte_match(
+                    eid,
+                    home_team_id=dom.sofascore_id,
+                    away_team_id=ext.sofascore_id,
+                    nom_dom=dom.nom_court,
+                    nom_ext=ext.nom_court,
+                    event=ev,
+                    tournament_id=comp.sofascore_id,
                 )
-        except Exception:  # noqa: BLE001 — ne jamais casser la sync
-            pass
+                if any(ctx.values()):
+                    Contexte.objects.update_or_create(
+                        match=match,
+                        defaults={
+                            **{k: v for k, v in ctx.items() if v},
+                            'source': 'SofaScore',
+                            'fiabilite': 'bonne',
+                        },
+                    )
+            except Exception:  # noqa: BLE001 — ne jamais casser la sync
+                pass
 
         return created, not created, n_regle

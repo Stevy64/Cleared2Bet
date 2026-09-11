@@ -110,15 +110,19 @@ collectstatic:
 
 sync:
 	$(COMPOSE_PROD) exec web sh -c "\
-		python manage.py synchroniser_sofascore && \
-		python manage.py calculer_analyses && \
+		python manage.py synchroniser_sofascore --sans-contexte --calculer && \
 		python manage.py regler_options --apprendre && \
 		python manage.py purger_chat"
 
 sync-dev:
 	$(COMPOSE_DEV) exec web sh -c "\
-		python manage.py synchroniser_sofascore && \
-		python manage.py calculer_analyses && \
+		python manage.py synchroniser_sofascore --pages 1 --passes 1 --sans-contexte --calculer && \
+		python manage.py regler_options --apprendre && \
+		python manage.py purger_chat"
+
+sync-full-dev:
+	$(COMPOSE_DEV) exec web sh -c "\
+		python manage.py synchroniser_sofascore --calculer && \
 		python manage.py regler_options --apprendre && \
 		python manage.py purger_chat"
 
