@@ -75,12 +75,12 @@ def test_justifier_filet_mentionne_plan_b():
 
 def test_apprendre_ne_modifie_pas_si_echantillon_faible():
     options = [
-        SimpleNamespace(famille='Total buts', probabilite=0.75, resultat='gagne'),
-        SimpleNamespace(famille='Total buts', probabilite=0.72, resultat='perdu'),
+        SimpleNamespace(code='OV_1.5', origine='calcul', probabilite=0.75, resultat='gagne'),
+        SimpleNamespace(code='OV_1.5', origine='calcul', probabilite=0.72, resultat='perdu'),
     ]
     tables, echantillons = apprendre_depuis_options(options, min_famille=MIN_FAMILLE)
-    assert echantillons['Total buts'] == 2
-    assert tables['Total buts'] == CALIBRATION_DEFAUT['Total buts']
+    assert echantillons['+1.5'] == 2
+    assert tables['+1.5'] == CALIBRATION_DEFAUT['+1.5']
 
 
 def test_apprendre_affine_avec_assez_d_obs(tmp_path, settings):
@@ -89,18 +89,19 @@ def test_apprendre_affine_avec_assez_d_obs(tmp_path, settings):
     options = []
     for i in range(40):
         options.append(SimpleNamespace(
-            famille='Total buts',
+            code='OV_1.5',
+            origine='calcul',
             probabilite=0.74 + (i % 5) * 0.01,
             resultat='gagne' if i % 3 else 'perdu',
         ))
     tables, echantillons = apprendre_depuis_options(options, min_famille=20)
-    assert echantillons['Total buts'] == 40
-    assert tables['Total buts'] != CALIBRATION_DEFAUT['Total buts']
-    ys = [y for _, y in tables['Total buts']]
+    assert echantillons['+1.5'] == 40
+    assert tables['+1.5'] != CALIBRATION_DEFAUT['+1.5']
+    ys = [y for _, y in tables['+1.5']]
     assert ys == sorted(ys)
 
 
 def test_corriger_utilise_cache_apres_invalider():
     invalider_calibration_cache()
-    p = corriger(0.752, 'Total buts')
+    p = corriger(0.7434, '+1.5')
     assert 0.005 <= p <= 0.995

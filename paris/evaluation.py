@@ -25,11 +25,14 @@ def evaluer(code, fh, fa, hh=None, ha=None):
         return (ecart >= n) if cote == 'H' else (-ecart >= n)
 
     if code.startswith('HCP_'):
-        # « ne perd pas de plus de h buts » : perdre d'exactement h reste gagnant.
-        # Le >= est le piège de toute cette fonction. Voir les tests.
-        _, cote, h = code.split('_')
-        h = int(h)                      # '+1' -> 1
-        return (ecart + h >= 0) if cote == 'H' else (-ecart + h >= 0)
+        # +1 : ne perd pas de plus d’un but (ecart + 1 >= 0).
+        # -k : gagne par k+1 buts ou plus (ecart > k).
+        _, cote, h_s = code.split('_')
+        h = int(h_s)
+        if h >= 0:
+            return (ecart + h >= 0) if cote == 'H' else (-ecart + h >= 0)
+        need = -h
+        return (ecart > need) if cote == 'H' else (-ecart > need)
 
     if code.startswith('HT_'):
         if hh is None or ha is None: return None
@@ -44,5 +47,7 @@ def evaluer(code, fh, fa, hh=None, ha=None):
     if code == 'BTTS_N': return not (fh > 0 and fa > 0)
     if code == 'DOM_MARQUE': return fh > 0
     if code == 'EXT_MARQUE': return fa > 0
+    if code == 'DOM_2PLUS': return fh >= 2
+    if code == 'EXT_2PLUS': return fa >= 2
 
     raise ValueError(f"code inconnu : {code}")

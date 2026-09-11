@@ -1,57 +1,91 @@
 """
 Moteur de probabilités Cleared2Bet — fonctions pures, sans Django.
 
-Pipeline
---------
-1. Cotes 1X2 (et optionnellement Over/Under 2.5) → probabilités sans marge (de-vig).
-2. Ajustement de λ domicile / extérieur (Poisson + correction Dixon–Coles).
-3. Matrice de scores → options de marchés (totaux, handicaps, mi-temps, etc.).
-4. Calibration empirique sur les marchés *calculés* (pas sur le 1X2 marché).
-5. Sélection journée : 1 tip par bande (prudente / équilibrée / audacieuse) + filet.
+Pipeline (v3.1)
+---------------
+1. Cotes 1X2 (+ OU 2.5) → probabilités sans marge (de-vig).
+2. Ajustement de λ domicile / extérieur (Poisson + Dixon–Coles).
+3. Matrice de scores → options de marchés.
+4. Calibration **marché par marché** (complémentaires cohérents à 100 %).
+5. Sélection journée : 3 niveaux + filet, plafond de formes, routage profil.
 
-Conventions importantes
------------------------
-- RHO négatif (−0.06) : forme « moderne » où 0-0 / 1-1 sont renforcés et
-  1-0 / 0-1 amortis. À recalibrer sur un historique réel avant de changer le signe.
-- Les tips 1X2 / DC / OU2.5 issus du marché ne passent PAS par CALIBRATION.
-- CODE_FILET (OV_0.5) n’est jamais un tip classé ; il sert de plan B affiché.
+Les tips 1X2 / DC / OU2.5 issus du marché ne passent PAS par la correction.
+Le contexte (forme, Elo…) n’entre pas dans le calcul (mesuré sans gain).
 """
 
 from __future__ import annotations
 
 import math
+import re
 from collections import Counter, defaultdict
 
 import numpy as np
 
-# Correction Dixon–Coles des petits scores (voir docstring module).
-RHO = -0.06
-VERSION_MOTEUR = '1.1.0'
-# Part des buts attendus attribuée à la 1re mi-temps (approx. empirique).
-FACTEUR_MI_TEMPS = 0.45
-# Residu (sqrt SSE) au-delà duquel l’ajustement λ est jugé douteux.
-RESIDU_DOUTEUX = 0.02
-# Au-delà, un 1X2 favori n’est pas proposé en tip (trop « collé »).
-P_1X2_MAX_RECO = 0.62
-# Bornes de cotes acceptées en entrée (évite crash / λ absurdes).
-COTE_MIN, COTE_MAX = 1.01, 100.0
-MARGE_MAX = 0.35  # overround 1X2 au-delà → analyse refusée
+from paris.calibrage import (
+    CALIBRATION_MARCHE_DEFAUT,
+    cle_marche_depuis_code,
+    corriger as corriger_marche,
+    tables_marche,
+    verifier_coherence,
+)
 
-# Tables empiriques par défaut (p prédite → p calibrée). Remplacées / fusionnées
-# par data/calibration.json après `apprendre_calibration`.
-CALIBRATION_DEFAUT = {
-    'Total buts':        [(.233, .243), (.551, .550), (.651, .649),
-                          (.752, .735), (.852, .838), (.936, .922)],
-    'Mi-temps':          [(.318, .320), (.550, .547), (.652, .669),
-                          (.741, .722), (.828, .778)],
-    'Handicap':          [(.169, .158), (.549, .527), (.650, .614),
-                          (.754, .704), (.854, .839), (.951, .939)],
-    'BTTS':              [(.416, .461), (.547, .527), (.639, .562), (.731, .601)],
-    'Une équipe marque': [(.417, .572), (.555, .622), (.653, .690),
-                          (.749, .779), (.846, .848), (.931, .914)],
-}
-# Alias rétrocompatibilité tests / imports.
+RHO = -0.06
+VERSION_MOTEUR = '3.1.0'
+FACTEUR_MI_TEMPS = 0.45
+RESIDU_DOUTEUX = 0.02
+P_1X2_MAX_RECO = 0.62
+COTE_MIN, COTE_MAX = 1.01, 100.0
+MARGE_MAX = 0.35
+PLAFOND_FORME = 3
+
+# Alias rétrocompat : tables = courbes par clé de marché (plus par famille).
+CALIBRATION_DEFAUT = CALIBRATION_MARCHE_DEFAUT
 CALIBRATION = CALIBRATION_DEFAUT
+
+# Erreur de calibration mesurée (points). Sous 2,0 = famille fiable.
+FIABILITE = {
+    'Total buts': 1.08,
+    'Mi-temps': 1.70,
+    'Handicap': 1.80,
+    'Ecart de buts': 1.80,
+    'Double chance': 1.83,
+    '1X2': 1.83,
+    "Total d'une équipe": 3.85,
+    'Une équipe marque': 3.88,
+    'BTTS': 4.07,
+}
+FIABLES = frozenset({
+    'Total buts', 'Mi-temps', 'Handicap', 'Ecart de buts', 'Double chance',
+})
+FAMILLES_ELIGIBLES = frozenset({
+    'Total buts', 'Mi-temps', 'Handicap', 'Ecart de buts', 'Double chance', '1X2',
+})
+FAMILLES_PEU_FIABLES = frozenset({
+    'BTTS', 'Une équipe marque', "Total d'une équipe",
+})
+CODE_FILET = 'OV_0.5'
+
+# Bonus négatif = famille privilégiée (224 163 obs.).
+ROUTAGE = {
+    'desequilibre': {
+        'Handicap': -0.7, 'Ecart de buts': -0.7, 'Total buts': -0.2,
+        'Mi-temps': -0.1, 'Double chance': 0.5, '1X2': 1.0,
+    },
+    'moyen': {
+        'Total buts': -0.3, 'Handicap': -0.2, 'Ecart de buts': -0.2,
+        'Mi-temps': -0.1, 'Double chance': 0.0, '1X2': 0.5,
+    },
+    'equilibre': {
+        'Double chance': -0.5, 'Total buts': -0.3, 'Mi-temps': -0.1,
+        'Handicap': 0.3, 'Ecart de buts': 0.4, '1X2': 0.6,
+    },
+}
+
+BANDES = {
+    'prudente': (0.70, 0.90),
+    'equilibree': (0.55, 0.70),
+    'audacieuse': (0.28, 0.505),
+}
 
 _CALIBRATION_CACHE: dict | None = None
 
@@ -59,36 +93,20 @@ _CALIBRATION_CACHE: dict | None = None
 def invalider_calibration_cache() -> None:
     global _CALIBRATION_CACHE
     _CALIBRATION_CACHE = None
+    try:
+        from paris import calibrage
+        calibrage.invalider_cache()
+    except Exception:  # noqa: BLE001
+        pass
 
 
 def tables_calibration() -> dict:
-    """Tables actives (fichier appris si présent, sinon défaut)."""
+    """Tables actives (clés de marché)."""
     global _CALIBRATION_CACHE
     if _CALIBRATION_CACHE is not None:
         return _CALIBRATION_CACHE
-    try:
-        from paris.calibration_store import charger_tables
-        _CALIBRATION_CACHE = charger_tables()
-    except Exception:  # noqa: BLE001 — tests hors Django / fichier absent
-        from copy import deepcopy
-        _CALIBRATION_CACHE = deepcopy(CALIBRATION_DEFAUT)
+    _CALIBRATION_CACHE = tables_marche()
     return _CALIBRATION_CACHE
-
-FAMILLES_ELIGIBLES = frozenset({
-    'Total buts', 'Mi-temps', 'Handicap', 'Double chance', '1X2',
-})
-# Affichées en détail / jauges, jamais choisies comme tips classés.
-FAMILLES_PEU_FIABLES = frozenset({
-    'BTTS', 'Une équipe marque',
-})
-CODE_FILET = 'OV_0.5'
-
-# Intervalles [lo, hi) sauf audacieuse inclusive à droite pour garder ~28–50,5 %.
-BANDES = {
-    'prudente': (0.70, 0.90),
-    'equilibree': (0.55, 0.70),
-    'audacieuse': (0.28, 0.505),
-}
 
 
 class AnalyseInvalide(ValueError):
@@ -108,10 +126,6 @@ def _valider_cote(c: float, label: str) -> float:
 
 
 def devig_puissance(cotes):
-    """Retire la marge d'un marché à 3 issues (méthode puissance / Shin soft).
-
-    Préserver mieux le skew des gros favoris qu’un de-vig proportionnel simple.
-    """
     inv = [1 / c for c in cotes]
     lo, hi = 1.0, 4.0
     for _ in range(90):
@@ -130,7 +144,6 @@ def _pois(k, lam):
 
 
 def _tau(x, y, lh, la, rho):
-    """Facteur Dixon–Coles ; borné à > 0 pour garder une matrice valide."""
     if x == 0 and y == 0:
         t = 1 - lh * la * rho
     elif x == 0 and y == 1:
@@ -145,7 +158,6 @@ def _tau(x, y, lh, la, rho):
 
 
 def matrice(lh, la, rho=RHO, n=12):
-    """Loi jointe P(buts_dom=i, buts_ext=j), tronquée à n puis renormalisée."""
     m = np.array([[_tau(i, j, lh, la, rho) * _pois(i, lh) * _pois(j, la)
                    for j in range(n + 1)] for i in range(n + 1)])
     total = m.sum()
@@ -155,7 +167,6 @@ def matrice(lh, la, rho=RHO, n=12):
 
 
 def ajuster(p1, pn, p2, p_over25=None):
-    """Retrouve λ_h, λ_a en calant P(1/N/2) (et optionnellement P(over 2.5))."""
     from scipy.optimize import minimize
 
     def erreur(v):
@@ -176,36 +187,38 @@ def ajuster(p1, pn, p2, p_over25=None):
     )
     lh, la = math.exp(r.x[0]), math.exp(r.x[1])
     residu = math.sqrt(max(float(r.fun), 0.0))
-    # Échec d’optimiseur → résidu artificiellement élevé (flag douteuse).
     if not getattr(r, 'success', True):
         residu = max(residu, RESIDU_DOUTEUX * 2)
     return lh, la, residu
 
 
-def corriger(p, famille):
-    t = tables_calibration().get(famille)
-    if not t:
-        return p
-    xs = [a for a, _ in t]
-    ys = [b for _, b in t]
-    return float(np.clip(np.interp(p, xs, ys), 0.005, 0.995))
+def corriger(p, marche_ou_famille):
+    """Corrige via clé de marché ; ignore les anciennes clés « famille » orphelines."""
+    # Compat tests / anciens appels : si on passe une famille connue sans table
+    # marché, ne rien faire (sauf si c'est déjà une clé marché).
+    if isinstance(marche_ou_famille, str) and marche_ou_famille in (
+        'Total buts', 'Mi-temps', 'Handicap', 'BTTS', 'Une équipe marque',
+        'Double chance', '1X2', 'Ecart de buts',
+    ):
+        return float(p)
+    return corriger_marche(p, marche_ou_famille, tables_calibration())
 
 
 def _p_over_two_way(over, under):
-    """De-vig proportionnel 2 voies (moins riche que la puissance 3 voies)."""
     return (1 / over) / (1 / over + 1 / under)
 
 
 def profil_match(p1, p2):
-    if max(p1, p2) >= 0.55:
-        return 'desequilibre'
-    if abs(p1 - p2) <= 0.08:
+    """Profil v3.1 : écart |p1−p2| (pas le max favori)."""
+    g = abs(p1 - p2)
+    if g < 0.15:
         return 'equilibre'
-    return 'moyen'
+    if g < 0.42:
+        return 'moyen'
+    return 'desequilibre'
 
 
 def score_probable(M):
-    """Mode de la matrice (score le plus probable), pas un score « utile » tip."""
     i, j = np.unravel_index(int(np.argmax(M)), M.shape)
     return f'{int(i)}-{int(j)}'
 
@@ -217,22 +230,27 @@ def libelle(code, nom_dom='Domicile', nom_ext='Extérieur'):
         '1X2_2': f'{nom_ext} gagne',
         'DC_1X': f'{nom_dom} ne perd pas',
         'DC_X2': f'{nom_ext} ne perd pas',
-        'DC_12': 'Pas de nul',
+        'DC_12': 'Pas de match nul',
         'OV_0.5': 'Au moins 1 but',
         'OV_1.5': 'Au moins 2 buts',
-        'OV_2.5': 'Plus de 2,5 buts',
-        'OV_3.5': 'Plus de 3,5 buts',
-        'OV_4.5': 'Plus de 4,5 buts',
+        'OV_2.5': 'Au moins 3 buts',
+        'OV_3.5': 'Au moins 4 buts',
+        'OV_4.5': 'Au moins 5 buts',
         'UN_0.5': 'Aucun but',
-        'UN_2.5': 'Moins de 2,5 buts',
-        'UN_3.5': 'Moins de 3,5 buts',
-        'UN_4.5': 'Moins de 4,5 buts',
+        'UN_1.5': 'Moins de 2 buts',
+        'UN_2.5': 'Moins de 3 buts',
+        'UN_3.5': 'Moins de 4 buts',
+        'UN_4.5': 'Moins de 5 buts',
         'MRG_H_2': f'{nom_dom} gagne par 2 buts ou plus',
         'MRG_H_3': f'{nom_dom} gagne par 3 buts ou plus',
         'MRG_A_2': f'{nom_ext} gagne par 2 buts ou plus',
         'MRG_A_3': f'{nom_ext} gagne par 3 buts ou plus',
-        'HCP_H_+1': f'{nom_dom} ne perd pas de plus d’un but',
-        'HCP_A_+1': f'{nom_ext} ne perd pas de plus d’un but',
+        'HCP_H_+1': f'{nom_dom} +1 (ne perd pas de plus d’un but)',
+        'HCP_A_+1': f'{nom_ext} +1 (ne perd pas de plus d’un but)',
+        'HCP_H_-1': f'{nom_dom} -1 (gagne par 2 buts ou plus)',
+        'HCP_A_-1': f'{nom_ext} -1 (gagne par 2 buts ou plus)',
+        'HCP_H_-2': f'{nom_dom} -2 (gagne par 3 buts ou plus)',
+        'HCP_A_-2': f'{nom_ext} -2 (gagne par 3 buts ou plus)',
         'HT_1': f'{nom_dom} mène à la pause',
         'HT_N': 'Nul à la pause',
         'HT_2': f'{nom_ext} mène à la pause',
@@ -244,27 +262,97 @@ def libelle(code, nom_dom='Domicile', nom_ext='Extérieur'):
         'BTTS_N': 'Au moins une équipe ne marque pas',
         'DOM_MARQUE': f'{nom_dom} marque',
         'EXT_MARQUE': f'{nom_ext} marque',
+        'DOM_2PLUS': f'{nom_dom} marque 2 buts ou plus',
+        'EXT_2PLUS': f'{nom_ext} marque 2 buts ou plus',
     }
     return table.get(code, code)
 
 
+def forme_pari(code: str, libelle_opt: str = '') -> str:
+    """Normalise une tip pour le plafond journée (même forme ≠ même équipe)."""
+    fixes = {
+        'OV_0.5': 'Au moins 1 but',
+        'OV_1.5': 'Au moins 2 buts',
+        'OV_2.5': 'Au moins 3 buts',
+        'OV_3.5': 'Au moins 4 buts',
+        'OV_4.5': 'Au moins 5 buts',
+        'UN_0.5': 'Aucun but',
+        'UN_1.5': 'Moins de 2 buts',
+        'UN_2.5': 'Moins de 3 buts',
+        'UN_3.5': 'Moins de 4 buts',
+        'UN_4.5': 'Moins de 5 buts',
+        'DC_12': 'Pas de match nul',
+        '1X2_N': 'Match nul',
+        'HT_OV_0.5': 'Au moins 1 but avant la pause',
+        'HT_OV_1.5': 'Au moins 2 buts avant la pause',
+        'HT_UN_0.5': 'Aucun but avant la pause',
+        'HT_UN_1.5': 'Moins de 1,5 but avant la pause',
+        'HT_N': 'Nul à la pause',
+        'BTTS_O': 'BTTS oui',
+        'BTTS_N': 'BTTS non',
+        'DC_1X': 'ÉQUIPE ne perd pas',
+        'DC_X2': 'ÉQUIPE ne perd pas',
+        '1X2_1': 'ÉQUIPE gagne',
+        '1X2_2': 'ÉQUIPE gagne',
+        'HT_1': 'ÉQUIPE mène à la pause',
+        'HT_2': 'ÉQUIPE mène à la pause',
+        'DOM_MARQUE': 'ÉQUIPE marque',
+        'EXT_MARQUE': 'ÉQUIPE marque',
+        'DOM_2PLUS': 'ÉQUIPE marque 2+',
+        'EXT_2PLUS': 'ÉQUIPE marque 2+',
+        'HCP_H_+1': 'ÉQUIPE +1',
+        'HCP_A_+1': 'ÉQUIPE +1',
+        'HCP_H_-1': 'ÉQUIPE -1',
+        'HCP_A_-1': 'ÉQUIPE -1',
+        'HCP_H_-2': 'ÉQUIPE -2',
+        'HCP_A_-2': 'ÉQUIPE -2',
+        'MRG_H_2': 'ÉQUIPE gagne par 2+',
+        'MRG_A_2': 'ÉQUIPE gagne par 2+',
+        'MRG_H_3': 'ÉQUIPE gagne par 3+',
+        'MRG_A_3': 'ÉQUIPE gagne par 3+',
+    }
+    if code in fixes:
+        return fixes[code]
+    s = libelle_opt or code
+    s = re.sub(r'^.+? \+(\d) \(.*\)$', r'ÉQUIPE +\1', s)
+    s = re.sub(r'^.+? -(\d) \(.*\)$', r'ÉQUIPE -\1', s)
+    return s
+
+
+def facteur_cache(opt: dict) -> str:
+    f, code = opt['famille'], opt['code']
+    if f == 'Total buts':
+        return 'buts'
+    if f == 'Mi-temps':
+        return 'mitemps' if code.startswith(('HT_OV', 'HT_UN')) else 'ecart'
+    if f in ('Handicap', 'Ecart de buts'):
+        return 'ecart'
+    if code in ('DC_12', '1X2_N'):
+        return 'nul'
+    return 'ecart'
+
+
 def _option(code, famille, p, origine, nom_dom, nom_ext, corriger_p=True):
+    p_brute = float(p)
     if origine == 'calcul' and corriger_p:
-        p = corriger(p, famille)
+        mk = cle_marche_depuis_code(code)
+        p = corriger_marche(p_brute, mk, tables_calibration())
     p = float(np.clip(p, 0.005, 0.995))
     return {
         'code': code,
         'famille': famille,
         'libelle': libelle(code, nom_dom, nom_ext),
         'probabilite': p,
+        'p_brute': p_brute,
         'cote_juste': 1.0 / p,
         'origine': origine,
         'niveau': 'detail',
+        'marche': cle_marche_depuis_code(code),
+        'fiabilite': FIABILITE.get(famille, 3.0),
     }
 
 
 def options_depuis_matrice(lh, la, p1, pn, p2, p_over25, nom_dom, nom_ext):
-    """Construit toutes les options. 1X2 et OU 2,5 viennent du marché, non corrigés."""
     M = matrice(lh, la)
     n = M.shape[0]
     i = np.arange(n)[:, None]
@@ -302,10 +390,20 @@ def options_depuis_matrice(lh, la, p1, pn, p2, p_over25, nom_dom, nom_ext):
                     'calcul', nom_dom, nom_ext))
 
     for n_mrg in (2, 3):
-        add(_option(f'MRG_H_{n_mrg}', 'Handicap', float(M[ecart >= n_mrg].sum()),
-                    'calcul', nom_dom, nom_ext))
-        add(_option(f'MRG_A_{n_mrg}', 'Handicap', float(M[-ecart >= n_mrg].sum()),
-                    'calcul', nom_dom, nom_ext))
+        pd = float(M[ecart >= n_mrg].sum())
+        pe = float(M[-ecart >= n_mrg].sum())
+        if pd > 0.05:
+            add(_option(f'MRG_H_{n_mrg}', 'Ecart de buts', pd, 'calcul', nom_dom, nom_ext))
+        if pe > 0.05:
+            add(_option(f'MRG_A_{n_mrg}', 'Ecart de buts', pe, 'calcul', nom_dom, nom_ext))
+
+    for k in (1, 2):
+        g = float(M[ecart > k].sum())
+        if g > 0.15:
+            add(_option(f'HCP_H_-{k}', 'Handicap', g, 'calcul', nom_dom, nom_ext))
+        g2 = float(M[-ecart > k].sum())
+        if g2 > 0.15:
+            add(_option(f'HCP_A_-{k}', 'Handicap', g2, 'calcul', nom_dom, nom_ext))
 
     add(_option('HCP_H_+1', 'Handicap', float(M[ecart + 1 >= 0].sum()),
                 'calcul', nom_dom, nom_ext))
@@ -326,16 +424,15 @@ def options_depuis_matrice(lh, la, p1, pn, p2, p_over25, nom_dom, nom_ext):
                 'calcul', nom_dom, nom_ext))
     add(_option('EXT_MARQUE', 'Une équipe marque', float(M[:, 1:].sum()),
                 'calcul', nom_dom, nom_ext))
+    add(_option('DOM_2PLUS', "Total d'une équipe", float(M[2:, :].sum()),
+                'calcul', nom_dom, nom_ext))
+    add(_option('EXT_2PLUS', "Total d'une équipe", float(M[:, 2:].sum()),
+                'calcul', nom_dom, nom_ext))
 
     return opts, M
 
 
 def analyser(cotes_1x2, cotes_ou25=None, nom_dom='Domicile', nom_ext='Extérieur'):
-    """Analyse un match à partir des cotes.
-
-    cotes_1x2 = (c1, cn, c2) ; cotes_ou25 = (over, under) facultatif.
-    Lève AnalyseInvalide si les cotes sont inutilisables.
-    """
     c1 = _valider_cote(cotes_1x2[0], '1')
     cn = _valider_cote(cotes_1x2[1], 'N')
     c2 = _valider_cote(cotes_1x2[2], '2')
@@ -365,6 +462,7 @@ def analyser(cotes_1x2, cotes_ou25=None, nom_dom='Domicile', nom_ext='Extérieur
         'residu': residu,
         'douteuse': residu > RESIDU_DOUTEUX,
         'version_moteur': VERSION_MOTEUR,
+        'incoherence': verifier_coherence(opts),
         'options': opts,
     }
 
@@ -374,6 +472,10 @@ def est_eligible(opt):
         return False
     if opt['famille'] in FAMILLES_PEU_FIABLES:
         return False
+    if opt['famille'] in FIABLES:
+        return True
+    if opt['famille'] == '1X2' and opt['probabilite'] < P_1X2_MAX_RECO:
+        return True
     if opt['famille'] not in FAMILLES_ELIGIBLES:
         return False
     if opt['famille'] == '1X2' and opt['probabilite'] >= P_1X2_MAX_RECO:
@@ -386,61 +488,69 @@ def _dans_bande(p, niveau):
     return lo <= p < hi if niveau != 'audacieuse' else lo <= p <= hi
 
 
-def _bonus_profil(opt, profil):
-    fam = opt['famille']
-    if profil == 'desequilibre' and fam == 'Handicap':
-        return 0.18
-    if profil == 'equilibre' and fam in ('Double chance', 'Total buts'):
-        return 0.18
-    if profil == 'moyen' and fam in ('Total buts', 'Mi-temps'):
-        return 0.06
-    return 0.0
+def _cout_choix(opt, profil, moyennes):
+    d = 0.0
+    key = opt['code']
+    if moyennes and key in moyennes:
+        d = -2.2 * abs(opt['probabilite'] - moyennes[key])
+    return (
+        FIABILITE.get(opt['famille'], 3.0)
+        + ROUTAGE.get(profil, {}).get(opt['famille'], 0.3)
+        + d
+    )
 
 
-def _score_choix(opt, profil, moyennes):
-    """Préfère les tips qui s’écartent de la moyenne journée + bonus de profil."""
-    p = opt['probabilite']
-    moy = moyennes.get(opt['code'], p)
-    return abs(p - moy) + _bonus_profil(opt, profil)
-
-
-def choisir_trois(options, profil, moyennes, codes_eviter=None):
-    """Retourne une copie des options avec niveau renseigné (3 + filet).
-
-    codes_eviter : codes sur-représentés sur la journée — évités si une
-    alternative éligible existe dans la bande (sinon repli autorisé).
-    """
+def choisir_trois(options, profil, moyennes, codes_eviter=None, compteur_formes=None):
+    """Classe 3 tips (familles distinctes) + filet ; respecte le plafond de formes."""
     eviter = set(codes_eviter or ())
+    compteur = compteur_formes if compteur_formes is not None else Counter()
     out = [dict(o) for o in options]
-    # Remet les niveaux au détail sauf filet (re-classement propre).
     for o in out:
         o['niveau'] = 'filet' if o['code'] == CODE_FILET else 'detail'
+        o['forme'] = forme_pari(o['code'], o.get('libelle', ''))
+        o['facteur'] = facteur_cache(o)
 
     familles_prises = set()
     codes_pris = set()
+    formes_prises = set()
 
     def _candidats(niveau, ignorer_eviter=False):
-        bande = [
-            o for o in out
-            if est_eligible(o)
-            and o['code'] not in codes_pris
-            and o['famille'] not in familles_prises
-            and _dans_bande(o['probabilite'], niveau)
-            and (ignorer_eviter or o['code'] not in eviter)
-        ]
+        bande = []
+        for o in out:
+            if not est_eligible(o):
+                continue
+            if o['code'] in codes_pris or o['famille'] in familles_prises:
+                continue
+            if o['forme'] in formes_prises:
+                continue
+            if compteur[o['forme']] >= PLAFOND_FORME:
+                continue
+            if not _dans_bande(o['probabilite'], niveau):
+                continue
+            if not ignorer_eviter and o['code'] in eviter:
+                continue
+            bande.append(o)
         if bande:
-            bande.sort(key=lambda o: -_score_choix(o, profil, moyennes))
+            bande.sort(key=lambda o: (_cout_choix(o, profil, moyennes), -o['probabilite']))
             return bande
         centre = (BANDES[niveau][0] + BANDES[niveau][1]) / 2
-        repli = [
-            o for o in out
-            if est_eligible(o)
-            and o['code'] not in codes_pris
-            and o['famille'] not in familles_prises
-            and (ignorer_eviter or o['code'] not in eviter)
-        ]
+        repli = []
+        for o in out:
+            if not est_eligible(o):
+                continue
+            if o['code'] in codes_pris or o['famille'] in familles_prises:
+                continue
+            if o['forme'] in formes_prises:
+                continue
+            if compteur[o['forme']] >= PLAFOND_FORME:
+                continue
+            if not ignorer_eviter and o['code'] in eviter:
+                continue
+            repli.append(o)
         repli.sort(
-            key=lambda o: abs(o['probabilite'] - centre) - _score_choix(o, profil, moyennes)
+            key=lambda o: (
+                abs(o['probabilite'] - centre) + _cout_choix(o, profil, moyennes),
+            )
         )
         return repli
 
@@ -454,6 +564,8 @@ def choisir_trois(options, profil, moyennes, codes_eviter=None):
         choisi['niveau'] = niveau
         familles_prises.add(choisi['famille'])
         codes_pris.add(choisi['code'])
+        formes_prises.add(choisi['forme'])
+        compteur[choisi['forme']] += 1
 
     return out
 
@@ -466,15 +578,21 @@ def moyennes_par_code(listes_options):
     return {k: sum(v) / len(v) for k, v in acc.items()}
 
 
-def classer_journee(analyses):
-    """Ajoute le classement (niveaux) à chaque analyse, en tenant compte de la journée.
+def lisibilite_match(analyse) -> float:
+    """Plus l’entropie 1X2 est basse, plus le match est lisible (prioritaire)."""
+    p = [analyse['p1'], analyse['pn'], analyse['p2']]
+    ent = -sum(x * np.log(max(x, 1e-9)) for x in p)
+    return float(-ent)
 
-    Si une même tip occupe trop souvent le même niveau, un 2e passage évite
-    ces codes lorsqu’une alternative existe (anti-uniformité douce).
-    """
+
+def classer_journee(analyses):
+    """Portefeuille journée : matchs lisibles d’abord + plafond 3 formes."""
     moy = moyennes_par_code(a['options'] for a in analyses)
-    for a in analyses:
-        a['options'] = choisir_trois(a['options'], a['profil'], moy)
+    compteur = Counter()
+    ordre = sorted(range(len(analyses)), key=lambda i: -lisibilite_match(analyses[i]))
+    for i in ordre:
+        a = analyses[i]
+        a['options'] = choisir_trois(a['options'], a['profil'], moy, compteur_formes=compteur)
 
     sels = [selections_niveaux(a['options']) for a in analyses]
     exclus = set()
@@ -487,8 +605,13 @@ def classer_journee(analyses):
             if count > len(sels) / 3:
                 exclus.add(code_dom)
     if exclus:
-        for a in analyses:
-            a['options'] = choisir_trois(a['options'], a['profil'], moy, codes_eviter=exclus)
+        compteur2 = Counter()
+        for i in ordre:
+            a = analyses[i]
+            a['options'] = choisir_trois(
+                a['options'], a['profil'], moy,
+                codes_eviter=exclus, compteur_formes=compteur2,
+            )
             a['uniformite_corrigee'] = True
     else:
         for a in analyses:
@@ -497,10 +620,6 @@ def classer_journee(analyses):
 
 
 def uniformite_excessive(selections, seuil=1 / 3):
-    """True si une même option occupe le même niveau sur plus d'un tiers des matchs.
-
-    selections : liste de dicts {niveau: code} pour prudente/equilibree/audacieuse.
-    """
     if not selections:
         return False
     n = len(selections)

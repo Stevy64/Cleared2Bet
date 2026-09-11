@@ -42,10 +42,15 @@ def test_ajuster_retrouve_ordre_des_favoris():
 
 
 def test_corriger_interpole_et_borne():
-    # Point de calibration Total buts : 0.752 → 0.735
-    assert corriger(0.752, 'Total buts') == pytest.approx(0.735, abs=0.002)
-    assert corriger(0.5, 'Famille inconnue') == 0.5
-    assert 0.005 <= corriger(0.0, 'BTTS') <= 0.995
+    # Courbe marché +1.5 (v3.1) : ~0.7434 → 0.737
+    assert corriger(0.7434, '+1.5') == pytest.approx(0.737, abs=0.01)
+    assert corriger(0.5, None) == 0.5
+    assert corriger(0.5, 'cle_inconnue') == 0.5
+    # Complément : 1 - corriger(1-p)
+    p_un = corriger(0.30, ('~', '+2.5'))
+    assert 0.005 <= p_un <= 0.995
+    # Anciennes clés « famille » : pas de correction aveugle
+    assert corriger(0.75, 'Total buts') == 0.75
 
 
 def test_marche_1x2_et_ou25_non_corriges():
@@ -162,3 +167,40 @@ def test_classement_journee_pas_uniforme():
 def test_profil_gros_favori_et_equilibre():
     assert profil_match(0.62, 0.18) == 'desequilibre'
     assert profil_match(0.34, 0.33) == 'equilibre'
+
+
+def test_coherence_complementaires_apres_calibration():
+    a = analyser((2.10, 3.40, 3.40), None, 'A', 'B')
+    assert a['incoherence'] < 1e-9
+    by = {o['code']: o for o in a['options']}
+    assert by['OV_1.5']['probabilite'] + by['UN_1.5']['probabilite'] == pytest.approx(1.0)
+    assert by['OV_3.5']['probabilite'] + by['UN_3.5']['probabilite'] == pytest.approx(1.0)
+
+
+def test_plafond_forme_sur_journee():
+    from collections import Counter
+    from paris.moteur import forme_pari
+
+    cotes = [
+        ((1.35, 5.00, 9.00), (1.55, 2.50)),
+        ((1.40, 4.80, 8.00), (1.60, 2.40)),
+        ((1.55, 4.20, 6.50), (1.70, 2.20)),
+        ((1.90, 3.50, 4.10), (1.85, 2.00)),
+        ((2.20, 3.30, 3.30), (1.95, 1.90)),
+        ((2.40, 3.20, 3.00), (2.05, 1.80)),
+        ((3.10, 3.30, 2.30), (1.90, 1.95)),
+        ((4.50, 3.70, 1.75), (1.80, 2.05)),
+        ((6.50, 4.40, 1.50), (1.65, 2.30)),
+        ((8.00, 5.00, 1.38), (1.58, 2.45)),
+        ((2.05, 3.25, 3.80), (2.20, 1.70)),
+        ((2.80, 3.10, 2.70), (1.72, 2.15)),
+    ]
+    analyses = [analyser(c1x2, ou, f'D{i}', f'E{i}') for i, (c1x2, ou) in enumerate(cotes)]
+    classer_journee(analyses)
+    formes = Counter()
+    for a in analyses:
+        for o in a['options']:
+            if o['niveau'] in ('prudente', 'equilibree', 'audacieuse'):
+                formes[forme_pari(o['code'], o['libelle'])] += 1
+    assert formes
+    assert max(formes.values()) <= 3

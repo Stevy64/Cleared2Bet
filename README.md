@@ -52,6 +52,8 @@ Feuille de route : [docs/deploy.md](docs/deploy.md)
    - Docker : [docs/docker.md](docs/docker.md) (`make prod-build`, images `cleared2bet-prod`)  
    - ou systemd + nginx
 
+Moteur d’analyse **v3.1** (calibration marché par marché) : [docs/moteur-v31.md](docs/moteur-v31.md).
+
 ```bash
 # Dev Docker
 make dev-build
