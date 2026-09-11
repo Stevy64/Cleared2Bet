@@ -3,13 +3,13 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#0b1728">
+  <meta name="theme-color" content="#ff7a30">
   <meta name="color-scheme" content="light">
   <meta name="description" content="You Are Cleared to Bet. Chances réelles, cote juste.">
   <title>Cleared2Bet</title>
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
-  <link rel="stylesheet" href="/static/css/app.css?v=65">
+  <link rel="stylesheet" href="/static/css/app.css?v=67">
 </head>
 <body
   x-data="c2b()"
@@ -19,26 +19,30 @@
   <a class="skip" href="#contenu">Aller au contenu</a>
 
   <nav class="topnav" :class="tabHidden ? 'topnav-hide' : ''" aria-label="Compte">
-    <button type="button" class="topnav-brand" @click="allerAccueil()">Cleared2Bet</button>
+    <button type="button" class="topnav-brand" @click="allerAccueil()" aria-label="Cleared2Bet">
+      <span class="topnav-brand-full">Cleared2Bet</span>
+      <span class="topnav-brand-short" aria-hidden="true">C2B</span>
+    </button>
     <div class="topnav-right">
       <button type="button" class="topnav-install" x-show="!installePWA" x-cloak
-        @click="installerPWA()" title="Installer l’application">
+        @click="installerPWA()" title="Installer l’application" aria-label="Installer l’application">
         <span x-html="icon('download','icon icon-sm')"></span>
         <span class="topnav-install-label">Installer</span>
       </button>
       <span class="badge-cat" :class="'cat-' + categorie" :title="libCategorie">
         <span class="badge-cat-ico" x-html="iconCategorie()"></span>
-        <span x-text="libCategorie"></span>
+        <span class="badge-cat-label" x-text="libCategorie"></span>
       </span>
       <button type="button" class="topnav-account" x-show="!authentifie" x-cloak
-        @click="ouvrirAuth('Connecte-toi pour accéder à ton compte Membre.')">
+        @click="ouvrirAuth('Connecte-toi pour accéder à ton compte Membre.')"
+        title="Connexion" aria-label="Connexion">
         <span x-html="icon('users','icon icon-sm')"></span>
-        Connexion
+        <span class="topnav-account-label">Connexion</span>
       </button>
       <button type="button" class="topnav-account on" x-show="authentifie" x-cloak
-        @click="go('/reglages')" :title="username">
+        @click="go('/reglages')" :title="username" :aria-label="username || 'Compte'">
         <span x-html="icon('users','icon icon-sm')"></span>
-        <span x-text="username || 'Compte'"></span>
+        <span class="topnav-account-label" x-text="username || 'Compte'"></span>
       </button>
     </div>
   </nav>

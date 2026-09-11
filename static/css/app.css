@@ -48,38 +48,38 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 8px;
   min-height: var(--topnav-h);
-  padding: 12px 16px;
-  padding-top: calc(12px + env(safe-area-inset-top, 0px));
+  max-width: 100%;
+  padding: 10px 12px;
+  padding-top: calc(10px + env(safe-area-inset-top, 0px));
   background:
-    linear-gradient(180deg, rgba(255, 122, 48, 0.12) 0%, transparent 42%),
-    linear-gradient(145deg, #12263a 0%, #0b1728 55%, #07101c 100%);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.14) 0%, transparent 45%),
+    linear-gradient(135deg, #ff8a45 0%, #ff7a30 42%, #e8631c 100%);
+  border-bottom: 1px solid rgba(120, 40, 0, 0.18);
   color: #fff;
   box-shadow:
-    0 10px 28px rgba(8, 16, 28, 0.32),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    0 10px 28px rgba(232, 99, 28, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
   transition: transform 0.28s var(--ease), opacity 0.28s var(--ease);
-  backdrop-filter: saturate(1.15);
+  overflow: hidden;
+  box-sizing: border-box;
 }
 .topnav::after {
   content: "";
   position: absolute;
-  left: 10%;
-  right: 10%;
+  left: 12%;
+  right: 12%;
   bottom: 0;
   height: 2px;
   border-radius: 999px;
   background: linear-gradient(
     90deg,
     transparent 0%,
-    rgba(255, 122, 48, 0.15) 20%,
-    #ff7a30 50%,
-    rgba(255, 122, 48, 0.15) 80%,
+    rgba(255, 255, 255, 0.55) 50%,
     transparent 100%
   );
-  opacity: 0.9;
+  opacity: 0.7;
   pointer-events: none;
 }
 .topnav-hide {
@@ -93,89 +93,162 @@
   background: transparent;
   color: #fff;
   font: inherit;
-  font-size: 1.28rem;
+  font-size: clamp(1rem, 4.5vw, 1.28rem);
   font-weight: 800;
   letter-spacing: -0.03em;
   cursor: pointer;
   padding: 6px 2px;
-  text-shadow: 0 1px 12px rgba(255, 122, 48, 0.25);
+  text-shadow: 0 1px 10px rgba(80, 25, 0, 0.25);
   transition: transform 0.2s var(--ease), text-shadow 0.2s var(--ease);
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 46%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: left;
 }
+.topnav-brand-short { display: none; }
 .topnav-brand:active {
   transform: scale(0.97);
 }
 .topnav-right {
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: flex-end;
+  gap: 6px;
   min-width: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
 }
 .topnav-account {
   appearance: none;
-  border: 1px solid rgba(255, 255, 255, 0.28);
-  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  background: rgba(255, 255, 255, 0.18);
   color: #fff;
   font: inherit;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
-  min-height: 40px;
-  padding: 0 13px;
+  min-height: 36px;
+  padding: 0 10px;
   border-radius: 999px;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   cursor: pointer;
-  max-width: 150px;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  max-width: min(132px, 34vw);
+  flex: 0 1 auto;
+  min-width: 0;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28);
   transition: background 0.2s var(--ease), border-color 0.2s var(--ease);
 }
-.topnav-account span:last-child {
+.topnav-account-label {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 .topnav-account.on {
-  background: rgba(255, 255, 255, 0.18);
-  border-color: rgba(255, 122, 48, 0.45);
+  background: rgba(11, 23, 40, 0.22);
+  border-color: rgba(11, 23, 40, 0.28);
 }
 .topnav-install {
   appearance: none;
-  border: 1px solid rgba(255, 255, 255, 0.35);
-  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  background: rgba(255, 255, 255, 0.18);
   color: #fff;
   font: inherit;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
-  min-height: 40px;
-  padding: 0 13px;
+  min-height: 36px;
+  min-width: 36px;
+  padding: 0 10px;
   border-radius: 999px;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  justify-content: center;
+  gap: 5px;
   cursor: pointer;
   white-space: nowrap;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  flex: 0 0 auto;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28);
   transition: background 0.2s var(--ease);
 }
 .topnav-install:hover {
-  background: rgba(255, 255, 255, 0.24);
+  background: rgba(255, 255, 255, 0.28);
 }
-@media (max-width: 420px) {
-  .topnav-install-label { display: none; }
+.topnav .badge-cat.cat-visiteur {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+.topnav .badge-cat.cat-membre {
+  background: rgba(11, 23, 40, 0.2);
+  color: #fff;
+  border: 1px solid rgba(11, 23, 40, 0.25);
+}
+.topnav .badge-cat.cat-premium,
+.topnav .badge-cat.cat-vip {
+  background: rgba(11, 23, 40, 0.28);
+  color: #fff7e8;
+  border: 1px solid rgba(255, 236, 180, 0.45);
 }
 .badge-cat {
   display: inline-flex;
   align-items: center;
   gap: 5px;
   min-height: 36px;
-  padding: 0 12px 0 10px;
+  padding: 0 10px 0 8px;
   border-radius: 999px;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   white-space: nowrap;
+  flex: 0 0 auto;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+.badge-cat-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 7.5em;
+}
+
+/* Mobile étroit : icônes compactes, labels masqués si besoin */
+@media (max-width: 430px) {
+  .topnav {
+    gap: 6px;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+  .topnav .topnav-install-label { display: none; }
+  .topnav .topnav-install {
+    width: 36px;
+    padding: 0;
+  }
+  .topnav .badge-cat-label { display: none; }
+  .topnav .badge-cat {
+    width: 36px;
+    padding: 0;
+    justify-content: center;
+  }
+  .topnav .topnav-account {
+    max-width: none;
+    flex: 0 0 auto;
+  }
+}
+@media (max-width: 360px) {
+  .topnav-brand-full { display: none; }
+  .topnav-brand-short { display: inline; }
+  .topnav-brand {
+    max-width: none;
+    font-size: 1.1rem;
+  }
+  .topnav .topnav-account-label { display: none; }
+  .topnav .topnav-account {
+    width: 36px;
+    padding: 0;
+    justify-content: center;
+  }
 }
 .badge-cat-ico {
   display: grid;
