@@ -9,7 +9,7 @@
   <title>Cleared2Bet</title>
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
-  <link rel="stylesheet" href="/static/css/app.css?v=63">
+  <link rel="stylesheet" href="/static/css/app.css?v=65">
 </head>
 <body
   x-data="c2b()"
@@ -63,8 +63,8 @@
 
     <template x-if="page === 'matchs'">
       <div class="hero-copy">
-        <h1 class="slogan">Bienvenue sur le Fax du Bet</h1>
-        <p class="slogan-sub">Clear2Bet, votre clairance vers la victoire</p>
+        <h1 class="slogan">Bienvenue sur Clear2Bet</h1>
+        <p class="slogan-sub">Votre moteur d'analyse</p>
         <div class="hero-actions">
           <button type="button" class="btn btn-hero btn-hero-glass" @click="ouvrirCompos()">
             <span x-html="icon('layers','icon icon-sm')"></span>
@@ -82,10 +82,14 @@
     </template>
   </header>
 
-  <main id="contenu" class="sheet">
+  <main id="contenu" class="sheet" :class="page === 'matchs' ? 'sheet-matchs' : ''">
     <template x-if="page === 'matchs'">
       <div class="ecran" :class="navDir === 'back' ? 'ecran-back' : ''"
         @touchstart="ptrStart($event)" @touchend="ptrEnd($event)">
+        <div class="matchs-pull-hint" aria-hidden="true">
+          <span x-html="icon('chevron-up')"></span>
+          <span>Tire vers le haut</span>
+        </div>
         <div class="puces" role="tablist" aria-label="Compétitions">
           <button type="button" role="tab"
             :aria-selected="filtre === ''"
@@ -783,6 +787,16 @@
               <p class="hint" x-show="authMode === 'register'">
                 Au moins 8 caractères, évite les mots de passe trop simples.
               </p>
+              <label class="auth-cgu" x-show="authMode === 'register'" x-cloak>
+                <input type="checkbox" x-model="authAcceptCgu" :required="authMode === 'register'">
+                <span>
+                  J’ai lu et j’accepte les
+                  <button type="button" class="btn-text" @click.stop.prevent="ouvrirCgu()">
+                    Conditions Générales d’utilisation (CGU)
+                  </button>.
+                  Je reste seul responsable de mes décisions de jeu.
+                </span>
+              </label>
               <button type="submit" class="btn btn-block" :disabled="authBusy"
                 x-text="authBusy ? 'Patiente…' : (authMode === 'register' ? 'Créer mon compte' : 'Se connecter')"></button>
               <p class="ko" x-show="authErr" x-text="authErr" x-cloak></p>
@@ -836,11 +850,22 @@
           <button type="button" class="btn btn-ghost" @click="purgerCache()">Purger le cache</button>
           <p class="hint" x-show="cachePurge" x-cloak>Cache vidé. Recharge si besoin.</p>
         </section>
+
+        <section class="bloc-card">
+          <h2>Conditions Générales d’utilisation (CGU)</h2>
+          <p class="hint">
+            Cleared2Bet est un outil d’analyse probabiliste. Aucun gain n’est garanti.
+            L’utilisateur reste seul responsable de ses décisions de jeu.
+          </p>
+          <button type="button" class="btn btn-ghost btn-block" @click="ouvrirCgu()">
+            Lire les CGU
+          </button>
+        </section>
       </div>
     </template>
   </main>
 
-  <div class="sheet-backdrop" :class="(sheetApercu || sheetClub || sheetAuth || sheetCompos || sheetInstall || sheetJustif || sheetVip) ? 'open' : ''"
+  <div class="sheet-backdrop" :class="(sheetApercu || sheetClub || sheetAuth || sheetCompos || sheetInstall || sheetJustif || sheetVip || sheetCgu) ? 'open' : ''"
     @click="fermerSheets()" @keydown.escape.window="fermerSheets()"></div>
 
   <div class="bottom-sheet sheet-install" :class="sheetInstall ? 'open' : ''"
@@ -960,6 +985,24 @@
                   <strong class="pred-pct"
                     x-text="bloc.prudente && fmtPct(bloc.prudente.probabilite)"></strong>
                 </button>
+                <button type="button" class="compos-opt pred-recommandee"
+                  :class="!peutVip ? 'is-locked' : ''"
+                  x-show="bloc.recommandee" x-cloak
+                  @click="ouvrirJustif(bloc, bloc.recommandee)"
+                  :aria-label="'Justification : ' + (bloc.recommandee && bloc.recommandee.libelle)">
+                  <span class="pred-mark" aria-hidden="true" x-html="icon('trending')"></span>
+                  <div class="pred-copy">
+                    <span class="opt-niv">
+                      Recommandée
+                      <span class="vip-lock-pill" x-show="!peutVip" x-cloak>
+                        <span x-html="icon('crown','icon icon-sm')"></span> VIP
+                      </span>
+                    </span>
+                    <span class="pred-lib" x-text="bloc.recommandee && bloc.recommandee.libelle"></span>
+                  </div>
+                  <strong class="pred-pct"
+                    x-text="bloc.recommandee && fmtPct(bloc.recommandee.probabilite)"></strong>
+                </button>
                 <button type="button" class="compos-opt pred-filet"
                   :class="!peutVip ? 'is-locked' : ''"
                   x-show="bloc.filet" x-cloak
@@ -1029,8 +1072,183 @@
           </article>
         </template>
       </div>
-      <p class="justif-foot">Faits match + cotes — résumé court pour décider vite.</p>
+      <p class="justif-foot">
+        Estimation indicative, pas une certitude — reste maître du jeu :
+        tes décisions et tes paris t’appartiennent.
+        <button type="button" class="btn-text justif-cgu-link" @click="ouvrirCgu()">Conditions d’utilisation</button>
+      </p>
       <button type="button" class="btn btn-ghost btn-block" @click="fermerJustif()">Fermer</button>
+    </div>
+  </div>
+
+  <div class="bottom-sheet sheet-cgu" :class="sheetCgu ? 'open' : ''"
+    role="dialog" aria-modal="true" aria-label="Conditions générales d’utilisation"
+    :aria-hidden="!sheetCgu">
+    <div class="sheet-handle" aria-hidden="true"></div>
+    <div class="sheet-body cgu-body">
+      <h2 class="sheet-title">Conditions générales d’utilisation</h2>
+      <p class="cgu-meta">Dernière mise à jour : 11 septembre 2026</p>
+      <div class="cgu-doc">
+        <section>
+          <h3>1. Objet</h3>
+          <p>
+            Les présentes Conditions générales d’utilisation (ci-après «&nbsp;CGU&nbsp;»)
+            régissent l’accès et l’utilisation de l’application et du site Cleared2Bet
+            (ci-après le «&nbsp;Service&nbsp;»). En accédant au Service, en créant un compte
+            ou en consultant les analyses, vous acceptez sans réserve les présentes CGU.
+            Si vous n’acceptez pas ces conditions, vous ne devez pas utiliser le Service.
+          </p>
+        </section>
+        <section>
+          <h3>2. Nature du Service</h3>
+          <p>
+            Cleared2Bet est un <strong>outil d’analyse et d’aide à la décision</strong>
+            portant sur des rencontres sportives. Le Service propose des estimations
+            probabilistes, des justifications et des indicateurs statistiques issus de
+            modèles algorithmiques et de données de marché.
+          </p>
+          <p>
+            Cleared2Bet <strong>n’est pas</strong> un opérateur de jeux d’argent,
+            un bookmaker, un intermédiaire de paris, ni un conseiller financier,
+            juridique ou d’investissement. Aucune mise en jeu d’argent n’est proposée
+            ni collectée via le Service.
+          </p>
+        </section>
+        <section>
+          <h3>3. Absence de garantie — estimations uniquement</h3>
+          <p>
+            Toute information affichée (probabilités, cotes justes, tips, compos,
+            justifications, scores probables, contextes) constitue une
+            <strong>estimation indicative</strong>, fondée sur des modèles et des
+            données susceptibles d’être incomplètes, erronées, retardées ou obsolètes.
+          </p>
+          <p>
+            Ces contenus <strong>ne constituent en aucun cas une vérité absolue</strong>,
+            une prédiction certaine, ni une promesse de résultat. Le sport comporte
+            une part d’aléa : aucun système d’analyse ne peut garantir l’issue d’un match
+            ni le succès d’un pari.
+          </p>
+          <p>
+            Cleared2Bet <strong>ne garantit aucun gain</strong>, aucun taux de réussite
+            et aucune performance passée, présente ou future. Les performances
+            historiques éventuelles ne préjugent pas des résultats futurs.
+          </p>
+        </section>
+        <section>
+          <h3>4. Responsabilité de l’utilisateur</h3>
+          <p>
+            Vous restez <strong>seul et unique responsable</strong> de l’usage que vous
+            faites du Service et de toute décision prise à partir des informations
+            consultées, y compris — sans limitation — toute décision de parier,
+            de miser, de s’abstenir ou de partager un contenu.
+          </p>
+          <p>
+            Vous reconnaissez que vous <strong>restez maître du jeu</strong> :
+            Cleared2Bet ne décide pas à votre place. Toute perte financière, tout
+            préjudice moral ou matériel résultant de vos décisions est de votre
+            seule responsabilité.
+          </p>
+          <p>
+            Vous vous engagez à utiliser le Service conformément aux lois applicables
+            dans votre pays de résidence, notamment en matière de jeux d’argent
+            et de protection des mineurs.
+          </p>
+        </section>
+        <section>
+          <h3>5. Jeu responsable</h3>
+          <p>
+            Les paris sportifs comportent des risques de pertes d’argent et peuvent
+            engendrer une dépendance. Jouez uniquement avec des sommes que vous pouvez
+            vous permettre de perdre. Si vous pensez avoir un problème lié au jeu,
+            consultez les dispositifs d’aide disponibles dans votre pays
+            (en France : Joueurs Info Service — 09&nbsp;74&nbsp;75&nbsp;13&nbsp;13,
+            appel non surtaxé).
+          </p>
+          <p>
+            Le Service est réservé aux personnes majeures selon la législation locale.
+            En utilisant Cleared2Bet, vous déclarez avoir l’âge légal requis.
+          </p>
+        </section>
+        <section>
+          <h3>6. Limitation de responsabilité</h3>
+          <p>
+            Dans les limites autorisées par la loi, l’éditeur du Service ne saurait être
+            tenu responsable des dommages directs ou indirects, pertes de chance,
+            pertes financières, manques à gagner, préjudices commerciaux ou tout autre
+            préjudice résultant :
+          </p>
+          <ul>
+            <li>de l’utilisation ou de l’impossibilité d’utiliser le Service ;</li>
+            <li>de la confiance accordée aux analyses, tips ou probabilités ;</li>
+            <li>d’erreurs, omissions, bugs, indisponibilités ou retards du Service ;</li>
+            <li>de données fournies par des tiers (cotes, calendriers, stats, logos, etc.) ;</li>
+            <li>de décisions de paris ou d’investissement prises par l’utilisateur.</li>
+          </ul>
+          <p>
+            Le Service est fourni «&nbsp;en l’état&nbsp;» et «&nbsp;selon disponibilité&nbsp;»,
+            sans garantie d’exactitude, d’exhaustivité, de continuité ou d’adéquation
+            à un usage particulier.
+          </p>
+        </section>
+        <section>
+          <h3>7. Compte utilisateur et accès VIP</h3>
+          <p>
+            Vous êtes responsable de la confidentialité de vos identifiants et de
+            toute activité réalisée via votre compte. L’éditeur peut suspendre ou
+            résilier un accès en cas d’abus, de fraude, de contournement des règles
+            ou d’usage contraire aux présentes CGU.
+          </p>
+          <p>
+            Les fonctionnalités VIP éventuelles sont des accès à des contenus
+            d’analyse supplémentaires ; elles n’offrent aucune garantie de résultat
+            sur les paris.
+          </p>
+        </section>
+        <section>
+          <h3>8. Propriété intellectuelle</h3>
+          <p>
+            L’ensemble des éléments du Service (marque, textes, interfaces, modèles,
+            bases de données, graphismes) est protégé. Toute reproduction,
+            extraction massive ou exploitation commerciale non autorisée est interdite.
+          </p>
+        </section>
+        <section>
+          <h3>9. Données personnelles</h3>
+          <p>
+            Les données collectées (compte, votes, messages éventuels du salon)
+            sont traitées pour faire fonctionner le Service. Vous pouvez demander
+            des informations sur vos données via les canaux de contact mis à disposition
+            par l’éditeur.
+          </p>
+        </section>
+        <section>
+          <h3>10. Modification des CGU</h3>
+          <p>
+            L’éditeur peut modifier les présentes CGU à tout moment. La version
+            applicable est celle publiée dans l’application à la date de consultation.
+            La poursuite de l’utilisation du Service après mise à jour vaut acceptation
+            des nouvelles conditions.
+          </p>
+        </section>
+        <section>
+          <h3>11. Droit applicable</h3>
+          <p>
+            Les présentes CGU sont régies par le droit français. Tout litige relatif
+            à leur interprétation ou à leur exécution sera soumis aux tribunaux
+            compétents, sous réserve des dispositions d’ordre public applicables
+            aux consommateurs.
+          </p>
+        </section>
+        <section>
+          <h3>12. Acceptation</h3>
+          <p>
+            En cochant la case d’acceptation lors de l’inscription, ou en utilisant
+            le Service, vous reconnaissez avoir lu, compris et accepté les présentes CGU,
+            et vous assumez l’entière responsabilité de vos décisions de jeu.
+          </p>
+        </section>
+      </div>
+      <button type="button" class="btn btn-ghost btn-block" @click="fermerCgu()">Fermer</button>
     </div>
   </div>
 
@@ -1211,6 +1429,16 @@
           </span>
         </label>
         <p class="hint" x-show="authMode === 'register'">Au moins 8 caractères, pas trop simple.</p>
+        <label class="auth-cgu" x-show="authMode === 'register'" x-cloak>
+          <input type="checkbox" x-model="authAcceptCgu" :required="authMode === 'register'">
+          <span>
+            J’ai lu et j’accepte les
+            <button type="button" class="btn-text" @click.stop.prevent="ouvrirCgu()">
+              Conditions Générales d’utilisation (CGU)
+            </button>.
+            Je reste seul responsable de mes décisions de jeu.
+          </span>
+        </label>
         <button type="submit" class="btn btn-block" :disabled="authBusy"
           x-text="authBusy ? 'Patiente…' : (authMode === 'register' ? 'Créer mon compte' : 'Se connecter')"></button>
         <p class="ko" x-show="authErr" x-text="authErr" x-cloak></p>

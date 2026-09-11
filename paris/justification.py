@@ -32,6 +32,7 @@ def _phrase(s: str) -> str:
 def _niv_label(niveau: str) -> str:
     return {
         'prudente': 'Prudente',
+        'recommandee': 'Recommandée',
         'filet': 'Filet',
         'equilibree': 'Équilibrée',
         'audacieuse': 'Audacieuse',

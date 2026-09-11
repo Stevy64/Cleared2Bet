@@ -68,7 +68,7 @@ class ApiMatchsQueriesTests(TestCase):
         self.assertIn('libelle', row['options'][0])
         self.assertIn('probabilite', row['options'][0])
         niveaux = {o['niveau'] for o in row['options']}
-        self.assertTrue(niveaux <= {'prudente', 'equilibree', 'audacieuse', 'filet'})
+        self.assertTrue(niveaux <= {'prudente', 'recommandee', 'equilibree', 'audacieuse', 'filet'})
         self.assertGreaterEqual(len(row['options']), 3)
         self.assertLessEqual(len(row['options']), 4)
 

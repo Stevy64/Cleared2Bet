@@ -17,7 +17,7 @@ from paris.calibration_store import charger_tables, sauver_tables
 from paris.models import Option
 from paris.views import _fenetre_jour
 
-NIVEAUX_APPRIS = ('prudente', 'filet', 'equilibree', 'audacieuse')
+NIVEAUX_APPRIS = ('prudente', 'recommandee', 'filet', 'equilibree', 'audacieuse')
 MIN_MARCHE = 12
 MIN_FAMILLE = MIN_MARCHE  # alias rétrocompat tests / CLI
 MIN_BIN = 4

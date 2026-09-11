@@ -7,7 +7,7 @@ Pipeline (v3.1)
 2. Ajustement de λ domicile / extérieur (Poisson + Dixon–Coles).
 3. Matrice de scores → options de marchés.
 4. Calibration **marché par marché** (complémentaires cohérents à 100 %).
-5. Sélection journée : 3 niveaux + filet, plafond de formes, routage profil.
+5. Sélection journée : 3 niveaux + recommandée + filet, plafond de formes, routage profil.
 
 Les tips 1X2 / DC / OU2.5 issus du marché ne passent PAS par la correction.
 Le contexte (forme, Elo…) n’entre pas dans le calcul (mesuré sans gain).
@@ -502,7 +502,7 @@ def _cout_choix(opt, profil, moyennes):
 
 
 def choisir_trois(options, profil, moyennes, codes_eviter=None, compteur_formes=None):
-    """Classe 3 tips (familles distinctes) + filet ; respecte le plafond de formes."""
+    """Classe 3 tips (familles distinctes) + recommandée + filet ; plafond de formes."""
     eviter = set(codes_eviter or ())
     compteur = compteur_formes if compteur_formes is not None else Counter()
     out = [dict(o) for o in options]
@@ -567,6 +567,20 @@ def choisir_trois(options, profil, moyennes, codes_eviter=None, compteur_formes=
         codes_pris.add(choisi['code'])
         formes_prises.add(choisi['forme'])
         compteur[choisi['forme']] += 1
+
+    # Recommandée : même famille que la prudente, probabilité max hors filet.
+    prudente = next((o for o in out if o.get('niveau') == 'prudente'), None)
+    if prudente is not None:
+        famille_p = prudente.get('famille')
+        candidats_reco = [
+            o for o in out
+            if o.get('niveau') == 'detail'
+            and o.get('famille') == famille_p
+            and o.get('code') != CODE_FILET
+        ]
+        if candidats_reco:
+            best = max(candidats_reco, key=lambda o: float(o.get('probabilite') or 0))
+            best['niveau'] = 'recommandee'
 
     return out
 

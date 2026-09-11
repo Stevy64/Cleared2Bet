@@ -133,6 +133,29 @@ def test_filet_exclu_du_classement():
     assert all(o['code'] != CODE_FILET for o in recos)
 
 
+def test_recommandee_meme_famille_proba_max():
+    a = analyser((2.10, 3.40, 3.40), (1.90, 1.95), 'A', 'B')
+    out = choisir_trois(a['options'], a['profil'], moyennes_par_code([a['options']]))
+    prudente = next(o for o in out if o['niveau'] == 'prudente')
+    reco = next((o for o in out if o['niveau'] == 'recommandee'), None)
+    assert reco is not None
+    assert reco['famille'] == prudente['famille']
+    assert reco['code'] != CODE_FILET
+    assert reco['code'] != prudente['code']
+    # Meilleure proba parmi les options détail restantes de la famille.
+    details_famille = [
+        o for o in out
+        if o['niveau'] == 'detail'
+        and o['famille'] == prudente['famille']
+        and o['code'] != CODE_FILET
+    ]
+    assert all(float(reco['probabilite']) >= float(o['probabilite']) for o in details_famille)
+    assert sum(1 for o in out if o['niveau'] == 'recommandee') == 1
+    assert reco['code'] not in {
+        o['code'] for o in out if o['niveau'] in ('prudente', 'equilibree', 'audacieuse')
+    }
+
+
 def test_trois_familles_distinctes():
     a = analyser((2.05, 3.40, 3.60), (1.85, 2.00), 'A', 'B')
     out = choisir_trois(a['options'], a['profil'], moyennes_par_code([a['options']]))

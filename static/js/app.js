@@ -62,7 +62,7 @@ function texteVersPdfBlob(titre, blocs) {
     wrap(line).forEach((w) => rows.push({ text: w, style: style || 'body' }));
   };
   push(titre, 'title');
-  push('Prudente + Filet de securite', 'sub');
+  push('Prudente + Recommandee + Filet de securite', 'sub');
   push('------------------------------------------------', 'rule');
   blocs.forEach((b) => {
     push(b.header, 'match');
@@ -179,6 +179,7 @@ const ICON_PATHS = {
   shield: '<path d="M12 3 5 6v6c0 5 3.5 8.5 7 9.5 3.5-1 7-4.5 7-9.5V6l-7-3z"/>',
   crosshair: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1.6"/><path d="M19.5 4.5 14 10M19.5 4.5l-3.2.7M19.5 4.5l.7 3.2"/>',
   chevron: '<path d="m9 6 6 6-6 6"/>',
+  'chevron-up': '<path d="m6 15 6-6 6 6"/>',
   layers: '<path d="m12 3 9 4.5-9 4.5L3 7.5 12 3z"/><path d="m3 12 9 4.5L21 12"/><path d="m3 16.5 9 4.5 9-4.5"/>',
   info: '<circle cx="12" cy="12" r="9"/><path d="M12 10v6M12 7h.01"/>',
   share: '<path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="M16 6l-4-4-4 4"/><path d="M12 2v14"/>',
@@ -441,6 +442,8 @@ function c2b() {
     _composDragY: null,
     sheetJustif: false,
     justif: null,
+    sheetCgu: false,
+    authAcceptCgu: false,
     jourDate: '',
     predictionsJour: [],
     chargementJour: false,
@@ -601,6 +604,10 @@ function c2b() {
     },
 
     fermerSheets() {
+      if (this.sheetCgu) {
+        this.fermerCgu();
+        return;
+      }
       if (this.sheetVip) {
         this.fermerVipGate();
         return;
@@ -611,7 +618,7 @@ function c2b() {
       }
       if (this.sheetInstall) {
         this.sheetInstall = false;
-        if (!this.sheetApercu && !this.sheetAuth && !this.sheetClub && !this.sheetCompos) {
+        if (!this.sheetApercu && !this.sheetAuth && !this.sheetClub && !this.sheetCompos && !this.sheetCgu) {
           document.body.classList.remove('sheet-open');
         }
         return;
@@ -620,7 +627,7 @@ function c2b() {
         this.sheetAuth = false;
         this.authPending = null;
         this.authErr = '';
-        if (!this.sheetApercu && !this.sheetClub && !this.sheetCompos && !this.sheetInstall) {
+        if (!this.sheetApercu && !this.sheetClub && !this.sheetCompos && !this.sheetInstall && !this.sheetCgu) {
           document.body.classList.remove('sheet-open');
         }
         return;
@@ -629,7 +636,7 @@ function c2b() {
         this.sheetClub = false;
         this.clubInfos = null;
         this.clubEq = null;
-        if (!this.sheetApercu && !this.sheetAuth && !this.sheetCompos && !this.sheetInstall) {
+        if (!this.sheetApercu && !this.sheetAuth && !this.sheetCompos && !this.sheetInstall && !this.sheetCgu) {
           document.body.classList.remove('sheet-open');
         }
         return;
@@ -640,7 +647,7 @@ function c2b() {
         this.partageMsg = '';
         this.sheetJustif = false;
         this.justif = null;
-        if (!this.sheetApercu && !this.sheetAuth && !this.sheetClub && !this.sheetInstall) {
+        if (!this.sheetApercu && !this.sheetAuth && !this.sheetClub && !this.sheetInstall && !this.sheetCgu) {
           document.body.classList.remove('sheet-open');
         }
         return;
@@ -697,7 +704,7 @@ function c2b() {
 
     fermerVipGate() {
       this.sheetVip = false;
-      if (!this.sheetCompos && !this.sheetApercu && !this.sheetAuth && !this.sheetClub && !this.sheetInstall && !this.sheetJustif) {
+      if (!this.sheetCompos && !this.sheetApercu && !this.sheetAuth && !this.sheetClub && !this.sheetInstall && !this.sheetJustif && !this.sheetCgu) {
         document.body.classList.remove('sheet-open');
       }
     },
@@ -705,7 +712,19 @@ function c2b() {
     fermerJustif() {
       this.sheetJustif = false;
       this.justif = null;
-      if (!this.sheetCompos && !this.sheetApercu && !this.sheetAuth && !this.sheetClub && !this.sheetInstall) {
+      if (!this.sheetCompos && !this.sheetApercu && !this.sheetAuth && !this.sheetClub && !this.sheetInstall && !this.sheetCgu) {
+        document.body.classList.remove('sheet-open');
+      }
+    },
+
+    ouvrirCgu() {
+      this.sheetCgu = true;
+      document.body.classList.add('sheet-open');
+    },
+
+    fermerCgu() {
+      this.sheetCgu = false;
+      if (!this.sheetJustif && !this.sheetCompos && !this.sheetApercu && !this.sheetAuth && !this.sheetClub && !this.sheetInstall && !this.sheetVip) {
         document.body.classList.remove('sheet-open');
       }
     },
@@ -847,9 +866,9 @@ function c2b() {
     },
 
     tipsHisto(m) {
-      const ordre = { prudente: 0, filet: 1 };
+      const ordre = { prudente: 0, recommandee: 1, filet: 2 };
       return (m.options || [])
-        .filter((o) => o.niveau === 'prudente' || o.niveau === 'filet')
+        .filter((o) => o.niveau === 'prudente' || o.niveau === 'recommandee' || o.niveau === 'filet')
         .sort((a, b) => (ordre[a.niveau] ?? 9) - (ordre[b.niveau] ?? 9));
     },
 
@@ -1001,7 +1020,13 @@ function c2b() {
     },
     fmtCote(c) { return Number(c).toFixed(2).replace('.', ','); },
     libNiveau(n) {
-      return { prudente: 'Prudente', equilibree: 'Équilibrée', audacieuse: 'Audacieuse', filet: 'Filet' }[n] || n;
+      return {
+        prudente: 'Prudente',
+        recommandee: 'Recommandée',
+        equilibree: 'Équilibrée',
+        audacieuse: 'Audacieuse',
+        filet: 'Filet',
+      }[n] || n;
     },
     libProfil(p) {
       return { equilibre: 'équilibré', moyen: 'moyen', desequilibre: 'déséquilibré' }[p] || p;
@@ -1041,6 +1066,7 @@ function c2b() {
     expliquerNiveau(n) {
       return {
         prudente: 'Niveau Prudente : forte probabilité (70–90 %). Priorité à la stabilité.',
+        recommandee: 'Niveau Recommandée : même famille que la prudente, probabilité la plus élevée hors tip principale.',
         equilibree: 'Niveau Équilibrée : zone intermédiaire (55–70 %). Compromis chance / cote.',
         audacieuse: 'Niveau Audacieuse : plus risqué (28–50 %). À manier avec une mise réduite.',
       }[n] || '';
@@ -1257,6 +1283,10 @@ function c2b() {
         this.authErr = 'Mot de passe trop court (8 caractères min.).';
         return;
       }
+      if (this.authMode === 'register' && !this.authAcceptCgu) {
+        this.authErr = 'Tu dois accepter les conditions d’utilisation pour créer un compte.';
+        return;
+      }
       this.authBusy = true;
       const url = this.authMode === 'register'
         ? '/api/v1/auth/register/'
@@ -1280,6 +1310,7 @@ function c2b() {
           this.estVip = !!(data.est_vip) || this.categorie === 'vip';
           this.authPass = '';
           this.authErr = '';
+          this.authAcceptCgu = false;
           const pending = this.authPending;
           this.sheetAuth = false;
           this.authPending = null;
@@ -1344,6 +1375,7 @@ function c2b() {
     optCompos(bloc, niveau) {
       if (!bloc) return null;
       if (niveau === 'prudente') return bloc.prudente || null;
+      if (niveau === 'recommandee') return bloc.recommandee || null;
       if (niveau === 'filet') return bloc.filet || null;
       if (!bloc.options) return null;
       return bloc.options.find((o) => o.niveau === niveau) || null;
@@ -1381,14 +1413,19 @@ function c2b() {
       const { data, ok } = await getJSON('/api/v1/matchs/?' + q.toString());
       this.chargementJour = false;
       if (!ok) return;
-      const ordre = { prudente: 0, filet: 1 };
+      const ordre = { prudente: 0, recommandee: 1, filet: 2 };
       const list = (data && data.results) || [];
       this.predictionsJour = list
         .map((m) => {
           const options = (m.options || [])
-            .filter((o) => o.niveau === 'prudente' || o.niveau === 'filet')
+            .filter((o) => (
+              o.niveau === 'prudente'
+              || o.niveau === 'recommandee'
+              || o.niveau === 'filet'
+            ))
             .sort((a, b) => ordre[a.niveau] - ordre[b.niveau]);
           const prudente = options.find((o) => o.niveau === 'prudente') || null;
+          const recommandee = options.find((o) => o.niveau === 'recommandee') || null;
           const filet = options.find((o) => o.niveau === 'filet') || null;
           return {
             id: m.id,
@@ -1398,10 +1435,11 @@ function c2b() {
             coup_denvoi: m.coup_denvoi,
             options,
             prudente,
+            recommandee,
             filet,
           };
         })
-        .filter((m) => m.prudente || m.filet);
+        .filter((m) => m.prudente || m.recommandee || m.filet);
     },
 
     textePredictionsJour() {
@@ -1431,6 +1469,9 @@ function c2b() {
         lines: [
           m.prudente
             ? 'Prudente : ' + m.prudente.libelle + '  ·  ' + this.fmtPct(m.prudente.probabilite)
+            : null,
+          m.recommandee
+            ? 'Recommandee : ' + m.recommandee.libelle + '  ·  ' + this.fmtPct(m.recommandee.probabilite)
             : null,
           m.filet
             ? 'Filet    : ' + m.filet.libelle + '  ·  ' + this.fmtPct(m.filet.probabilite)

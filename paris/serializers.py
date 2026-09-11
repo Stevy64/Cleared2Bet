@@ -6,8 +6,8 @@ from paris.models import (
 from paris.moteur import RESIDU_DOUTEUX
 
 NIVEAUX_LISTE = ('prudente', 'equilibree', 'audacieuse')
-# Compos du jour / historique : tips + filet de sécurité
-NIVEAUX_COMPOS = ('prudente', 'equilibree', 'audacieuse', 'filet')
+# Compos du jour / historique : tips + recommandée + filet de sécurité
+NIVEAUX_COMPOS = ('prudente', 'recommandee', 'equilibree', 'audacieuse', 'filet')
 
 
 def _est_vip_request(request) -> bool:
