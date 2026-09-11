@@ -126,7 +126,7 @@ sync-full-dev:
 		python manage.py purger_chat"
 
 snapshot-export-dev:
-	$(COMPOSE_DEV) exec web python manage.py exporter_snapshot --out exports/matchs.json --jours 21
+	$(COMPOSE_DEV) exec web python manage.py exporter_snapshot --out exports/matchs.json --jours 21 --enrichir-clubs
 
 snapshot-import-dev:
 	$(COMPOSE_DEV) exec web python manage.py importer_snapshot --source exports/matchs.json

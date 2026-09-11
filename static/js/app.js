@@ -350,9 +350,11 @@ function c2b() {
     fmtJour,
     TYPES_PROPOSITION,
     logoUrl(eq) {
-      if (!eq || !eq.id) return '';
-      // Proxy serveur (chaîne de secours logos, sans exposer la source).
-      return '/api/v1/equipes/' + eq.id + '/logo/';
+      if (!eq) return '';
+      // Préfère une URL CDN (navigateur) — le proxy serveur échoue souvent hors whitelist.
+      if (eq.logo_url) return eq.logo_url;
+      if (eq.id) return '/api/v1/equipes/' + eq.id + '/logo/';
+      return '';
     },
     moteur: document.body.dataset.moteur,
     chargement: false,

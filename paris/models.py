@@ -26,6 +26,10 @@ class Equipe(models.Model):
     slug = models.SlugField(unique=True)
     sofascore_id = models.PositiveIntegerField(null=True, blank=True, unique=True)
     thesportsdb_id = models.PositiveIntegerField(null=True, blank=True, unique=True)
+    # URL logo chargeable par le navigateur (évite le proxy serveur / egress PA)
+    logo_externe = models.URLField(max_length=500, blank=True, default='')
+    # Fiche club précalculée (forme / classement / récents) pour hébergeurs sans API live
+    fiche_club = models.JSONField(default=dict, blank=True)
 
     class Meta:
         verbose_name = 'Équipe'

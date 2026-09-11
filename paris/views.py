@@ -571,54 +571,8 @@ def _tsdb_id(eq: Equipe) -> int | None:
 
 
 def _infos_equipe_locale(eq: Equipe) -> dict:
-    """Forme / récents depuis la base locale si les APIs externes échouent."""
-    matchs = (
-        Match.objects
-        .filter(Q(domicile=eq) | Q(exterieur=eq), statut='termine')
-        .filter(buts_dom__isnull=False, buts_ext__isnull=False)
-        .select_related('domicile', 'exterieur', 'competition')
-        .order_by('-coup_denvoi')[:8]
-    )
-    recents = []
-    forme: list[str] = []
-    for m in matchs:
-        is_home = m.domicile_id == eq.id
-        hs, aw = int(m.buts_dom), int(m.buts_ext)
-        if is_home:
-            res = 'W' if hs > aw else ('L' if hs < aw else 'D')
-            adversaire = m.exterieur.nom_court or m.exterieur.nom
-        else:
-            res = 'W' if aw > hs else ('L' if aw < hs else 'D')
-            adversaire = m.domicile.nom_court or m.domicile.nom
-        forme.append(res)
-        recents.append({
-            'adversaire': adversaire,
-            'score': f'{hs}-{aw}',
-            'domicile': is_home,
-            'resultat': res,
-            'coup_denvoi': m.coup_denvoi.isoformat() if m.coup_denvoi else None,
-        })
-    forme_chrono = list(reversed(forme[:5]))
-    pays = None
-    m_ref = (
-        Match.objects.filter(Q(domicile=eq) | Q(exterieur=eq))
-        .select_related('competition')
-        .order_by('-coup_denvoi')
-        .first()
-    )
-    if m_ref and m_ref.competition_id:
-        pays = m_ref.competition.pays or None
-    return {
-        'id': eq.sofascore_id or eq.thesportsdb_id,
-        'nom': eq.nom,
-        'nom_court': eq.nom_court,
-        'pays': pays,
-        'forme': forme_chrono,
-        'position': None,
-        'note_moyenne': None,
-        'classement': None,
-        'recents': recents,
-    }
+    from paris.clubs import infos_equipe_locale
+    return infos_equipe_locale(eq)
 
 
 class EquipeLogo(APIView):
@@ -674,6 +628,11 @@ class EquipeInfos(APIView):
 
         eq = get_object_or_404(Equipe, pk=pk)
         data = None
+        cached = dict(eq.fiche_club or {})
+        # Sur hébergeurs sans egress : servir d’abord la fiche embarquée au snapshot.
+        if cached.get('forme') or cached.get('recents') or cached.get('classement'):
+            data = cached
+
         m = (
             Match.objects.filter(Q(domicile=eq) | Q(exterieur=eq))
             .select_related('competition')
@@ -682,29 +641,48 @@ class EquipeInfos(APIView):
         )
         league_code = m.competition.code if m and m.competition_id else None
 
+        # Tentative live (échoue souvent hors whitelist — on garde le cache).
+        live = None
         sid = _sid_equipe(eq)
         if sid:
             tid = None
             if m and m.competition.sofascore_id:
                 tid = m.competition.sofascore_id
             try:
-                data = sofa.infos_equipe(sid, tournament_id=tid)
+                live = sofa.infos_equipe(sid, tournament_id=tid)
             except sofa.SofaScoreErreur:
-                data = None
-
-        if data is None:
+                live = None
+        if live is None:
             tsid = _tsdb_id(eq)
             if tsid:
                 try:
-                    data = tsdb.infos_equipe(tsid, league_code=league_code)
+                    live = tsdb.infos_equipe(tsid, league_code=league_code)
                 except tsdb.SportsDbErreur:
-                    data = None
+                    live = None
+        if live is not None:
+            data = live
+            # Rafraîchit le cache pour les prochains appels hors-ligne.
+            fiche = {
+                k: live.get(k) for k in (
+                    'nom', 'nom_court', 'pays', 'forme', 'position',
+                    'classement', 'recents', 'note_moyenne',
+                )
+                if live.get(k) is not None
+            }
+            fiche['nom'] = eq.nom
+            fiche['nom_court'] = eq.nom_court
+            eq.fiche_club = fiche
+            badge = (live.get('badge_url') or '').strip()
+            updates = ['fiche_club']
+            if badge and not eq.logo_externe:
+                eq.logo_externe = badge
+                updates.append('logo_externe')
+            eq.save(update_fields=updates)
 
         local = _infos_equipe_locale(eq)
         if data is None:
             data = local
         else:
-            # Complète avec l’historique local si plus riche.
             if len(data.get('recents') or []) < len(local.get('recents') or []):
                 data['recents'] = local['recents']
                 if len(data.get('forme') or []) < len(local.get('forme') or []):
@@ -712,7 +690,7 @@ class EquipeInfos(APIView):
             if not data.get('pays') and local.get('pays'):
                 data['pays'] = local['pays']
 
-        # Jamais exposer la provenance technique au client.
+        data = dict(data or {})
         data.pop('source', None)
         data.pop('badge_url', None)
         data['equipe_id'] = eq.id

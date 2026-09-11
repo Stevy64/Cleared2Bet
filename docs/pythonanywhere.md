@@ -116,9 +116,13 @@ source ~/.virtualenvs/cleared2bet/bin/activate
 set -a && source .env && set +a
 python manage.py migrate --noinput
 python manage.py collectstatic --noinput
-python manage.py createsuperuser
+python manage.py createsuperuser   # si pas déjà fait
 python manage.py importer_snapshot --source exports/matchs.json
 ```
+
+Les **logos** sont des URLs CDN chargées par le **navigateur** (pas le serveur PA).  
+Les **fiches club** (blason) viennent du champ embarqué dans le snapshot.  
+« Consensus — » = pas encore de votes utilisateurs (normal).
 
 ---
 

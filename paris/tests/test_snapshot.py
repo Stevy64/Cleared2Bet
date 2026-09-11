@@ -69,3 +69,6 @@ class SnapshotRoundtripTests(TestCase):
         self.assertEqual(m.domicile.slug, 'home-fc')
         self.assertTrue(hasattr(m, 'analyse'))
         self.assertEqual(m.analyse.options.count(), 1)
+        # Logos navigateur : URL CDN dérivée de sofascore_id
+        from paris.clubs import logo_url_pour
+        self.assertIn('sofascore.com', logo_url_pour(m.domicile))

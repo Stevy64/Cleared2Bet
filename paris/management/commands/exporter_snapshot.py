@@ -31,6 +31,11 @@ class Command(BaseCommand):
             default=None,
             help='Ne garder que les matchs dans ±N jours autour de maintenant.',
         )
+        parser.add_argument(
+            '--enrichir-clubs',
+            action='store_true',
+            help='Résout logos/fiches via API secours (plus lent, utile avant push PA).',
+        )
 
     def handle(self, *args, **opts):
         chemin = Path(opts['out'])
@@ -38,7 +43,10 @@ class Command(BaseCommand):
             chemin = Path(settings.BASE_DIR) / chemin
         chemin.parent.mkdir(parents=True, exist_ok=True)
 
-        data = exporter_snapshot(jours=opts.get('jours'))
+        data = exporter_snapshot(
+            jours=opts.get('jours'),
+            enrichir_clubs=bool(opts.get('enrichir_clubs')),
+        )
         n = len(data.get('matchs') or [])
         if n == 0:
             raise CommandError(

@@ -25,7 +25,7 @@ def _dec(v) -> float | None:
     return float(v)
 
 
-def exporter_snapshot(*, jours: int | None = None) -> dict[str, Any]:
+def exporter_snapshot(*, jours: int | None = None, enrichir_clubs: bool = False) -> dict[str, Any]:
     """Exporte les matchs « réels » (avec sofascore_id) + dépendances."""
     qs = (
         Match.objects
@@ -56,16 +56,10 @@ def exporter_snapshot(*, jours: int | None = None) -> dict[str, Any]:
         }
         for c in Competition.objects.filter(pk__in=comp_ids).order_by('ordre', 'code')
     ]
-    equipes = [
-        {
-            'nom': e.nom,
-            'nom_court': e.nom_court,
-            'slug': e.slug,
-            'sofascore_id': e.sofascore_id,
-            'thesportsdb_id': e.thesportsdb_id,
-        }
-        for e in Equipe.objects.filter(pk__in=eq_ids).order_by('slug')
-    ]
+    equipes = []
+    from paris.clubs import enrichir_equipe_pour_snapshot
+    for e in Equipe.objects.filter(pk__in=eq_ids).order_by('slug'):
+        equipes.append(enrichir_equipe_pour_snapshot(e, resoudre_externe=enrichir_clubs))
 
     out_matchs = []
     for m in matchs:
@@ -185,6 +179,8 @@ def importer_snapshot(data: dict[str, Any]) -> dict[str, int]:
             'nom_court': e.get('nom_court') or e['nom'][:24],
             'slug': e['slug'],
             'thesportsdb_id': e.get('thesportsdb_id'),
+            'logo_externe': e.get('logo_externe') or '',
+            'fiche_club': e.get('fiche_club') or {},
         }
         if sid:
             eq = Equipe.objects.filter(sofascore_id=sid).first()

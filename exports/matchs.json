@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "exporte_le": "2026-09-11T09:04:33.954880+00:00",
+  "exporte_le": "2026-09-11T09:30:47.823924+00:00",
   "competitions": [
     {
       "code": "UCL",
@@ -49,721 +49,4467 @@
       "nom_court": "AEK",
       "slug": "aek-athens",
       "sofascore_id": 3250,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/3250/image",
+      "fiche_club": {
+        "id": 3250,
+        "nom": "AEK Athens",
+        "nom_court": "AEK",
+        "pays": "Europe",
+        "forme": [
+          "W",
+          "W"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "LASK",
+            "score": "1-0",
+            "domicile": true,
+            "resultat": "W",
+            "coup_denvoi": "2026-09-08T16:45:00+00:00"
+          },
+          {
+            "adversaire": "Levski Sofia",
+            "score": "4-0",
+            "domicile": true,
+            "resultat": "W",
+            "coup_denvoi": "2026-08-26T19:00:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Angers",
       "nom_court": "Angers",
       "slug": "angers",
       "sofascore_id": 1684,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/1684/image",
+      "fiche_club": {
+        "id": 1684,
+        "nom": "Angers",
+        "nom_court": "Angers",
+        "pays": "France",
+        "forme": [
+          "L",
+          "W",
+          "L"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Rennes",
+            "score": "1-2",
+            "domicile": true,
+            "resultat": "L",
+            "coup_denvoi": "2026-09-06T15:15:00+00:00"
+          },
+          {
+            "adversaire": "Auxerre",
+            "score": "1-3",
+            "domicile": false,
+            "resultat": "W",
+            "coup_denvoi": "2026-08-29T18:45:00+00:00"
+          },
+          {
+            "adversaire": "Lille",
+            "score": "0-2",
+            "domicile": true,
+            "resultat": "L",
+            "coup_denvoi": "2026-08-23T13:00:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Arsenal",
       "nom_court": "Arsenal",
       "slug": "arsenal",
       "sofascore_id": 42,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/42/image",
+      "fiche_club": {
+        "id": 42,
+        "nom": "Arsenal",
+        "nom_court": "Arsenal",
+        "pays": "Europe",
+        "forme": [
+          "W",
+          "W",
+          "W",
+          "W"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Napoli",
+            "score": "0-1",
+            "domicile": false,
+            "resultat": "W",
+            "coup_denvoi": "2026-09-09T19:00:00+00:00"
+          },
+          {
+            "adversaire": "Chelsea",
+            "score": "2-1",
+            "domicile": true,
+            "resultat": "W",
+            "coup_denvoi": "2026-09-06T15:30:00+00:00"
+          },
+          {
+            "adversaire": "Aston Villa",
+            "score": "0-1",
+            "domicile": false,
+            "resultat": "W",
+            "coup_denvoi": "2026-08-31T19:00:00+00:00"
+          },
+          {
+            "adversaire": "Coventry",
+            "score": "3-0",
+            "domicile": true,
+            "resultat": "W",
+            "coup_denvoi": "2026-08-21T19:00:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "AS Monaco",
       "nom_court": "AS Monaco",
       "slug": "as-monaco",
       "sofascore_id": 1653,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/1653/image",
+      "fiche_club": {
+        "id": 1653,
+        "nom": "AS Monaco",
+        "nom_court": "AS Monaco",
+        "pays": "France",
+        "forme": [
+          "W",
+          "W",
+          "W"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "PSG",
+            "score": "1-2",
+            "domicile": false,
+            "resultat": "W",
+            "coup_denvoi": "2026-09-04T19:05:00+00:00"
+          },
+          {
+            "adversaire": "Marseille",
+            "score": "2-0",
+            "domicile": true,
+            "resultat": "W",
+            "coup_denvoi": "2026-08-30T18:45:00+00:00"
+          },
+          {
+            "adversaire": "Le Havre",
+            "score": "0-1",
+            "domicile": false,
+            "resultat": "W",
+            "coup_denvoi": "2026-08-23T15:15:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Aston Villa",
       "nom_court": "Aston Villa",
       "slug": "aston-villa",
       "sofascore_id": 40,
-      "thesportsdb_id": 133601
+      "thesportsdb_id": 133601,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/40/image",
+      "fiche_club": {
+        "id": 40,
+        "nom": "Aston Villa",
+        "nom_court": "Aston Villa",
+        "pays": "Europe",
+        "forme": [
+          "L",
+          "L",
+          "D",
+          "W"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Club Brugge",
+            "score": "2-3",
+            "domicile": false,
+            "resultat": "W",
+            "coup_denvoi": "2026-09-08T16:45:00+00:00"
+          },
+          {
+            "adversaire": "Hull",
+            "score": "0-0",
+            "domicile": false,
+            "resultat": "D",
+            "coup_denvoi": "2026-09-05T16:30:00+00:00"
+          },
+          {
+            "adversaire": "Arsenal",
+            "score": "0-1",
+            "domicile": true,
+            "resultat": "L",
+            "coup_denvoi": "2026-08-31T19:00:00+00:00"
+          },
+          {
+            "adversaire": "Brighton",
+            "score": "4-0",
+            "domicile": false,
+            "resultat": "L",
+            "coup_denvoi": "2026-08-23T13:00:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Atalanta",
       "nom_court": "Atalanta",
       "slug": "atalanta",
       "sofascore_id": 2686,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/2686/image",
+      "fiche_club": {
+        "id": 2686,
+        "nom": "Atalanta",
+        "nom_court": "Atalanta",
+        "pays": "Italie",
+        "forme": [
+          "W",
+          "W",
+          "L"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Roma",
+            "score": "2-1",
+            "domicile": false,
+            "resultat": "L",
+            "coup_denvoi": "2026-09-05T18:45:00+00:00"
+          },
+          {
+            "adversaire": "Bologna",
+            "score": "1-0",
+            "domicile": true,
+            "resultat": "W",
+            "coup_denvoi": "2026-08-31T18:45:00+00:00"
+          },
+          {
+            "adversaire": "Sassuolo",
+            "score": "2-1",
+            "domicile": true,
+            "resultat": "W",
+            "coup_denvoi": "2026-08-23T18:45:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Athletic Club",
       "nom_court": "Athletic Club",
       "slug": "athletic-club",
       "sofascore_id": 2825,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/2825/image",
+      "fiche_club": {
+        "id": 2825,
+        "nom": "Athletic Club",
+        "nom_court": "Athletic Club",
+        "pays": "Espagne",
+        "forme": [
+          "L",
+          "W",
+          "W"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Atl. Madrid",
+            "score": "3-0",
+            "domicile": true,
+            "resultat": "W",
+            "coup_denvoi": "2026-09-05T14:15:00+00:00"
+          },
+          {
+            "adversaire": "Celta",
+            "score": "0-2",
+            "domicile": false,
+            "resultat": "W",
+            "coup_denvoi": "2026-08-30T19:30:00+00:00"
+          },
+          {
+            "adversaire": "Barcelona",
+            "score": "2-0",
+            "domicile": false,
+            "resultat": "L",
+            "coup_denvoi": "2026-08-27T19:00:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Atlético Madrid",
       "nom_court": "Atl. Madrid",
       "slug": "atletico-madrid",
       "sofascore_id": 2836,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/2836/image",
+      "fiche_club": {
+        "id": 2836,
+        "nom": "Atlético Madrid",
+        "nom_court": "Atl. Madrid",
+        "pays": "Europe",
+        "forme": [
+          "D",
+          "W",
+          "L",
+          "L"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Liverpool",
+            "score": "2-1",
+            "domicile": false,
+            "resultat": "L",
+            "coup_denvoi": "2026-09-09T19:00:00+00:00"
+          },
+          {
+            "adversaire": "Athletic Club",
+            "score": "3-0",
+            "domicile": false,
+            "resultat": "L",
+            "coup_denvoi": "2026-09-05T14:15:00+00:00"
+          },
+          {
+            "adversaire": "Sevilla",
+            "score": "1-3",
+            "domicile": false,
+            "resultat": "W",
+            "coup_denvoi": "2026-08-29T19:30:00+00:00"
+          },
+          {
+            "adversaire": "Villarreal",
+            "score": "2-2",
+            "domicile": true,
+            "resultat": "D",
+            "coup_denvoi": "2026-08-23T15:00:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Auxerre",
       "nom_court": "Auxerre",
       "slug": "auxerre",
       "sofascore_id": 1646,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/1646/image",
+      "fiche_club": {
+        "id": 1646,
+        "nom": "Auxerre",
+        "nom_court": "Auxerre",
+        "pays": "France",
+        "forme": [
+          "L",
+          "L",
+          "L"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Lyon",
+            "score": "3-1",
+            "domicile": false,
+            "resultat": "L",
+            "coup_denvoi": "2026-09-04T17:00:00+00:00"
+          },
+          {
+            "adversaire": "Angers",
+            "score": "1-3",
+            "domicile": true,
+            "resultat": "L",
+            "coup_denvoi": "2026-08-29T18:45:00+00:00"
+          },
+          {
+            "adversaire": "Lens",
+            "score": "5-2",
+            "domicile": false,
+            "resultat": "L",
+            "coup_denvoi": "2026-08-22T15:15:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "FC Barcelona",
       "nom_court": "Barcelona",
       "slug": "barcelona",
       "sofascore_id": 2817,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/2817/image",
+      "fiche_club": {
+        "id": 2817,
+        "nom": "FC Barcelona",
+        "nom_court": "Barcelona",
+        "pays": "Europe",
+        "forme": [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Feyenoord",
+            "score": "5-1",
+            "domicile": true,
+            "resultat": "W",
+            "coup_denvoi": "2026-09-09T16:45:00+00:00"
+          },
+          {
+            "adversaire": "Valencia",
+            "score": "0-5",
+            "domicile": false,
+            "resultat": "W",
+            "coup_denvoi": "2026-09-06T14:15:00+00:00"
+          },
+          {
+            "adversaire": "Rayo Vallecano",
+            "score": "5-2",
+            "domicile": true,
+            "resultat": "W",
+            "coup_denvoi": "2026-08-31T19:30:00+00:00"
+          },
+          {
+            "adversaire": "Athletic Club",
+            "score": "2-0",
+            "domicile": true,
+            "resultat": "W",
+            "coup_denvoi": "2026-08-27T19:00:00+00:00"
+          },
+          {
+            "adversaire": "Elche",
+            "score": "0-5",
+            "domicile": false,
+            "resultat": "W",
+            "coup_denvoi": "2026-08-23T19:30:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Bodø/Glimt",
       "nom_court": "Bodø/Glimt",
       "slug": "bodoglimt",
       "sofascore_id": 656,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/656/image",
+      "fiche_club": {
+        "id": 656,
+        "nom": "Bodø/Glimt",
+        "nom_court": "Bodø/Glimt",
+        "pays": "Europe",
+        "forme": [
+          "W",
+          "W",
+          "L"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Bayern",
+            "score": "5-0",
+            "domicile": false,
+            "resultat": "L",
+            "coup_denvoi": "2026-09-10T19:00:00+00:00"
+          },
+          {
+            "adversaire": "NEC",
+            "score": "3-0",
+            "domicile": true,
+            "resultat": "W",
+            "coup_denvoi": "2026-08-25T19:00:00+00:00"
+          },
+          {
+            "adversaire": "NEC",
+            "score": "1-3",
+            "domicile": false,
+            "resultat": "W",
+            "coup_denvoi": "2026-08-19T19:00:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Bologna",
       "nom_court": "Bologna",
       "slug": "bologna",
       "sofascore_id": 2685,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/2685/image",
+      "fiche_club": {
+        "id": 2685,
+        "nom": "Bologna",
+        "nom_court": "Bologna",
+        "pays": "Italie",
+        "forme": [
+          "L",
+          "L",
+          "D"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Sassuolo",
+            "score": "2-2",
+            "domicile": true,
+            "resultat": "D",
+            "coup_denvoi": "2026-09-06T16:00:00+00:00"
+          },
+          {
+            "adversaire": "Atalanta",
+            "score": "1-0",
+            "domicile": false,
+            "resultat": "L",
+            "coup_denvoi": "2026-08-31T18:45:00+00:00"
+          },
+          {
+            "adversaire": "Lazio",
+            "score": "0-1",
+            "domicile": true,
+            "resultat": "L",
+            "coup_denvoi": "2026-08-24T16:30:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Borussia Dortmund",
       "nom_court": "Dortmund",
       "slug": "borussia-dortmund",
       "sofascore_id": 2673,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/2673/image",
+      "fiche_club": {
+        "id": 2673,
+        "nom": "Borussia Dortmund",
+        "nom_court": "Dortmund",
+        "pays": "Europe",
+        "forme": [
+          "W"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Villarreal",
+            "score": "3-2",
+            "domicile": true,
+            "resultat": "W",
+            "coup_denvoi": "2026-09-08T19:00:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Bournemouth",
       "nom_court": "Bournemouth",
       "slug": "bournemouth",
       "sofascore_id": 60,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/60/image",
+      "fiche_club": {
+        "id": 60,
+        "nom": "Bournemouth",
+        "nom_court": "Bournemouth",
+        "pays": "Angleterre",
+        "forme": [
+          "L",
+          "D",
+          "D"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Newcastle",
+            "score": "2-2",
+            "domicile": false,
+            "resultat": "D",
+            "coup_denvoi": "2026-09-05T11:30:00+00:00"
+          },
+          {
+            "adversaire": "Everton",
+            "score": "1-1",
+            "domicile": true,
+            "resultat": "D",
+            "coup_denvoi": "2026-08-29T14:00:00+00:00"
+          },
+          {
+            "adversaire": "Man City",
+            "score": "2-1",
+            "domicile": false,
+            "resultat": "L",
+            "coup_denvoi": "2026-08-23T13:00:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Brentford",
       "nom_court": "Brentford",
       "slug": "brentford",
       "sofascore_id": 50,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/50/image",
+      "fiche_club": {
+        "id": 50,
+        "nom": "Brentford",
+        "nom_court": "Brentford",
+        "pays": "Angleterre",
+        "forme": [
+          "W",
+          "D",
+          "D"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Sunderland",
+            "score": "1-1",
+            "domicile": true,
+            "resultat": "D",
+            "coup_denvoi": "2026-09-05T14:00:00+00:00"
+          },
+          {
+            "adversaire": "Leeds",
+            "score": "1-1",
+            "domicile": false,
+            "resultat": "D",
+            "coup_denvoi": "2026-08-30T13:00:00+00:00"
+          },
+          {
+            "adversaire": "Tottenham",
+            "score": "3-0",
+            "domicile": true,
+            "resultat": "W",
+            "coup_denvoi": "2026-08-22T16:30:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Brighton & Hove Albion",
       "nom_court": "Brighton",
       "slug": "brighton-and-hove-albion",
       "sofascore_id": 30,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/30/image",
+      "fiche_club": {
+        "id": 30,
+        "nom": "Brighton & Hove Albion",
+        "nom_court": "Brighton",
+        "pays": "Angleterre",
+        "forme": [
+          "W",
+          "L",
+          "D"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Leeds",
+            "score": "1-1",
+            "domicile": true,
+            "resultat": "D",
+            "coup_denvoi": "2026-09-05T14:00:00+00:00"
+          },
+          {
+            "adversaire": "Chelsea",
+            "score": "4-3",
+            "domicile": false,
+            "resultat": "L",
+            "coup_denvoi": "2026-08-30T13:00:00+00:00"
+          },
+          {
+            "adversaire": "Aston Villa",
+            "score": "4-0",
+            "domicile": true,
+            "resultat": "W",
+            "coup_denvoi": "2026-08-23T13:00:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Cagliari",
       "nom_court": "Cagliari",
       "slug": "cagliari",
       "sofascore_id": 2719,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/2719/image",
+      "fiche_club": {
+        "id": 2719,
+        "nom": "Cagliari",
+        "nom_court": "Cagliari",
+        "pays": "Italie",
+        "forme": [
+          "W",
+          "L",
+          "W"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Lecce",
+            "score": "1-0",
+            "domicile": true,
+            "resultat": "W",
+            "coup_denvoi": "2026-09-07T16:30:00+00:00"
+          },
+          {
+            "adversaire": "Inter",
+            "score": "0-1",
+            "domicile": true,
+            "resultat": "L",
+            "coup_denvoi": "2026-08-30T18:45:00+00:00"
+          },
+          {
+            "adversaire": "Parma",
+            "score": "0-1",
+            "domicile": false,
+            "resultat": "W",
+            "coup_denvoi": "2026-08-22T18:45:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Celta Vigo",
       "nom_court": "Celta",
       "slug": "celta-vigo",
       "sofascore_id": 2821,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/2821/image",
+      "fiche_club": {
+        "id": 2821,
+        "nom": "Celta Vigo",
+        "nom_court": "Celta",
+        "pays": "Espagne",
+        "forme": [
+          "L",
+          "L",
+          "D",
+          "D"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Getafe",
+            "score": "1-1",
+            "domicile": false,
+            "resultat": "D",
+            "coup_denvoi": "2026-09-07T17:00:00+00:00"
+          },
+          {
+            "adversaire": "Real Sociedad",
+            "score": "0-0",
+            "domicile": false,
+            "resultat": "D",
+            "coup_denvoi": "2026-09-03T19:00:00+00:00"
+          },
+          {
+            "adversaire": "Athletic Club",
+            "score": "0-2",
+            "domicile": true,
+            "resultat": "L",
+            "coup_denvoi": "2026-08-30T19:30:00+00:00"
+          },
+          {
+            "adversaire": "Osasuna",
+            "score": "1-2",
+            "domicile": true,
+            "resultat": "L",
+            "coup_denvoi": "2026-08-27T18:30:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Celtic",
       "nom_court": "Celtic",
       "slug": "celtic",
       "sofascore_id": 2352,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/2352/image",
+      "fiche_club": {
+        "id": 2352,
+        "nom": "Celtic",
+        "nom_court": "Celtic",
+        "pays": "Europe",
+        "forme": [
+          "W"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "LASK",
+            "score": "3-0",
+            "domicile": true,
+            "resultat": "W",
+            "coup_denvoi": "2026-08-19T19:00:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Chelsea",
       "nom_court": "Chelsea",
       "slug": "chelsea",
       "sofascore_id": 38,
-      "thesportsdb_id": 133610
+      "thesportsdb_id": 133610,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/38/image",
+      "fiche_club": {
+        "id": 38,
+        "nom": "Chelsea",
+        "nom_court": "Chelsea",
+        "pays": "Angleterre",
+        "forme": [
+          "W",
+          "W",
+          "L"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Arsenal",
+            "score": "2-1",
+            "domicile": false,
+            "resultat": "L",
+            "coup_denvoi": "2026-09-06T15:30:00+00:00"
+          },
+          {
+            "adversaire": "Brighton",
+            "score": "4-3",
+            "domicile": true,
+            "resultat": "W",
+            "coup_denvoi": "2026-08-30T13:00:00+00:00"
+          },
+          {
+            "adversaire": "Fulham",
+            "score": "2-3",
+            "domicile": false,
+            "resultat": "W",
+            "coup_denvoi": "2026-08-24T19:00:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Club Brugge KV",
       "nom_court": "Club Brugge",
       "slug": "club-brugge-kv",
       "sofascore_id": 2888,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/2888/image",
+      "fiche_club": {
+        "id": 2888,
+        "nom": "Club Brugge KV",
+        "nom_court": "Club Brugge",
+        "pays": "Europe",
+        "forme": [
+          "L"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Aston Villa",
+            "score": "2-3",
+            "domicile": true,
+            "resultat": "L",
+            "coup_denvoi": "2026-09-08T16:45:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Como",
       "nom_court": "Como",
       "slug": "como",
       "sofascore_id": 2704,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/2704/image",
+      "fiche_club": {
+        "id": 2704,
+        "nom": "Como",
+        "nom_court": "Como",
+        "pays": "Europe",
+        "forme": [
+          "D",
+          "W",
+          "W",
+          "W"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Leipzig",
+            "score": "4-1",
+            "domicile": true,
+            "resultat": "W",
+            "coup_denvoi": "2026-09-10T19:00:00+00:00"
+          },
+          {
+            "adversaire": "Genoa",
+            "score": "1-4",
+            "domicile": false,
+            "resultat": "W",
+            "coup_denvoi": "2026-09-04T18:45:00+00:00"
+          },
+          {
+            "adversaire": "Napoli",
+            "score": "1-2",
+            "domicile": false,
+            "resultat": "W",
+            "coup_denvoi": "2026-08-30T16:30:00+00:00"
+          },
+          {
+            "adversaire": "Udinese",
+            "score": "1-1",
+            "domicile": false,
+            "resultat": "D",
+            "coup_denvoi": "2026-08-22T16:30:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Coventry City",
       "nom_court": "Coventry",
       "slug": "coventry-city",
       "sofascore_id": 11,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/11/image",
+      "fiche_club": {
+        "id": 11,
+        "nom": "Coventry City",
+        "nom_court": "Coventry",
+        "pays": "Angleterre",
+        "forme": [
+          "L",
+          "L",
+          "L"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Man City",
+            "score": "1-0",
+            "domicile": false,
+            "resultat": "L",
+            "coup_denvoi": "2026-09-05T14:00:00+00:00"
+          },
+          {
+            "adversaire": "Hull",
+            "score": "0-1",
+            "domicile": true,
+            "resultat": "L",
+            "coup_denvoi": "2026-08-29T14:00:00+00:00"
+          },
+          {
+            "adversaire": "Arsenal",
+            "score": "3-0",
+            "domicile": false,
+            "resultat": "L",
+            "coup_denvoi": "2026-08-21T19:00:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Crystal Palace",
       "nom_court": "Crystal Palace",
       "slug": "crystal-palace",
       "sofascore_id": 7,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/7/image",
+      "fiche_club": {
+        "id": 7,
+        "nom": "Crystal Palace",
+        "nom_court": "Crystal Palace",
+        "pays": "Angleterre",
+        "forme": [
+          "L",
+          "L",
+          "W"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Fulham",
+            "score": "2-3",
+            "domicile": false,
+            "resultat": "W",
+            "coup_denvoi": "2026-09-05T14:00:00+00:00"
+          },
+          {
+            "adversaire": "Man City",
+            "score": "1-4",
+            "domicile": true,
+            "resultat": "L",
+            "coup_denvoi": "2026-08-28T19:00:00+00:00"
+          },
+          {
+            "adversaire": "Everton",
+            "score": "2-0",
+            "domicile": false,
+            "resultat": "L",
+            "coup_denvoi": "2026-08-22T14:00:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Deportivo Alavés",
       "nom_court": "Alavés",
       "slug": "deportivo-alaves",
       "sofascore_id": 2885,
-      "thesportsdb_id": 134221
+      "thesportsdb_id": 134221,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/2885/image",
+      "fiche_club": {
+        "id": 2885,
+        "nom": "Deportivo Alavés",
+        "nom_court": "Alavés",
+        "pays": "Espagne",
+        "forme": [
+          "W",
+          "W"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Osasuna",
+            "score": "5-2",
+            "domicile": true,
+            "resultat": "W",
+            "coup_denvoi": "2026-09-06T16:30:00+00:00"
+          },
+          {
+            "adversaire": "Villarreal",
+            "score": "1-0",
+            "domicile": true,
+            "resultat": "W",
+            "coup_denvoi": "2026-08-28T19:30:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Deportivo de A Coruña",
       "nom_court": "Deportivo",
       "slug": "deportivo-la-coruna",
       "sofascore_id": 2832,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/2832/image",
+      "fiche_club": {
+        "id": 2832,
+        "nom": "Deportivo de A Coruña",
+        "nom_court": "Deportivo",
+        "pays": "Espagne",
+        "forme": [
+          "D",
+          "W",
+          "W"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Villarreal",
+            "score": "2-3",
+            "domicile": false,
+            "resultat": "W",
+            "coup_denvoi": "2026-09-05T19:00:00+00:00"
+          },
+          {
+            "adversaire": "Valencia",
+            "score": "3-1",
+            "domicile": true,
+            "resultat": "W",
+            "coup_denvoi": "2026-08-30T17:30:00+00:00"
+          },
+          {
+            "adversaire": "Málaga",
+            "score": "1-1",
+            "domicile": false,
+            "resultat": "D",
+            "coup_denvoi": "2026-08-24T19:30:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Elche",
       "nom_court": "Elche",
       "slug": "elche",
       "sofascore_id": 2846,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/2846/image",
+      "fiche_club": {
+        "id": 2846,
+        "nom": "Elche",
+        "nom_court": "Elche",
+        "pays": "Espagne",
+        "forme": [
+          "L",
+          "L",
+          "L"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Real Sociedad",
+            "score": "2-3",
+            "domicile": true,
+            "resultat": "L",
+            "coup_denvoi": "2026-09-07T19:30:00+00:00"
+          },
+          {
+            "adversaire": "R. Racing Club",
+            "score": "3-2",
+            "domicile": false,
+            "resultat": "L",
+            "coup_denvoi": "2026-08-28T17:00:00+00:00"
+          },
+          {
+            "adversaire": "Barcelona",
+            "score": "0-5",
+            "domicile": true,
+            "resultat": "L",
+            "coup_denvoi": "2026-08-23T19:30:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Espanyol",
       "nom_court": "Espanyol",
       "slug": "espanyol",
       "sofascore_id": 2814,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/2814/image",
+      "fiche_club": {
+        "id": 2814,
+        "nom": "Espanyol",
+        "nom_court": "Espanyol",
+        "pays": "Espagne",
+        "forme": [
+          "L",
+          "D"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Sevilla",
+            "score": "1-1",
+            "domicile": true,
+            "resultat": "D",
+            "coup_denvoi": "2026-09-06T19:00:00+00:00"
+          },
+          {
+            "adversaire": "Real Sociedad",
+            "score": "2-1",
+            "domicile": false,
+            "resultat": "L",
+            "coup_denvoi": "2026-08-29T17:00:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Everton",
       "nom_court": "Everton",
       "slug": "everton",
       "sofascore_id": 48,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/48/image",
+      "fiche_club": {
+        "id": 48,
+        "nom": "Everton",
+        "nom_court": "Everton",
+        "pays": "Angleterre",
+        "forme": [
+          "W",
+          "D",
+          "D"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Man Utd",
+            "score": "2-2",
+            "domicile": true,
+            "resultat": "D",
+            "coup_denvoi": "2026-09-06T13:00:00+00:00"
+          },
+          {
+            "adversaire": "Bournemouth",
+            "score": "1-1",
+            "domicile": false,
+            "resultat": "D",
+            "coup_denvoi": "2026-08-29T14:00:00+00:00"
+          },
+          {
+            "adversaire": "Crystal Palace",
+            "score": "2-0",
+            "domicile": true,
+            "resultat": "W",
+            "coup_denvoi": "2026-08-22T14:00:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "FC Bayern München",
       "nom_court": "Bayern",
       "slug": "fc-bayern-munchen",
       "sofascore_id": 2672,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/2672/image",
+      "fiche_club": {
+        "id": 2672,
+        "nom": "FC Bayern München",
+        "nom_court": "Bayern",
+        "pays": "Europe",
+        "forme": [
+          "W"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Bodø/Glimt",
+            "score": "5-0",
+            "domicile": true,
+            "resultat": "W",
+            "coup_denvoi": "2026-09-10T19:00:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "FC Porto",
       "nom_court": "Porto",
       "slug": "fc-porto",
       "sofascore_id": 3002,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/3002/image",
+      "fiche_club": {
+        "id": 3002,
+        "nom": "FC Porto",
+        "nom_court": "Porto",
+        "pays": "Europe",
+        "forme": [
+          "L"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Man City",
+            "score": "0-2",
+            "domicile": true,
+            "resultat": "L",
+            "coup_denvoi": "2026-09-08T19:00:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Fenerbahçe",
       "nom_court": "Fenerbahçe",
       "slug": "fenerbahce",
       "sofascore_id": 3052,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/3052/image",
+      "fiche_club": {
+        "id": 3052,
+        "nom": "Fenerbahçe",
+        "nom_court": "Fenerbahçe",
+        "pays": "Europe",
+        "forme": [
+          "D",
+          "W",
+          "D"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Roma",
+            "score": "1-1",
+            "domicile": true,
+            "resultat": "D",
+            "coup_denvoi": "2026-09-10T16:45:00+00:00"
+          },
+          {
+            "adversaire": "Lyon",
+            "score": "1-2",
+            "domicile": false,
+            "resultat": "W",
+            "coup_denvoi": "2026-08-26T19:00:00+00:00"
+          },
+          {
+            "adversaire": "Lyon",
+            "score": "1-1",
+            "domicile": true,
+            "resultat": "D",
+            "coup_denvoi": "2026-08-18T19:00:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Feyenoord",
       "nom_court": "Feyenoord",
       "slug": "feyenoord",
       "sofascore_id": 2959,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/2959/image",
+      "fiche_club": {
+        "id": 2959,
+        "nom": "Feyenoord",
+        "nom_court": "Feyenoord",
+        "pays": "Europe",
+        "forme": [
+          "L"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Barcelona",
+            "score": "5-1",
+            "domicile": false,
+            "resultat": "L",
+            "coup_denvoi": "2026-09-09T16:45:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Fiorentina",
       "nom_court": "Fiorentina",
       "slug": "fiorentina",
       "sofascore_id": 2693,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/2693/image",
+      "fiche_club": {
+        "id": 2693,
+        "nom": "Fiorentina",
+        "nom_court": "Fiorentina",
+        "pays": "Italie",
+        "forme": [
+          "L",
+          "L",
+          "L"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Torino",
+            "score": "1-2",
+            "domicile": true,
+            "resultat": "L",
+            "coup_denvoi": "2026-09-05T13:00:00+00:00"
+          },
+          {
+            "adversaire": "Frosinone",
+            "score": "0-3",
+            "domicile": true,
+            "resultat": "L",
+            "coup_denvoi": "2026-08-29T16:30:00+00:00"
+          },
+          {
+            "adversaire": "Roma",
+            "score": "4-0",
+            "domicile": false,
+            "resultat": "L",
+            "coup_denvoi": "2026-08-24T18:45:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Frosinone",
       "nom_court": "Frosinone",
       "slug": "frosinone",
       "sofascore_id": 2801,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/2801/image",
+      "fiche_club": {
+        "id": 2801,
+        "nom": "Frosinone",
+        "nom_court": "Frosinone",
+        "pays": "Italie",
+        "forme": [
+          "L",
+          "W",
+          "W"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Venezia",
+            "score": "3-2",
+            "domicile": true,
+            "resultat": "W",
+            "coup_denvoi": "2026-09-06T13:00:00+00:00"
+          },
+          {
+            "adversaire": "Fiorentina",
+            "score": "0-3",
+            "domicile": false,
+            "resultat": "W",
+            "coup_denvoi": "2026-08-29T16:30:00+00:00"
+          },
+          {
+            "adversaire": "Juventus",
+            "score": "0-1",
+            "domicile": true,
+            "resultat": "L",
+            "coup_denvoi": "2026-08-23T16:30:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Fulham",
       "nom_court": "Fulham",
       "slug": "fulham",
       "sofascore_id": 43,
-      "thesportsdb_id": 133600
+      "thesportsdb_id": 133600,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/43/image",
+      "fiche_club": {
+        "id": 43,
+        "nom": "Fulham",
+        "nom_court": "Fulham",
+        "pays": "Angleterre",
+        "forme": [
+          "L",
+          "L",
+          "L"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Crystal Palace",
+            "score": "2-3",
+            "domicile": true,
+            "resultat": "L",
+            "coup_denvoi": "2026-09-05T14:00:00+00:00"
+          },
+          {
+            "adversaire": "Sunderland",
+            "score": "1-0",
+            "domicile": false,
+            "resultat": "L",
+            "coup_denvoi": "2026-08-30T13:00:00+00:00"
+          },
+          {
+            "adversaire": "Chelsea",
+            "score": "2-3",
+            "domicile": true,
+            "resultat": "L",
+            "coup_denvoi": "2026-08-24T19:00:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Galatasaray",
       "nom_court": "Galatasaray",
       "slug": "galatasaray",
       "sofascore_id": 3061,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/3061/image",
+      "fiche_club": {
+        "id": 3061,
+        "nom": "Galatasaray",
+        "nom_court": "Galatasaray",
+        "pays": "Europe",
+        "forme": [
+          "L"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Sporting",
+            "score": "3-1",
+            "domicile": false,
+            "resultat": "L",
+            "coup_denvoi": "2026-09-09T19:00:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Genoa",
       "nom_court": "Genoa",
       "slug": "genoa",
       "sofascore_id": 2713,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/2713/image",
+      "fiche_club": {
+        "id": 2713,
+        "nom": "Genoa",
+        "nom_court": "Genoa",
+        "pays": "Italie",
+        "forme": [
+          "L",
+          "L",
+          "L"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Como",
+            "score": "1-4",
+            "domicile": true,
+            "resultat": "L",
+            "coup_denvoi": "2026-09-04T18:45:00+00:00"
+          },
+          {
+            "adversaire": "Lazio",
+            "score": "1-0",
+            "domicile": false,
+            "resultat": "L",
+            "coup_denvoi": "2026-08-30T18:45:00+00:00"
+          },
+          {
+            "adversaire": "Napoli",
+            "score": "0-2",
+            "domicile": true,
+            "resultat": "L",
+            "coup_denvoi": "2026-08-22T18:45:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Getafe",
       "nom_court": "Getafe",
       "slug": "getafe",
       "sofascore_id": 2859,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/2859/image",
+      "fiche_club": {
+        "id": 2859,
+        "nom": "Getafe",
+        "nom_court": "Getafe",
+        "pays": "Espagne",
+        "forme": [
+          "W",
+          "L",
+          "D"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Celta",
+            "score": "1-1",
+            "domicile": true,
+            "resultat": "D",
+            "coup_denvoi": "2026-09-07T17:00:00+00:00"
+          },
+          {
+            "adversaire": "Osasuna",
+            "score": "1-0",
+            "domicile": false,
+            "resultat": "L",
+            "coup_denvoi": "2026-08-31T17:30:00+00:00"
+          },
+          {
+            "adversaire": "R. Racing Club",
+            "score": "1-0",
+            "domicile": true,
+            "resultat": "W",
+            "coup_denvoi": "2026-08-23T17:30:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "GNK Dinamo Zagreb",
       "nom_court": "Dinamo",
       "slug": "gnk-dinamo-zagreb",
       "sofascore_id": 2032,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/2032/image",
+      "fiche_club": {
+        "id": 2032,
+        "nom": "GNK Dinamo Zagreb",
+        "nom_court": "Dinamo",
+        "pays": "Europe",
+        "forme": [
+          "L"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Viking",
+            "score": "3-1",
+            "domicile": false,
+            "resultat": "L",
+            "coup_denvoi": "2026-08-26T19:00:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Hapoel Be'er Sheva",
       "nom_court": "H. Be'er Sheva",
       "slug": "hapoel-beer-sheva",
       "sofascore_id": 5202,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/5202/image",
+      "fiche_club": {
+        "id": 5202,
+        "nom": "Hapoel Be'er Sheva",
+        "nom_court": "H. Be'er Sheva",
+        "pays": "Europe",
+        "forme": [
+          "W"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Sabah",
+            "score": "2-1",
+            "domicile": true,
+            "resultat": "W",
+            "coup_denvoi": "2026-08-19T19:00:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Hull City",
       "nom_court": "Hull",
       "slug": "hull-city",
       "sofascore_id": 96,
-      "thesportsdb_id": 133617
+      "thesportsdb_id": 133617,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/96/image",
+      "fiche_club": {
+        "id": 96,
+        "nom": "Hull City",
+        "nom_court": "Hull",
+        "pays": "Angleterre",
+        "forme": [
+          "W",
+          "W",
+          "D"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Aston Villa",
+            "score": "0-0",
+            "domicile": true,
+            "resultat": "D",
+            "coup_denvoi": "2026-09-05T16:30:00+00:00"
+          },
+          {
+            "adversaire": "Coventry",
+            "score": "0-1",
+            "domicile": false,
+            "resultat": "W",
+            "coup_denvoi": "2026-08-29T14:00:00+00:00"
+          },
+          {
+            "adversaire": "Man Utd",
+            "score": "2-0",
+            "domicile": true,
+            "resultat": "W",
+            "coup_denvoi": "2026-08-22T11:30:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Inter",
       "nom_court": "Inter",
       "slug": "inter",
       "sofascore_id": 2697,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/2697/image",
+      "fiche_club": {
+        "id": 2697,
+        "nom": "Inter",
+        "nom_court": "Inter",
+        "pays": "Europe",
+        "forme": [
+          "W",
+          "W",
+          "W",
+          "L"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Real Madrid",
+            "score": "2-1",
+            "domicile": false,
+            "resultat": "L",
+            "coup_denvoi": "2026-09-08T19:00:00+00:00"
+          },
+          {
+            "adversaire": "Napoli",
+            "score": "3-2",
+            "domicile": true,
+            "resultat": "W",
+            "coup_denvoi": "2026-09-05T16:00:00+00:00"
+          },
+          {
+            "adversaire": "Cagliari",
+            "score": "0-1",
+            "domicile": false,
+            "resultat": "W",
+            "coup_denvoi": "2026-08-30T18:45:00+00:00"
+          },
+          {
+            "adversaire": "Monza",
+            "score": "4-1",
+            "domicile": true,
+            "resultat": "W",
+            "coup_denvoi": "2026-08-22T16:30:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Ipswich Town",
       "nom_court": "Ipswich",
       "slug": "ipswich-town",
       "sofascore_id": 32,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/32/image",
+      "fiche_club": {
+        "id": 32,
+        "nom": "Ipswich Town",
+        "nom_court": "Ipswich",
+        "pays": "Angleterre",
+        "forme": [
+          "W",
+          "L",
+          "L"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Liverpool",
+            "score": "0-2",
+            "domicile": true,
+            "resultat": "L",
+            "coup_denvoi": "2026-09-04T19:00:00+00:00"
+          },
+          {
+            "adversaire": "Man Utd",
+            "score": "5-2",
+            "domicile": false,
+            "resultat": "L",
+            "coup_denvoi": "2026-08-30T15:30:00+00:00"
+          },
+          {
+            "adversaire": "Sunderland",
+            "score": "2-1",
+            "domicile": true,
+            "resultat": "W",
+            "coup_denvoi": "2026-08-22T14:00:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Juventus",
       "nom_court": "Juventus",
       "slug": "juventus",
       "sofascore_id": 2687,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/2687/image",
+      "fiche_club": {
+        "id": 2687,
+        "nom": "Juventus",
+        "nom_court": "Juventus",
+        "pays": "Italie",
+        "forme": [
+          "W",
+          "W",
+          "D"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Milan",
+            "score": "1-1",
+            "domicile": true,
+            "resultat": "D",
+            "coup_denvoi": "2026-09-06T18:45:00+00:00"
+          },
+          {
+            "adversaire": "Parma",
+            "score": "2-0",
+            "domicile": true,
+            "resultat": "W",
+            "coup_denvoi": "2026-08-29T18:45:00+00:00"
+          },
+          {
+            "adversaire": "Frosinone",
+            "score": "0-1",
+            "domicile": false,
+            "resultat": "W",
+            "coup_denvoi": "2026-08-23T16:30:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "LASK",
       "nom_court": "LASK",
       "slug": "lask",
       "sofascore_id": 2058,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/2058/image",
+      "fiche_club": {
+        "id": 2058,
+        "nom": "LASK",
+        "nom_court": "LASK",
+        "pays": "Europe",
+        "forme": [
+          "L",
+          "L"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "AEK",
+            "score": "1-0",
+            "domicile": false,
+            "resultat": "L",
+            "coup_denvoi": "2026-09-08T16:45:00+00:00"
+          },
+          {
+            "adversaire": "Celtic",
+            "score": "3-0",
+            "domicile": false,
+            "resultat": "L",
+            "coup_denvoi": "2026-08-19T19:00:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Lazio",
       "nom_court": "Lazio",
       "slug": "lazio",
       "sofascore_id": 2699,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/2699/image",
+      "fiche_club": {
+        "id": 2699,
+        "nom": "Lazio",
+        "nom_court": "Lazio",
+        "pays": "Italie",
+        "forme": [
+          "W",
+          "W",
+          "W"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Udinese",
+            "score": "1-2",
+            "domicile": false,
+            "resultat": "W",
+            "coup_denvoi": "2026-09-07T18:45:00+00:00"
+          },
+          {
+            "adversaire": "Genoa",
+            "score": "1-0",
+            "domicile": true,
+            "resultat": "W",
+            "coup_denvoi": "2026-08-30T18:45:00+00:00"
+          },
+          {
+            "adversaire": "Bologna",
+            "score": "0-1",
+            "domicile": false,
+            "resultat": "W",
+            "coup_denvoi": "2026-08-24T16:30:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Le Havre",
       "nom_court": "Le Havre",
       "slug": "le-havre",
       "sofascore_id": 1662,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/1662/image",
+      "fiche_club": {
+        "id": 1662,
+        "nom": "Le Havre",
+        "nom_court": "Le Havre",
+        "pays": "France",
+        "forme": [
+          "L",
+          "D",
+          "L"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Brest",
+            "score": "1-2",
+            "domicile": true,
+            "resultat": "L",
+            "coup_denvoi": "2026-09-05T18:45:00+00:00"
+          },
+          {
+            "adversaire": "Lyon",
+            "score": "1-1",
+            "domicile": false,
+            "resultat": "D",
+            "coup_denvoi": "2026-08-29T18:45:00+00:00"
+          },
+          {
+            "adversaire": "AS Monaco",
+            "score": "0-1",
+            "domicile": true,
+            "resultat": "L",
+            "coup_denvoi": "2026-08-23T15:15:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Le Mans",
       "nom_court": "Le Mans",
       "slug": "le-mans",
       "sofascore_id": 1672,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/1672/image",
+      "fiche_club": {
+        "id": 1672,
+        "nom": "Le Mans",
+        "nom_court": "Le Mans",
+        "pays": "France",
+        "forme": [
+          "D",
+          "L",
+          "D"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Nice",
+            "score": "1-1",
+            "domicile": false,
+            "resultat": "D",
+            "coup_denvoi": "2026-09-05T18:45:00+00:00"
+          },
+          {
+            "adversaire": "Rennes",
+            "score": "3-2",
+            "domicile": false,
+            "resultat": "L",
+            "coup_denvoi": "2026-08-30T15:15:00+00:00"
+          },
+          {
+            "adversaire": "Brest",
+            "score": "2-2",
+            "domicile": true,
+            "resultat": "D",
+            "coup_denvoi": "2026-08-22T18:45:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Lecce",
       "nom_court": "Lecce",
       "slug": "lecce",
       "sofascore_id": 2689,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/2689/image",
+      "fiche_club": {
+        "id": 2689,
+        "nom": "Lecce",
+        "nom_court": "Lecce",
+        "pays": "Italie",
+        "forme": [
+          "W",
+          "L",
+          "L"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Cagliari",
+            "score": "1-0",
+            "domicile": false,
+            "resultat": "L",
+            "coup_denvoi": "2026-09-07T16:30:00+00:00"
+          },
+          {
+            "adversaire": "Roma",
+            "score": "0-4",
+            "domicile": true,
+            "resultat": "L",
+            "coup_denvoi": "2026-08-31T16:30:00+00:00"
+          },
+          {
+            "adversaire": "Venezia",
+            "score": "0-2",
+            "domicile": false,
+            "resultat": "W",
+            "coup_denvoi": "2026-08-23T16:30:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Leeds United",
       "nom_court": "Leeds",
       "slug": "leeds-united",
       "sofascore_id": 34,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/34/image",
+      "fiche_club": {
+        "id": 34,
+        "nom": "Leeds United",
+        "nom_court": "Leeds",
+        "pays": "Angleterre",
+        "forme": [
+          "W",
+          "D",
+          "D"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Brighton",
+            "score": "1-1",
+            "domicile": false,
+            "resultat": "D",
+            "coup_denvoi": "2026-09-05T14:00:00+00:00"
+          },
+          {
+            "adversaire": "Brentford",
+            "score": "1-1",
+            "domicile": true,
+            "resultat": "D",
+            "coup_denvoi": "2026-08-30T13:00:00+00:00"
+          },
+          {
+            "adversaire": "Forest",
+            "score": "0-1",
+            "domicile": false,
+            "resultat": "W",
+            "coup_denvoi": "2026-08-22T14:00:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Levante UD",
       "nom_court": "Levante",
       "slug": "levante-ud",
       "sofascore_id": 2849,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/2849/image",
+      "fiche_club": {
+        "id": 2849,
+        "nom": "Levante UD",
+        "nom_court": "Levante",
+        "pays": "Espagne",
+        "forme": [
+          "D",
+          "W",
+          "D"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Málaga",
+            "score": "0-0",
+            "domicile": false,
+            "resultat": "D",
+            "coup_denvoi": "2026-09-06T16:30:00+00:00"
+          },
+          {
+            "adversaire": "Real Betis",
+            "score": "5-2",
+            "domicile": true,
+            "resultat": "W",
+            "coup_denvoi": "2026-08-29T15:00:00+00:00"
+          },
+          {
+            "adversaire": "Osasuna",
+            "score": "0-0",
+            "domicile": false,
+            "resultat": "D",
+            "coup_denvoi": "2026-08-24T17:30:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Levski Sofia",
       "nom_court": "Levski Sofia",
       "slug": "levski-sofia",
       "sofascore_id": 3273,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/3273/image",
+      "fiche_club": {
+        "id": 3273,
+        "nom": "Levski Sofia",
+        "nom_court": "Levski Sofia",
+        "pays": "Europe",
+        "forme": [
+          "L"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "AEK",
+            "score": "4-0",
+            "domicile": false,
+            "resultat": "L",
+            "coup_denvoi": "2026-08-26T19:00:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Lille",
       "nom_court": "Lille",
       "slug": "lille",
       "sofascore_id": 1643,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/1643/image",
+      "fiche_club": {
+        "id": 1643,
+        "nom": "Lille",
+        "nom_court": "Lille",
+        "pays": "Europe",
+        "forme": [
+          "W",
+          "D",
+          "W",
+          "L"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Real Betis",
+            "score": "2-3",
+            "domicile": true,
+            "resultat": "L",
+            "coup_denvoi": "2026-09-08T19:00:00+00:00"
+          },
+          {
+            "adversaire": "Toulouse",
+            "score": "0-1",
+            "domicile": false,
+            "resultat": "W",
+            "coup_denvoi": "2026-09-03T18:45:00+00:00"
+          },
+          {
+            "adversaire": "PSG",
+            "score": "2-2",
+            "domicile": true,
+            "resultat": "D",
+            "coup_denvoi": "2026-08-28T19:00:00+00:00"
+          },
+          {
+            "adversaire": "Angers",
+            "score": "0-2",
+            "domicile": false,
+            "resultat": "W",
+            "coup_denvoi": "2026-08-23T13:00:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Liverpool FC",
       "nom_court": "Liverpool",
       "slug": "liverpool",
       "sofascore_id": 44,
-      "thesportsdb_id": 133602
+      "thesportsdb_id": 133602,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/44/image",
+      "fiche_club": {
+        "id": 44,
+        "nom": "Liverpool FC",
+        "nom_court": "Liverpool",
+        "pays": "Europe",
+        "forme": [
+          "D",
+          "D",
+          "W",
+          "W"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Atl. Madrid",
+            "score": "2-1",
+            "domicile": true,
+            "resultat": "W",
+            "coup_denvoi": "2026-09-09T19:00:00+00:00"
+          },
+          {
+            "adversaire": "Ipswich",
+            "score": "0-2",
+            "domicile": false,
+            "resultat": "W",
+            "coup_denvoi": "2026-09-04T19:00:00+00:00"
+          },
+          {
+            "adversaire": "Forest",
+            "score": "2-2",
+            "domicile": true,
+            "resultat": "D",
+            "coup_denvoi": "2026-08-29T11:30:00+00:00"
+          },
+          {
+            "adversaire": "Newcastle",
+            "score": "2-2",
+            "domicile": false,
+            "resultat": "D",
+            "coup_denvoi": "2026-08-23T15:30:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Lorient",
       "nom_court": "Lorient",
       "slug": "lorient",
       "sofascore_id": 1656,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/1656/image",
+      "fiche_club": {
+        "id": 1656,
+        "nom": "Lorient",
+        "nom_court": "Lorient",
+        "pays": "France",
+        "forme": [
+          "D",
+          "L",
+          "W"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Lens",
+            "score": "0-1",
+            "domicile": false,
+            "resultat": "W",
+            "coup_denvoi": "2026-09-05T15:15:00+00:00"
+          },
+          {
+            "adversaire": "Troyes",
+            "score": "1-2",
+            "domicile": true,
+            "resultat": "L",
+            "coup_denvoi": "2026-08-29T18:45:00+00:00"
+          },
+          {
+            "adversaire": "Nice",
+            "score": "0-0",
+            "domicile": false,
+            "resultat": "D",
+            "coup_denvoi": "2026-08-22T18:45:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Málaga CF",
       "nom_court": "Málaga",
       "slug": "malaga",
       "sofascore_id": 2830,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/2830/image",
+      "fiche_club": {
+        "id": 2830,
+        "nom": "Málaga CF",
+        "nom_court": "Málaga",
+        "pays": "Espagne",
+        "forme": [
+          "D",
+          "L",
+          "D"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Levante",
+            "score": "0-0",
+            "domicile": true,
+            "resultat": "D",
+            "coup_denvoi": "2026-09-06T16:30:00+00:00"
+          },
+          {
+            "adversaire": "Real Madrid",
+            "score": "4-0",
+            "domicile": false,
+            "resultat": "L",
+            "coup_denvoi": "2026-08-30T15:00:00+00:00"
+          },
+          {
+            "adversaire": "Deportivo",
+            "score": "1-1",
+            "domicile": true,
+            "resultat": "D",
+            "coup_denvoi": "2026-08-24T19:30:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Manchester City",
       "nom_court": "Man City",
       "slug": "manchester-city",
       "sofascore_id": 17,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/17/image",
+      "fiche_club": {
+        "id": 17,
+        "nom": "Manchester City",
+        "nom_court": "Man City",
+        "pays": "Europe",
+        "forme": [
+          "W",
+          "W",
+          "W",
+          "W"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Porto",
+            "score": "0-2",
+            "domicile": false,
+            "resultat": "W",
+            "coup_denvoi": "2026-09-08T19:00:00+00:00"
+          },
+          {
+            "adversaire": "Coventry",
+            "score": "1-0",
+            "domicile": true,
+            "resultat": "W",
+            "coup_denvoi": "2026-09-05T14:00:00+00:00"
+          },
+          {
+            "adversaire": "Crystal Palace",
+            "score": "1-4",
+            "domicile": false,
+            "resultat": "W",
+            "coup_denvoi": "2026-08-28T19:00:00+00:00"
+          },
+          {
+            "adversaire": "Bournemouth",
+            "score": "2-1",
+            "domicile": true,
+            "resultat": "W",
+            "coup_denvoi": "2026-08-23T13:00:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Manchester United",
       "nom_court": "Man Utd",
       "slug": "manchester-united",
       "sofascore_id": 35,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/35/image",
+      "fiche_club": {
+        "id": 35,
+        "nom": "Manchester United",
+        "nom_court": "Man Utd",
+        "pays": "Europe",
+        "forme": [
+          "L",
+          "W",
+          "D",
+          "W"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Sabah",
+            "score": "4-0",
+            "domicile": true,
+            "resultat": "W",
+            "coup_denvoi": "2026-09-10T19:00:00+00:00"
+          },
+          {
+            "adversaire": "Everton",
+            "score": "2-2",
+            "domicile": false,
+            "resultat": "D",
+            "coup_denvoi": "2026-09-06T13:00:00+00:00"
+          },
+          {
+            "adversaire": "Ipswich",
+            "score": "5-2",
+            "domicile": true,
+            "resultat": "W",
+            "coup_denvoi": "2026-08-30T15:30:00+00:00"
+          },
+          {
+            "adversaire": "Hull",
+            "score": "2-0",
+            "domicile": false,
+            "resultat": "L",
+            "coup_denvoi": "2026-08-22T11:30:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "AC Milan",
       "nom_court": "Milan",
       "slug": "milan",
       "sofascore_id": 2692,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/2692/image",
+      "fiche_club": {
+        "id": 2692,
+        "nom": "AC Milan",
+        "nom_court": "Milan",
+        "pays": "Italie",
+        "forme": [
+          "W",
+          "W",
+          "D"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Juventus",
+            "score": "1-1",
+            "domicile": false,
+            "resultat": "D",
+            "coup_denvoi": "2026-09-06T18:45:00+00:00"
+          },
+          {
+            "adversaire": "Venezia",
+            "score": "2-0",
+            "domicile": true,
+            "resultat": "W",
+            "coup_denvoi": "2026-08-28T18:45:00+00:00"
+          },
+          {
+            "adversaire": "Torino",
+            "score": "1-2",
+            "domicile": false,
+            "resultat": "W",
+            "coup_denvoi": "2026-08-23T18:45:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Monza",
       "nom_court": "Monza",
       "slug": "monza",
       "sofascore_id": 2729,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/2729/image",
+      "fiche_club": {
+        "id": 2729,
+        "nom": "Monza",
+        "nom_court": "Monza",
+        "pays": "Italie",
+        "forme": [
+          "L",
+          "L",
+          "D"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Parma",
+            "score": "1-1",
+            "domicile": false,
+            "resultat": "D",
+            "coup_denvoi": "2026-09-06T13:00:00+00:00"
+          },
+          {
+            "adversaire": "Udinese",
+            "score": "2-3",
+            "domicile": true,
+            "resultat": "L",
+            "coup_denvoi": "2026-08-29T16:30:00+00:00"
+          },
+          {
+            "adversaire": "Inter",
+            "score": "4-1",
+            "domicile": false,
+            "resultat": "L",
+            "coup_denvoi": "2026-08-22T16:30:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "SSC Napoli",
       "nom_court": "Napoli",
       "slug": "napoli",
       "sofascore_id": 2714,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/2714/image",
+      "fiche_club": {
+        "id": 2714,
+        "nom": "SSC Napoli",
+        "nom_court": "Napoli",
+        "pays": "Europe",
+        "forme": [
+          "W",
+          "L",
+          "L",
+          "L"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Arsenal",
+            "score": "0-1",
+            "domicile": true,
+            "resultat": "L",
+            "coup_denvoi": "2026-09-09T19:00:00+00:00"
+          },
+          {
+            "adversaire": "Inter",
+            "score": "3-2",
+            "domicile": false,
+            "resultat": "L",
+            "coup_denvoi": "2026-09-05T16:00:00+00:00"
+          },
+          {
+            "adversaire": "Como",
+            "score": "1-2",
+            "domicile": true,
+            "resultat": "L",
+            "coup_denvoi": "2026-08-30T16:30:00+00:00"
+          },
+          {
+            "adversaire": "Genoa",
+            "score": "0-2",
+            "domicile": false,
+            "resultat": "W",
+            "coup_denvoi": "2026-08-22T18:45:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "NEC Nijmegen",
       "nom_court": "NEC",
       "slug": "nec-nijmegen",
       "sofascore_id": 2962,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/2962/image",
+      "fiche_club": {
+        "id": 2962,
+        "nom": "NEC Nijmegen",
+        "nom_court": "NEC",
+        "pays": "Europe",
+        "forme": [
+          "L",
+          "L"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Bodø/Glimt",
+            "score": "3-0",
+            "domicile": false,
+            "resultat": "L",
+            "coup_denvoi": "2026-08-25T19:00:00+00:00"
+          },
+          {
+            "adversaire": "Bodø/Glimt",
+            "score": "1-3",
+            "domicile": true,
+            "resultat": "L",
+            "coup_denvoi": "2026-08-19T19:00:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Newcastle United",
       "nom_court": "Newcastle",
       "slug": "newcastle-united",
       "sofascore_id": 39,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/39/image",
+      "fiche_club": {
+        "id": 39,
+        "nom": "Newcastle United",
+        "nom_court": "Newcastle",
+        "pays": "Angleterre",
+        "forme": [
+          "D",
+          "W",
+          "D"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Bournemouth",
+            "score": "2-2",
+            "domicile": true,
+            "resultat": "D",
+            "coup_denvoi": "2026-09-05T11:30:00+00:00"
+          },
+          {
+            "adversaire": "Tottenham",
+            "score": "0-2",
+            "domicile": false,
+            "resultat": "W",
+            "coup_denvoi": "2026-08-29T16:30:00+00:00"
+          },
+          {
+            "adversaire": "Liverpool",
+            "score": "2-2",
+            "domicile": true,
+            "resultat": "D",
+            "coup_denvoi": "2026-08-23T15:30:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Nice",
       "nom_court": "Nice",
       "slug": "nice",
       "sofascore_id": 1661,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/1661/image",
+      "fiche_club": {
+        "id": 1661,
+        "nom": "Nice",
+        "nom_court": "Nice",
+        "pays": "France",
+        "forme": [
+          "D",
+          "L",
+          "D"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Le Mans",
+            "score": "1-1",
+            "domicile": true,
+            "resultat": "D",
+            "coup_denvoi": "2026-09-05T18:45:00+00:00"
+          },
+          {
+            "adversaire": "Paris",
+            "score": "3-0",
+            "domicile": false,
+            "resultat": "L",
+            "coup_denvoi": "2026-08-30T13:00:00+00:00"
+          },
+          {
+            "adversaire": "Lorient",
+            "score": "0-0",
+            "domicile": true,
+            "resultat": "D",
+            "coup_denvoi": "2026-08-22T18:45:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "NK Celje",
       "nom_court": "Celje",
       "slug": "nk-celje",
       "sofascore_id": 2413,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/2413/image",
+      "fiche_club": {
+        "id": 2413,
+        "nom": "NK Celje",
+        "nom_court": "Celje",
+        "pays": "Europe",
+        "forme": [
+          "D"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Slovan",
+            "score": "1-1",
+            "domicile": false,
+            "resultat": "D",
+            "coup_denvoi": "2026-08-19T19:00:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Nottingham Forest",
       "nom_court": "Forest",
       "slug": "nottingham-forest",
       "sofascore_id": 14,
-      "thesportsdb_id": 150960
+      "thesportsdb_id": 150960,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/14/image",
+      "fiche_club": {
+        "id": 14,
+        "nom": "Nottingham Forest",
+        "nom_court": "Forest",
+        "pays": "Angleterre",
+        "forme": [
+          "L",
+          "D",
+          "D"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Tottenham",
+            "score": "0-0",
+            "domicile": true,
+            "resultat": "D",
+            "coup_denvoi": "2026-09-05T14:00:00+00:00"
+          },
+          {
+            "adversaire": "Liverpool",
+            "score": "2-2",
+            "domicile": false,
+            "resultat": "D",
+            "coup_denvoi": "2026-08-29T11:30:00+00:00"
+          },
+          {
+            "adversaire": "Leeds",
+            "score": "0-1",
+            "domicile": true,
+            "resultat": "L",
+            "coup_denvoi": "2026-08-22T14:00:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Olympique de Marseille",
       "nom_court": "Marseille",
       "slug": "olympique-de-marseille",
       "sofascore_id": 1641,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/1641/image",
+      "fiche_club": {
+        "id": 1641,
+        "nom": "Olympique de Marseille",
+        "nom_court": "Marseille",
+        "pays": "France",
+        "forme": [
+          "W",
+          "L",
+          "L"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Paris",
+            "score": "2-3",
+            "domicile": true,
+            "resultat": "L",
+            "coup_denvoi": "2026-09-06T18:45:00+00:00"
+          },
+          {
+            "adversaire": "AS Monaco",
+            "score": "2-0",
+            "domicile": false,
+            "resultat": "L",
+            "coup_denvoi": "2026-08-30T18:45:00+00:00"
+          },
+          {
+            "adversaire": "Strasbourg",
+            "score": "4-0",
+            "domicile": true,
+            "resultat": "W",
+            "coup_denvoi": "2026-08-21T18:45:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Olympique Lyonnais",
       "nom_court": "Lyon",
       "slug": "olympique-lyonnais",
       "sofascore_id": 1649,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/1649/image",
+      "fiche_club": {
+        "id": 1649,
+        "nom": "Olympique Lyonnais",
+        "nom_court": "Lyon",
+        "pays": "France",
+        "forme": [
+          "D",
+          "W",
+          "L",
+          "D",
+          "W"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Auxerre",
+            "score": "3-1",
+            "domicile": true,
+            "resultat": "W",
+            "coup_denvoi": "2026-09-04T17:00:00+00:00"
+          },
+          {
+            "adversaire": "Le Havre",
+            "score": "1-1",
+            "domicile": true,
+            "resultat": "D",
+            "coup_denvoi": "2026-08-29T18:45:00+00:00"
+          },
+          {
+            "adversaire": "Fenerbahçe",
+            "score": "1-2",
+            "domicile": true,
+            "resultat": "L",
+            "coup_denvoi": "2026-08-26T19:00:00+00:00"
+          },
+          {
+            "adversaire": "Toulouse",
+            "score": "0-2",
+            "domicile": false,
+            "resultat": "W",
+            "coup_denvoi": "2026-08-22T18:45:00+00:00"
+          },
+          {
+            "adversaire": "Fenerbahçe",
+            "score": "1-1",
+            "domicile": false,
+            "resultat": "D",
+            "coup_denvoi": "2026-08-18T19:00:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Osasuna",
       "nom_court": "Osasuna",
       "slug": "osasuna",
       "sofascore_id": 2820,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/2820/image",
+      "fiche_club": {
+        "id": 2820,
+        "nom": "Osasuna",
+        "nom_court": "Osasuna",
+        "pays": "Espagne",
+        "forme": [
+          "D",
+          "W",
+          "W",
+          "L"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Alavés",
+            "score": "5-2",
+            "domicile": false,
+            "resultat": "L",
+            "coup_denvoi": "2026-09-06T16:30:00+00:00"
+          },
+          {
+            "adversaire": "Getafe",
+            "score": "1-0",
+            "domicile": true,
+            "resultat": "W",
+            "coup_denvoi": "2026-08-31T17:30:00+00:00"
+          },
+          {
+            "adversaire": "Celta",
+            "score": "1-2",
+            "domicile": false,
+            "resultat": "W",
+            "coup_denvoi": "2026-08-27T18:30:00+00:00"
+          },
+          {
+            "adversaire": "Levante",
+            "score": "0-0",
+            "domicile": true,
+            "resultat": "D",
+            "coup_denvoi": "2026-08-24T17:30:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Paris FC",
       "nom_court": "Paris",
       "slug": "paris-fc",
       "sofascore_id": 6070,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/6070/image",
+      "fiche_club": {
+        "id": 6070,
+        "nom": "Paris FC",
+        "nom_court": "Paris",
+        "pays": "France",
+        "forme": [
+          "D",
+          "W",
+          "W"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Marseille",
+            "score": "2-3",
+            "domicile": false,
+            "resultat": "W",
+            "coup_denvoi": "2026-09-06T18:45:00+00:00"
+          },
+          {
+            "adversaire": "Nice",
+            "score": "3-0",
+            "domicile": true,
+            "resultat": "W",
+            "coup_denvoi": "2026-08-30T13:00:00+00:00"
+          },
+          {
+            "adversaire": "Troyes",
+            "score": "0-0",
+            "domicile": false,
+            "resultat": "D",
+            "coup_denvoi": "2026-08-22T18:45:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Paris Saint-Germain",
       "nom_court": "PSG",
       "slug": "paris-saint-germain",
       "sofascore_id": 1644,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/1644/image",
+      "fiche_club": {
+        "id": 1644,
+        "nom": "Paris Saint-Germain",
+        "nom_court": "PSG",
+        "pays": "Europe",
+        "forme": [
+          "D",
+          "D",
+          "L",
+          "W"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Slovan",
+            "score": "6-1",
+            "domicile": true,
+            "resultat": "W",
+            "coup_denvoi": "2026-09-09T19:00:00+00:00"
+          },
+          {
+            "adversaire": "AS Monaco",
+            "score": "1-2",
+            "domicile": true,
+            "resultat": "L",
+            "coup_denvoi": "2026-09-04T19:05:00+00:00"
+          },
+          {
+            "adversaire": "Lille",
+            "score": "2-2",
+            "domicile": false,
+            "resultat": "D",
+            "coup_denvoi": "2026-08-28T19:00:00+00:00"
+          },
+          {
+            "adversaire": "Rennes",
+            "score": "2-2",
+            "domicile": false,
+            "resultat": "D",
+            "coup_denvoi": "2026-08-23T18:45:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Parma",
       "nom_court": "Parma",
       "slug": "parma",
       "sofascore_id": 2690,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/2690/image",
+      "fiche_club": {
+        "id": 2690,
+        "nom": "Parma",
+        "nom_court": "Parma",
+        "pays": "Italie",
+        "forme": [
+          "L",
+          "L",
+          "D"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Monza",
+            "score": "1-1",
+            "domicile": true,
+            "resultat": "D",
+            "coup_denvoi": "2026-09-06T13:00:00+00:00"
+          },
+          {
+            "adversaire": "Juventus",
+            "score": "2-0",
+            "domicile": false,
+            "resultat": "L",
+            "coup_denvoi": "2026-08-29T18:45:00+00:00"
+          },
+          {
+            "adversaire": "Cagliari",
+            "score": "0-1",
+            "domicile": true,
+            "resultat": "L",
+            "coup_denvoi": "2026-08-22T18:45:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "PSV Eindhoven",
       "nom_court": "PSV",
       "slug": "psv-eindhoven",
       "sofascore_id": 2952,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/2952/image",
+      "fiche_club": {
+        "id": 2952,
+        "nom": "PSV Eindhoven",
+        "nom_court": "PSV",
+        "pays": "Europe",
+        "forme": [
+          "D"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Shakhtar",
+            "score": "1-1",
+            "domicile": true,
+            "resultat": "D",
+            "coup_denvoi": "2026-09-10T16:45:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Real Racing Club",
       "nom_court": "R. Racing Club",
       "slug": "racing-de-santander",
       "sofascore_id": 2835,
-      "thesportsdb_id": 133726
+      "thesportsdb_id": 133726,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/2835/image",
+      "fiche_club": {
+        "id": 2835,
+        "nom": "Real Racing Club",
+        "nom_court": "R. Racing Club",
+        "pays": "Espagne",
+        "forme": [
+          "L",
+          "W",
+          "L"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Rayo Vallecano",
+            "score": "3-2",
+            "domicile": false,
+            "resultat": "L",
+            "coup_denvoi": "2026-09-05T16:30:00+00:00"
+          },
+          {
+            "adversaire": "Elche",
+            "score": "3-2",
+            "domicile": true,
+            "resultat": "W",
+            "coup_denvoi": "2026-08-28T17:00:00+00:00"
+          },
+          {
+            "adversaire": "Getafe",
+            "score": "1-0",
+            "domicile": false,
+            "resultat": "L",
+            "coup_denvoi": "2026-08-23T17:30:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Rayo Vallecano",
       "nom_court": "Rayo Vallecano",
       "slug": "rayo-vallecano",
       "sofascore_id": 2818,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/2818/image",
+      "fiche_club": {
+        "id": 2818,
+        "nom": "Rayo Vallecano",
+        "nom_court": "Rayo Vallecano",
+        "pays": "Espagne",
+        "forme": [
+          "L",
+          "W"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "R. Racing Club",
+            "score": "3-2",
+            "domicile": true,
+            "resultat": "W",
+            "coup_denvoi": "2026-09-05T16:30:00+00:00"
+          },
+          {
+            "adversaire": "Barcelona",
+            "score": "5-2",
+            "domicile": false,
+            "resultat": "L",
+            "coup_denvoi": "2026-08-31T19:30:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "RB Leipzig",
       "nom_court": "Leipzig",
       "slug": "rb-leipzig",
       "sofascore_id": 36360,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/36360/image",
+      "fiche_club": {
+        "id": 36360,
+        "nom": "RB Leipzig",
+        "nom_court": "Leipzig",
+        "pays": "Europe",
+        "forme": [
+          "L"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Como",
+            "score": "4-1",
+            "domicile": false,
+            "resultat": "L",
+            "coup_denvoi": "2026-09-10T19:00:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "RC Lens",
       "nom_court": "Lens",
       "slug": "rc-lens",
       "sofascore_id": 1648,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/1648/image",
+      "fiche_club": {
+        "id": 1648,
+        "nom": "RC Lens",
+        "nom_court": "Lens",
+        "pays": "Europe",
+        "forme": [
+          "W",
+          "L",
+          "L",
+          "W"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Slavia Praha",
+            "score": "2-3",
+            "domicile": false,
+            "resultat": "W",
+            "coup_denvoi": "2026-09-10T19:00:00+00:00"
+          },
+          {
+            "adversaire": "Lorient",
+            "score": "0-1",
+            "domicile": true,
+            "resultat": "L",
+            "coup_denvoi": "2026-09-05T15:15:00+00:00"
+          },
+          {
+            "adversaire": "Strasbourg",
+            "score": "2-1",
+            "domicile": false,
+            "resultat": "L",
+            "coup_denvoi": "2026-08-29T15:15:00+00:00"
+          },
+          {
+            "adversaire": "Auxerre",
+            "score": "5-2",
+            "domicile": true,
+            "resultat": "W",
+            "coup_denvoi": "2026-08-22T15:15:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "RC Strasbourg",
       "nom_court": "Strasbourg",
       "slug": "rc-strasbourg",
       "sofascore_id": 1659,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/1659/image",
+      "fiche_club": {
+        "id": 1659,
+        "nom": "RC Strasbourg",
+        "nom_court": "Strasbourg",
+        "pays": "France",
+        "forme": [
+          "L",
+          "W",
+          "W"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Troyes",
+            "score": "2-6",
+            "domicile": false,
+            "resultat": "W",
+            "coup_denvoi": "2026-09-06T13:00:00+00:00"
+          },
+          {
+            "adversaire": "Lens",
+            "score": "2-1",
+            "domicile": true,
+            "resultat": "W",
+            "coup_denvoi": "2026-08-29T15:15:00+00:00"
+          },
+          {
+            "adversaire": "Marseille",
+            "score": "4-0",
+            "domicile": false,
+            "resultat": "L",
+            "coup_denvoi": "2026-08-21T18:45:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Real Betis",
       "nom_court": "Real Betis",
       "slug": "real-betis",
       "sofascore_id": 2816,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/2816/image",
+      "fiche_club": {
+        "id": 2816,
+        "nom": "Real Betis",
+        "nom_court": "Real Betis",
+        "pays": "Europe",
+        "forme": [
+          "W",
+          "L",
+          "W",
+          "W"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Lille",
+            "score": "2-3",
+            "domicile": false,
+            "resultat": "W",
+            "coup_denvoi": "2026-09-08T19:00:00+00:00"
+          },
+          {
+            "adversaire": "Real Madrid",
+            "score": "1-0",
+            "domicile": true,
+            "resultat": "W",
+            "coup_denvoi": "2026-09-04T19:00:00+00:00"
+          },
+          {
+            "adversaire": "Levante",
+            "score": "5-2",
+            "domicile": false,
+            "resultat": "L",
+            "coup_denvoi": "2026-08-29T15:00:00+00:00"
+          },
+          {
+            "adversaire": "Valencia",
+            "score": "0-1",
+            "domicile": false,
+            "resultat": "W",
+            "coup_denvoi": "2026-08-25T19:00:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Real Madrid",
       "nom_court": "Real Madrid",
       "slug": "real-madrid",
       "sofascore_id": 2829,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/2829/image",
+      "fiche_club": {
+        "id": 2829,
+        "nom": "Real Madrid",
+        "nom_court": "Real Madrid",
+        "pays": "Europe",
+        "forme": [
+          "W",
+          "W",
+          "L",
+          "W"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Inter",
+            "score": "2-1",
+            "domicile": true,
+            "resultat": "W",
+            "coup_denvoi": "2026-09-08T19:00:00+00:00"
+          },
+          {
+            "adversaire": "Real Betis",
+            "score": "1-0",
+            "domicile": false,
+            "resultat": "L",
+            "coup_denvoi": "2026-09-04T19:00:00+00:00"
+          },
+          {
+            "adversaire": "Málaga",
+            "score": "4-0",
+            "domicile": true,
+            "resultat": "W",
+            "coup_denvoi": "2026-08-30T15:00:00+00:00"
+          },
+          {
+            "adversaire": "Real Sociedad",
+            "score": "4-1",
+            "domicile": true,
+            "resultat": "W",
+            "coup_denvoi": "2026-08-26T19:00:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Real Sociedad",
       "nom_court": "Real Sociedad",
       "slug": "real-sociedad",
       "sofascore_id": 2824,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/2824/image",
+      "fiche_club": {
+        "id": 2824,
+        "nom": "Real Sociedad",
+        "nom_court": "Real Sociedad",
+        "pays": "Espagne",
+        "forme": [
+          "L",
+          "W",
+          "D",
+          "W"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Elche",
+            "score": "2-3",
+            "domicile": false,
+            "resultat": "W",
+            "coup_denvoi": "2026-09-07T19:30:00+00:00"
+          },
+          {
+            "adversaire": "Celta",
+            "score": "0-0",
+            "domicile": true,
+            "resultat": "D",
+            "coup_denvoi": "2026-09-03T19:00:00+00:00"
+          },
+          {
+            "adversaire": "Espanyol",
+            "score": "2-1",
+            "domicile": true,
+            "resultat": "W",
+            "coup_denvoi": "2026-08-29T17:00:00+00:00"
+          },
+          {
+            "adversaire": "Real Madrid",
+            "score": "4-1",
+            "domicile": false,
+            "resultat": "L",
+            "coup_denvoi": "2026-08-26T19:00:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "AS Roma",
       "nom_court": "Roma",
       "slug": "roma",
       "sofascore_id": 2702,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/2702/image",
+      "fiche_club": {
+        "id": 2702,
+        "nom": "AS Roma",
+        "nom_court": "Roma",
+        "pays": "Europe",
+        "forme": [
+          "W",
+          "W",
+          "W",
+          "D"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Fenerbahçe",
+            "score": "1-1",
+            "domicile": false,
+            "resultat": "D",
+            "coup_denvoi": "2026-09-10T16:45:00+00:00"
+          },
+          {
+            "adversaire": "Atalanta",
+            "score": "2-1",
+            "domicile": true,
+            "resultat": "W",
+            "coup_denvoi": "2026-09-05T18:45:00+00:00"
+          },
+          {
+            "adversaire": "Lecce",
+            "score": "0-4",
+            "domicile": false,
+            "resultat": "W",
+            "coup_denvoi": "2026-08-31T16:30:00+00:00"
+          },
+          {
+            "adversaire": "Fiorentina",
+            "score": "4-0",
+            "domicile": true,
+            "resultat": "W",
+            "coup_denvoi": "2026-08-24T18:45:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Sabah FK",
       "nom_court": "Sabah",
       "slug": "sabah-fk",
       "sofascore_id": 267828,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/267828/image",
+      "fiche_club": {
+        "id": 267828,
+        "nom": "Sabah FK",
+        "nom_court": "Sabah",
+        "pays": "Europe",
+        "forme": [
+          "L",
+          "L"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Man Utd",
+            "score": "4-0",
+            "domicile": false,
+            "resultat": "L",
+            "coup_denvoi": "2026-09-10T19:00:00+00:00"
+          },
+          {
+            "adversaire": "H. Be'er Sheva",
+            "score": "2-1",
+            "domicile": false,
+            "resultat": "L",
+            "coup_denvoi": "2026-08-19T19:00:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Sassuolo",
       "nom_court": "Sassuolo",
       "slug": "sassuolo",
       "sofascore_id": 2793,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/2793/image",
+      "fiche_club": {
+        "id": 2793,
+        "nom": "Sassuolo",
+        "nom_court": "Sassuolo",
+        "pays": "Italie",
+        "forme": [
+          "L",
+          "W",
+          "D"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Bologna",
+            "score": "2-2",
+            "domicile": false,
+            "resultat": "D",
+            "coup_denvoi": "2026-09-06T16:00:00+00:00"
+          },
+          {
+            "adversaire": "Torino",
+            "score": "2-1",
+            "domicile": true,
+            "resultat": "W",
+            "coup_denvoi": "2026-08-29T16:30:00+00:00"
+          },
+          {
+            "adversaire": "Atalanta",
+            "score": "2-1",
+            "domicile": false,
+            "resultat": "L",
+            "coup_denvoi": "2026-08-23T18:45:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Sevilla",
       "nom_court": "Sevilla",
       "slug": "sevilla",
       "sofascore_id": 2833,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/2833/image",
+      "fiche_club": {
+        "id": 2833,
+        "nom": "Sevilla",
+        "nom_court": "Sevilla",
+        "pays": "Espagne",
+        "forme": [
+          "L",
+          "D"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Espanyol",
+            "score": "1-1",
+            "domicile": false,
+            "resultat": "D",
+            "coup_denvoi": "2026-09-06T19:00:00+00:00"
+          },
+          {
+            "adversaire": "Atl. Madrid",
+            "score": "1-3",
+            "domicile": true,
+            "resultat": "L",
+            "coup_denvoi": "2026-08-29T19:30:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Shakhtar Donetsk",
       "nom_court": "Shakhtar",
       "slug": "shakhtar-donetsk",
       "sofascore_id": 3313,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/3313/image",
+      "fiche_club": {
+        "id": 3313,
+        "nom": "Shakhtar Donetsk",
+        "nom_court": "Shakhtar",
+        "pays": "Europe",
+        "forme": [
+          "D"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "PSV",
+            "score": "1-1",
+            "domicile": false,
+            "resultat": "D",
+            "coup_denvoi": "2026-09-10T16:45:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "ŠK Slovan Bratislava",
       "nom_court": "Slovan",
       "slug": "sk-slovan-bratislava",
       "sofascore_id": 2404,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/2404/image",
+      "fiche_club": {
+        "id": 2404,
+        "nom": "ŠK Slovan Bratislava",
+        "nom_court": "Slovan",
+        "pays": "Europe",
+        "forme": [
+          "D",
+          "L"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "PSG",
+            "score": "6-1",
+            "domicile": false,
+            "resultat": "L",
+            "coup_denvoi": "2026-09-09T19:00:00+00:00"
+          },
+          {
+            "adversaire": "Celje",
+            "score": "1-1",
+            "domicile": true,
+            "resultat": "D",
+            "coup_denvoi": "2026-08-19T19:00:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "SK Slavia Praha",
       "nom_court": "Slavia Praha",
       "slug": "slavia-praha",
       "sofascore_id": 2216,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/2216/image",
+      "fiche_club": {
+        "id": 2216,
+        "nom": "SK Slavia Praha",
+        "nom_court": "Slavia Praha",
+        "pays": "Europe",
+        "forme": [
+          "L"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Lens",
+            "score": "2-3",
+            "domicile": true,
+            "resultat": "L",
+            "coup_denvoi": "2026-09-10T19:00:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Sporting CP",
       "nom_court": "Sporting",
       "slug": "sporting",
       "sofascore_id": 3001,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/3001/image",
+      "fiche_club": {
+        "id": 3001,
+        "nom": "Sporting CP",
+        "nom_court": "Sporting",
+        "pays": "Europe",
+        "forme": [
+          "W"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Galatasaray",
+            "score": "3-1",
+            "domicile": true,
+            "resultat": "W",
+            "coup_denvoi": "2026-09-09T19:00:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Stade Brestois",
       "nom_court": "Brest",
       "slug": "stade-brestois",
       "sofascore_id": 1715,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/1715/image",
+      "fiche_club": {
+        "id": 1715,
+        "nom": "Stade Brestois",
+        "nom_court": "Brest",
+        "pays": "France",
+        "forme": [
+          "D",
+          "D",
+          "W"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Le Havre",
+            "score": "1-2",
+            "domicile": false,
+            "resultat": "W",
+            "coup_denvoi": "2026-09-05T18:45:00+00:00"
+          },
+          {
+            "adversaire": "Toulouse",
+            "score": "2-2",
+            "domicile": true,
+            "resultat": "D",
+            "coup_denvoi": "2026-08-29T18:45:00+00:00"
+          },
+          {
+            "adversaire": "Le Mans",
+            "score": "2-2",
+            "domicile": false,
+            "resultat": "D",
+            "coup_denvoi": "2026-08-22T18:45:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Stade Rennais",
       "nom_court": "Rennes",
       "slug": "stade-rennais",
       "sofascore_id": 1658,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/1658/image",
+      "fiche_club": {
+        "id": 1658,
+        "nom": "Stade Rennais",
+        "nom_court": "Rennes",
+        "pays": "France",
+        "forme": [
+          "D",
+          "W",
+          "W"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Angers",
+            "score": "1-2",
+            "domicile": false,
+            "resultat": "W",
+            "coup_denvoi": "2026-09-06T15:15:00+00:00"
+          },
+          {
+            "adversaire": "Le Mans",
+            "score": "3-2",
+            "domicile": true,
+            "resultat": "W",
+            "coup_denvoi": "2026-08-30T15:15:00+00:00"
+          },
+          {
+            "adversaire": "PSG",
+            "score": "2-2",
+            "domicile": true,
+            "resultat": "D",
+            "coup_denvoi": "2026-08-23T18:45:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Sunderland",
       "nom_court": "Sunderland",
       "slug": "sunderland",
       "sofascore_id": 41,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/41/image",
+      "fiche_club": {
+        "id": 41,
+        "nom": "Sunderland",
+        "nom_court": "Sunderland",
+        "pays": "Angleterre",
+        "forme": [
+          "L",
+          "W",
+          "D"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Brentford",
+            "score": "1-1",
+            "domicile": false,
+            "resultat": "D",
+            "coup_denvoi": "2026-09-05T14:00:00+00:00"
+          },
+          {
+            "adversaire": "Fulham",
+            "score": "1-0",
+            "domicile": true,
+            "resultat": "W",
+            "coup_denvoi": "2026-08-30T13:00:00+00:00"
+          },
+          {
+            "adversaire": "Ipswich",
+            "score": "2-1",
+            "domicile": false,
+            "resultat": "L",
+            "coup_denvoi": "2026-08-22T14:00:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Torino",
       "nom_court": "Torino",
       "slug": "torino",
       "sofascore_id": 2696,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/2696/image",
+      "fiche_club": {
+        "id": 2696,
+        "nom": "Torino",
+        "nom_court": "Torino",
+        "pays": "Italie",
+        "forme": [
+          "L",
+          "L",
+          "W"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Fiorentina",
+            "score": "1-2",
+            "domicile": false,
+            "resultat": "W",
+            "coup_denvoi": "2026-09-05T13:00:00+00:00"
+          },
+          {
+            "adversaire": "Sassuolo",
+            "score": "2-1",
+            "domicile": false,
+            "resultat": "L",
+            "coup_denvoi": "2026-08-29T16:30:00+00:00"
+          },
+          {
+            "adversaire": "Milan",
+            "score": "1-2",
+            "domicile": true,
+            "resultat": "L",
+            "coup_denvoi": "2026-08-23T18:45:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Tottenham Hotspur",
       "nom_court": "Tottenham",
       "slug": "tottenham-hotspur",
       "sofascore_id": 33,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/33/image",
+      "fiche_club": {
+        "id": 33,
+        "nom": "Tottenham Hotspur",
+        "nom_court": "Tottenham",
+        "pays": "Angleterre",
+        "forme": [
+          "L",
+          "L",
+          "D"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Forest",
+            "score": "0-0",
+            "domicile": false,
+            "resultat": "D",
+            "coup_denvoi": "2026-09-05T14:00:00+00:00"
+          },
+          {
+            "adversaire": "Newcastle",
+            "score": "0-2",
+            "domicile": true,
+            "resultat": "L",
+            "coup_denvoi": "2026-08-29T16:30:00+00:00"
+          },
+          {
+            "adversaire": "Brentford",
+            "score": "3-0",
+            "domicile": false,
+            "resultat": "L",
+            "coup_denvoi": "2026-08-22T16:30:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Toulouse",
       "nom_court": "Toulouse",
       "slug": "toulouse",
       "sofascore_id": 1681,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/1681/image",
+      "fiche_club": {
+        "id": 1681,
+        "nom": "Toulouse",
+        "nom_court": "Toulouse",
+        "pays": "France",
+        "forme": [
+          "L",
+          "D",
+          "L"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Lille",
+            "score": "0-1",
+            "domicile": true,
+            "resultat": "L",
+            "coup_denvoi": "2026-09-03T18:45:00+00:00"
+          },
+          {
+            "adversaire": "Brest",
+            "score": "2-2",
+            "domicile": false,
+            "resultat": "D",
+            "coup_denvoi": "2026-08-29T18:45:00+00:00"
+          },
+          {
+            "adversaire": "Lyon",
+            "score": "0-2",
+            "domicile": true,
+            "resultat": "L",
+            "coup_denvoi": "2026-08-22T18:45:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Troyes",
       "nom_court": "Troyes",
       "slug": "troyes",
       "sofascore_id": 1652,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/1652/image",
+      "fiche_club": {
+        "id": 1652,
+        "nom": "Troyes",
+        "nom_court": "Troyes",
+        "pays": "France",
+        "forme": [
+          "D",
+          "W",
+          "L"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Strasbourg",
+            "score": "2-6",
+            "domicile": true,
+            "resultat": "L",
+            "coup_denvoi": "2026-09-06T13:00:00+00:00"
+          },
+          {
+            "adversaire": "Lorient",
+            "score": "1-2",
+            "domicile": false,
+            "resultat": "W",
+            "coup_denvoi": "2026-08-29T18:45:00+00:00"
+          },
+          {
+            "adversaire": "Paris",
+            "score": "0-0",
+            "domicile": true,
+            "resultat": "D",
+            "coup_denvoi": "2026-08-22T18:45:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Udinese",
       "nom_court": "Udinese",
       "slug": "udinese",
       "sofascore_id": 2695,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/2695/image",
+      "fiche_club": {
+        "id": 2695,
+        "nom": "Udinese",
+        "nom_court": "Udinese",
+        "pays": "Italie",
+        "forme": [
+          "D",
+          "W",
+          "L"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Lazio",
+            "score": "1-2",
+            "domicile": true,
+            "resultat": "L",
+            "coup_denvoi": "2026-09-07T18:45:00+00:00"
+          },
+          {
+            "adversaire": "Monza",
+            "score": "2-3",
+            "domicile": false,
+            "resultat": "W",
+            "coup_denvoi": "2026-08-29T16:30:00+00:00"
+          },
+          {
+            "adversaire": "Como",
+            "score": "1-1",
+            "domicile": true,
+            "resultat": "D",
+            "coup_denvoi": "2026-08-22T16:30:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Valencia",
       "nom_court": "Valencia",
       "slug": "valencia",
       "sofascore_id": 2828,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/2828/image",
+      "fiche_club": {
+        "id": 2828,
+        "nom": "Valencia",
+        "nom_court": "Valencia",
+        "pays": "Espagne",
+        "forme": [
+          "L",
+          "L",
+          "L"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Barcelona",
+            "score": "0-5",
+            "domicile": true,
+            "resultat": "L",
+            "coup_denvoi": "2026-09-06T14:15:00+00:00"
+          },
+          {
+            "adversaire": "Deportivo",
+            "score": "3-1",
+            "domicile": false,
+            "resultat": "L",
+            "coup_denvoi": "2026-08-30T17:30:00+00:00"
+          },
+          {
+            "adversaire": "Real Betis",
+            "score": "0-1",
+            "domicile": true,
+            "resultat": "L",
+            "coup_denvoi": "2026-08-25T19:00:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Venezia",
       "nom_court": "Venezia",
       "slug": "venezia",
       "sofascore_id": 2688,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/2688/image",
+      "fiche_club": {
+        "id": 2688,
+        "nom": "Venezia",
+        "nom_court": "Venezia",
+        "pays": "Italie",
+        "forme": [
+          "L",
+          "L",
+          "L"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Frosinone",
+            "score": "3-2",
+            "domicile": false,
+            "resultat": "L",
+            "coup_denvoi": "2026-09-06T13:00:00+00:00"
+          },
+          {
+            "adversaire": "Milan",
+            "score": "2-0",
+            "domicile": false,
+            "resultat": "L",
+            "coup_denvoi": "2026-08-28T18:45:00+00:00"
+          },
+          {
+            "adversaire": "Lecce",
+            "score": "0-2",
+            "domicile": true,
+            "resultat": "L",
+            "coup_denvoi": "2026-08-23T16:30:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "VfB Stuttgart",
       "nom_court": "Stuttgart",
       "slug": "vfb-stuttgart",
       "sofascore_id": 2677,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/2677/image",
+      "fiche_club": {
+        "id": 2677,
+        "nom": "VfB Stuttgart",
+        "nom_court": "Stuttgart",
+        "pays": "Europe",
+        "forme": [
+          "W"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Viking",
+            "score": "3-1",
+            "domicile": true,
+            "resultat": "W",
+            "coup_denvoi": "2026-09-09T16:45:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Viking FK",
       "nom_court": "Viking",
       "slug": "viking-fk",
       "sofascore_id": 1164,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/1164/image",
+      "fiche_club": {
+        "id": 1164,
+        "nom": "Viking FK",
+        "nom_court": "Viking",
+        "pays": "Europe",
+        "forme": [
+          "W",
+          "L"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Stuttgart",
+            "score": "3-1",
+            "domicile": false,
+            "resultat": "L",
+            "coup_denvoi": "2026-09-09T16:45:00+00:00"
+          },
+          {
+            "adversaire": "Dinamo",
+            "score": "3-1",
+            "domicile": true,
+            "resultat": "W",
+            "coup_denvoi": "2026-08-26T19:00:00+00:00"
+          }
+        ]
+      }
     },
     {
       "nom": "Villarreal",
       "nom_court": "Villarreal",
       "slug": "villarreal",
       "sofascore_id": 2819,
-      "thesportsdb_id": null
+      "thesportsdb_id": null,
+      "logo_externe": "https://img.sofascore.com/api/v1/team/2819/image",
+      "fiche_club": {
+        "id": 2819,
+        "nom": "Villarreal",
+        "nom_court": "Villarreal",
+        "pays": "Europe",
+        "forme": [
+          "D",
+          "L",
+          "L",
+          "L"
+        ],
+        "position": null,
+        "note_moyenne": null,
+        "classement": null,
+        "recents": [
+          {
+            "adversaire": "Dortmund",
+            "score": "3-2",
+            "domicile": false,
+            "resultat": "L",
+            "coup_denvoi": "2026-09-08T19:00:00+00:00"
+          },
+          {
+            "adversaire": "Deportivo",
+            "score": "2-3",
+            "domicile": true,
+            "resultat": "L",
+            "coup_denvoi": "2026-09-05T19:00:00+00:00"
+          },
+          {
+            "adversaire": "Alavés",
+            "score": "1-0",
+            "domicile": false,
+            "resultat": "L",
+            "coup_denvoi": "2026-08-28T19:30:00+00:00"
+          },
+          {
+            "adversaire": "Atl. Madrid",
+            "score": "2-2",
+            "domicile": false,
+            "resultat": "D",
+            "coup_denvoi": "2026-08-23T15:00:00+00:00"
+          }
+        ]
+      }
     }
   ],
   "matchs": [

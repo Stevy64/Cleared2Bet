@@ -52,6 +52,12 @@ class EquipeCourtSerializer(serializers.Serializer):
     nom = serializers.CharField()
     nom_court = serializers.CharField()
     slug = serializers.CharField()
+    logo_url = serializers.SerializerMethodField()
+
+    def get_logo_url(self, obj):
+        """URL directe pour le navigateur (pas le proxy serveur)."""
+        from paris.clubs import logo_url_pour
+        return logo_url_pour(obj) or None
 
 
 class OptionListeSerializer(serializers.ModelSerializer):
