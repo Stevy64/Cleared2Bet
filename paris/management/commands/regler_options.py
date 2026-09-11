@@ -1,4 +1,5 @@
 from django.core.management.base import BaseCommand
+from django.core.management import call_command
 from django.db.models import Prefetch
 
 from paris.models import Match, Option
@@ -10,6 +11,11 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument('--dry-run', action='store_true')
+        parser.add_argument(
+            '--apprendre',
+            action='store_true',
+            help='Après règlement, affine data/calibration.json (apprendre_calibration).',
+        )
 
     def handle(self, *args, **opts):
         qs = (
@@ -36,3 +42,5 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS(
             f'{prefix}{total} options réglées sur {n_matchs} matchs.'
         ))
+        if opts['apprendre'] and not opts['dry_run']:
+            call_command('apprendre_calibration', stdout=self.stdout)

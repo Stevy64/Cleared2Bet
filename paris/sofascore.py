@@ -164,10 +164,198 @@ def formater_h2h(data: dict[str, Any], nom_dom: str, nom_ext: str) -> str:
     total = hw + aw + dr
     if total <= 0:
         return ''
+    if hw > aw + dr:
+        lecture = f'{nom_dom} a dominé ce duel récemment'
+    elif aw > hw + dr:
+        lecture = f'{nom_ext} a souvent pris le dessus'
+    elif dr >= max(hw, aw):
+        lecture = 'beaucoup de matchs serrés / nuls dans l’historique'
+    else:
+        lecture = 'bilan assez équilibré entre les deux'
     return (
-        f'Dernières confrontations ({total}) : '
-        f'{nom_dom} {hw} victoire(s), {dr} nul(s), {nom_ext} {aw} victoire(s).'
+        f'Sur {total} confrontations récentes : {nom_dom} {hw} victoire(s), '
+        f'{dr} nul(s), {nom_ext} {aw} — {lecture}.'
     )
+
+
+def _lettre_forme_fr(c: str) -> str:
+    return {'W': 'V', 'D': 'N', 'L': 'D'}.get(c, c)
+
+
+def formater_forme_equipe(infos: dict[str, Any] | None, nom: str) -> str:
+    """Texte forme récente à partir de infos_equipe()."""
+    if not infos:
+        return ''
+    forme = infos.get('forme') or []
+    if not forme:
+        return ''
+    suite = '–'.join(_lettre_forme_fr(c) for c in forme[:5])
+    wins = sum(1 for c in forme[:5] if c == 'W')
+    losses = sum(1 for c in forme[:5] if c == 'L')
+    pos = infos.get('position')
+    bits = [f'{nom} : {suite}']
+    if wins >= 3:
+        bits.append('bonne dynamique')
+    elif losses >= 3:
+        bits.append('série compliquée')
+    elif wins == 0 and losses <= 1:
+        bits.append('peu de résultats tranchés')
+    if pos:
+        bits.append(f'{pos}ᵉ au classement')
+    return ' — '.join(bits) + '.'
+
+
+def _raison_absent(reason: Any) -> str:
+    # Codes SofaScore usuels : 1 blessé, 2 suspendu, 3 autre / douteux
+    try:
+        code = int(reason)
+    except (TypeError, ValueError):
+        return ''
+    return {1: 'blessé', 2: 'suspendu', 3: 'indisponible'}.get(code, '')
+
+
+def formater_absents_lineups(data: dict[str, Any], cote: str = 'home') -> str:
+    """Liste courte des absents depuis /event/{id}/lineups."""
+    if not data:
+        return ''
+    side = data.get(cote) or {}
+    missing = side.get('missingPlayers') or []
+    noms: list[str] = []
+    for item in missing[:6]:
+        player = item.get('player') or {}
+        nom = (player.get('shortName') or player.get('name') or '').strip()
+        if not nom:
+            continue
+        motif = _raison_absent(item.get('reason'))
+        noms.append(f'{nom} ({motif})' if motif else nom)
+    if not noms:
+        return ''
+    return ', '.join(noms)
+
+
+def formater_meteo_event(ev: dict[str, Any] | None) -> str:
+    """Météo si présente dans le JSON event SofaScore."""
+    if not ev:
+        return ''
+    weather = ev.get('weather') or {}
+    if not weather:
+        return ''
+    temp = weather.get('temperature')
+    if temp is None:
+        temp = weather.get('temp')
+    cond = (
+        weather.get('condition')
+        or weather.get('skyCondition')
+        or weather.get('description')
+        or ''
+    )
+    cond = str(cond).strip().lower()
+    cond_fr = {
+        'clear': 'ciel dégagé',
+        'sunny': 'ensoleillé',
+        'cloudy': 'nuageux',
+        'partly-cloudy': 'partiellement nuageux',
+        'overcast': 'couvert',
+        'rain': 'pluie',
+        'light-rain': 'pluie fine',
+        'heavy-rain': 'forte pluie',
+        'storm': 'orage',
+        'snow': 'neige',
+        'fog': 'brouillard',
+        'windy': 'venteux',
+    }.get(cond.replace(' ', '-'), cond.replace('-', ' ') if cond else '')
+    bits = []
+    if temp is not None:
+        try:
+            bits.append(f'{int(round(float(temp)))} °C')
+        except (TypeError, ValueError):
+            pass
+    if cond_fr:
+        bits.append(cond_fr)
+    wind = weather.get('wind') or weather.get('windSpeed')
+    if wind is not None:
+        try:
+            bits.append(f'vent ~{int(round(float(wind)))} km/h')
+        except (TypeError, ValueError):
+            pass
+    if not bits:
+        return ''
+    texte = 'Conditions annoncées : ' + ', '.join(bits) + '.'
+    if any(k in (cond_fr or '') for k in ('pluie', 'orage', 'neige', 'brouillard')):
+        texte += ' Terrain potentiellement plus fermé / moins de buts spectaculaires.'
+    elif 'ensoleillé' in (cond_fr or '') or 'dégagé' in (cond_fr or ''):
+        texte += ' Cadre classique pour un match joué à plat.'
+    return texte
+
+
+def collecter_contexte_match(
+    event_id: int,
+    *,
+    home_team_id: int | None,
+    away_team_id: int | None,
+    nom_dom: str,
+    nom_ext: str,
+    event: dict[str, Any] | None = None,
+    tournament_id: int | None = None,
+) -> dict[str, str]:
+    """Agrège H2H, formes, absents et météo pour Contexte (best-effort)."""
+    out = {
+        'confrontations': '',
+        'forme_dom': '',
+        'forme_ext': '',
+        'absents_dom': '',
+        'absents_ext': '',
+        'tendance_buts': '',
+        'a_savoir': '',
+    }
+    try:
+        out['confrontations'] = formater_h2h(h2h(event_id), nom_dom, nom_ext)
+    except SofaScoreErreur:
+        pass
+
+    if home_team_id:
+        try:
+            out['forme_dom'] = formater_forme_equipe(
+                infos_equipe(int(home_team_id), tournament_id), nom_dom,
+            )
+        except SofaScoreErreur:
+            pass
+    if away_team_id:
+        try:
+            out['forme_ext'] = formater_forme_equipe(
+                infos_equipe(int(away_team_id), tournament_id), nom_ext,
+            )
+        except SofaScoreErreur:
+            pass
+
+    try:
+        lineups = _get(f'/event/{int(event_id)}/lineups')
+        out['absents_dom'] = formater_absents_lineups(lineups, 'home')
+        out['absents_ext'] = formater_absents_lineups(lineups, 'away')
+    except SofaScoreErreur:
+        pass
+
+    meteo = formater_meteo_event(event)
+    if meteo:
+        out['a_savoir'] = meteo
+
+    # Tendance buts légère à partir des formes (lecture terrain, pas de maths).
+    fd = out['forme_dom']
+    fe = out['forme_ext']
+    if 'bonne dynamique' in fd and 'bonne dynamique' in fe:
+        out['tendance_buts'] = (
+            'Les deux arrivent en confiance : match souvent plus ouvert, occasions des deux côtés.'
+        )
+    elif 'série compliquée' in fd and 'série compliquée' in fe:
+        out['tendance_buts'] = (
+            'Deux équipes en galère : souvent plus prudent, moins de rythme offensif.'
+        )
+    elif 'bonne dynamique' in fd or 'bonne dynamique' in fe:
+        out['tendance_buts'] = (
+            'Une équipe arrive mieux lancée : elle peut imposer son rythme et forcer le jeu.'
+        )
+
+    return out
 
 
 def cotes_1x2(event_id: int) -> tuple[float, float, float] | None:

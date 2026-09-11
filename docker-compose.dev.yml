@@ -1,0 +1,59 @@
+# ════════════════════════════════════════════
+# Cleared2Bet — développement local
+# Usage : make dev   |  docker compose -f docker-compose.dev.yml up
+# Image  : cleared2bet-dev
+# ════════════════════════════════════════════
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder
+    image: cleared2bet-dev:latest
+    container_name: cleared2bet-web-dev
+    restart: unless-stopped
+    working_dir: /app
+    volumes:
+      - .:/app
+      - cleared2bet_dev_static:/app/staticfiles
+      - cleared2bet_dev_data:/app/data
+    ports:
+      - "${C2B_DEV_PORT:-8000}:8000"
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings
+      DJANGO_DEBUG: "1"
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-dev-cleared2bet-secret-local-only}
+      DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-localhost,127.0.0.1,0.0.0.0,web}
+      DJANGO_CSRF_TRUSTED_ORIGINS: ${DJANGO_CSRF_TRUSTED_ORIGINS:-http://localhost:8000,http://127.0.0.1:8000}
+      DJANGO_SSL: "0"
+      DJANGO_SECURE_SSL_REDIRECT: "0"
+      DJANGO_SQLITE_PATH: /app/data/db.sqlite3
+      C2B_SKIP_COLLECTSTATIC: "1"
+      PYTHONUNBUFFERED: "1"
+    command: >
+      sh -c "python manage.py migrate --noinput
+      && python manage.py runserver 0.0.0.0:8000"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/')",
+        ]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+    networks:
+      - cleared2bet-dev-net
+
+volumes:
+  cleared2bet_dev_static:
+  cleared2bet_dev_data:
+
+networks:
+  cleared2bet-dev-net:
+    driver: bridge
+    name: cleared2bet-dev-net

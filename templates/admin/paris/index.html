@@ -1,0 +1,175 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block content_title %}{% endblock %}
+{% block nav-sidebar %}{% endblock %}
+
+{% block content %}
+{% if c2b_stats %}
+<div class="c2b-shell">
+  <header class="c2b-top">
+    <div class="c2b-top-copy">
+      <p class="c2b-kicker">Administration</p>
+      <h1>Tableau de bord</h1>
+      <p class="c2b-lead">VIP, matchs, tips et salon — actions prioritaires en un clic.</p>
+    </div>
+    <div class="c2b-top-cta">
+      <a class="c2b-btn c2b-btn-primary" href="{% url 'admin:paris_profil_changelist' %}">Gérer les VIP</a>
+      <a class="c2b-btn c2b-btn-dark" href="{% url 'admin:paris_reglagesite_changelist' %}">WhatsApp &amp; tarif</a>
+      {% if c2b_reglages and c2b_reglages.lien_whatsapp_vip %}
+      <a class="c2b-btn c2b-btn-ghost" href="{{ c2b_reglages.lien_whatsapp_vip }}" target="_blank" rel="noopener">Ouvrir WhatsApp</a>
+      {% endif %}
+    </div>
+  </header>
+
+  <section class="c2b-metrics" aria-label="Indicateurs">
+    <div class="c2b-metric">
+      <strong>{{ c2b_stats.n_users }}</strong>
+      <span>Comptes</span>
+    </div>
+    <div class="c2b-metric accent">
+      <strong>{{ c2b_stats.n_vip }}</strong>
+      <span>VIP</span>
+    </div>
+    <div class="c2b-metric">
+      <strong>{{ c2b_stats.n_membres }}</strong>
+      <span>Membres</span>
+    </div>
+    <div class="c2b-metric">
+      <strong>{{ c2b_stats.n_inscrits_7j }}</strong>
+      <span>Inscrits 7 j</span>
+    </div>
+    <div class="c2b-metric">
+      <strong>{{ c2b_stats.n_a_venir }}</strong>
+      <span>À venir</span>
+    </div>
+    <div class="c2b-metric ok">
+      <strong>{% if c2b_stats.taux_tips != None %}{{ c2b_stats.taux_tips }}%{% else %}—{% endif %}</strong>
+      <span>Réussite P/F</span>
+    </div>
+  </section>
+
+  <section class="c2b-hero-actions" aria-label="Actions principales">
+    <a class="c2b-hero-card is-vip" href="{% url 'admin:paris_profil_changelist' %}">
+      <div class="c2b-hero-card-top">
+        <span class="c2b-pill">Prioritaire</span>
+        <span class="c2b-hero-count">{{ c2b_stats.n_vip }}</span>
+      </div>
+      <h2>Profils VIP</h2>
+      <p>Octroie ou retire le statut après paiement WhatsApp.</p>
+      <span class="c2b-hero-go">Ouvrir →</span>
+    </a>
+    <a class="c2b-hero-card" href="{% url 'admin:paris_match_changelist' %}?statut__exact=a_venir">
+      <div class="c2b-hero-card-top">
+        <span class="c2b-pill soft">Matchs</span>
+        <span class="c2b-hero-count">{{ c2b_stats.n_a_venir }}</span>
+      </div>
+      <h2>Matchs à venir</h2>
+      <p>Scores, contextes et analyses moteur.</p>
+      <span class="c2b-hero-go">Ouvrir →</span>
+    </a>
+    <a class="c2b-hero-card" href="{% url 'admin:paris_option_changelist' %}?niveau__exact=prudente">
+      <div class="c2b-hero-card-top">
+        <span class="c2b-pill soft">Tips</span>
+        <span class="c2b-hero-count">{% if c2b_stats.taux_tips != None %}{{ c2b_stats.taux_tips }}%{% else %}—{% endif %}</span>
+      </div>
+      <h2>Tips Prudente / Filet</h2>
+      <p>{{ c2b_stats.n_tips }} tips réglés · suivi des résultats.</p>
+      <span class="c2b-hero-go">Ouvrir →</span>
+    </a>
+    <a class="c2b-hero-card" href="{% url 'admin:paris_messagechat_changelist' %}">
+      <div class="c2b-hero-card-top">
+        <span class="c2b-pill soft">Salon</span>
+        <span class="c2b-hero-count">{{ c2b_stats.n_msg_actifs }}</span>
+      </div>
+      <h2>Salon VIP</h2>
+      <p>Messages actifs (purge automatique 24 h).</p>
+      <span class="c2b-hero-go">Ouvrir →</span>
+    </a>
+  </section>
+
+  <div class="c2b-main-grid">
+    <section class="c2b-card">
+      <div class="c2b-card-head">
+        <h3>Derniers VIP</h3>
+        <a href="{% url 'admin:paris_profil_changelist' %}">Tous les profils</a>
+      </div>
+      <ul class="c2b-list">
+        {% for p in c2b_stats.derniers_vip %}
+        <li>
+          <div class="c2b-list-main">
+            <a href="{% url 'admin:paris_profil_change' p.pk %}">{{ p.user.username }}</a>
+            <span class="c2b-badge">VIP</span>
+          </div>
+          <span class="c2b-meta">{% if p.vip_expire_le %}jusqu’au {{ p.vip_expire_le|date:"d/m/Y" }}{% elif p.vip_depuis %}{{ p.vip_depuis|date:"d/m/Y" }}{% else %}—{% endif %}</span>
+        </li>
+        {% empty %}
+        <li class="c2b-empty-row">Aucun VIP pour l’instant.</li>
+        {% endfor %}
+      </ul>
+    </section>
+
+    <section class="c2b-card">
+      <div class="c2b-card-head">
+        <h3>Salon VIP · récent</h3>
+        <a href="{% url 'admin:paris_messagechat_changelist' %}">Voir tout</a>
+      </div>
+      <ul class="c2b-list">
+        {% for m in c2b_stats.derniers_msg %}
+        <li>
+          <div class="c2b-list-main">
+            <strong>{{ m.auteur.username }}</strong>
+            <span class="c2b-msg">{{ m.texte|truncatechars:48 }}</span>
+          </div>
+          <span class="c2b-meta">{{ m.created_at|date:"H:i" }}</span>
+        </li>
+        {% empty %}
+        <li class="c2b-empty-row">Aucun message actif.</li>
+        {% endfor %}
+      </ul>
+    </section>
+
+    <aside class="c2b-card c2b-side">
+      <div class="c2b-card-head">
+        <h3>Workflow VIP</h3>
+      </div>
+      <ol class="c2b-steps">
+        <li>L’utilisateur demande via WhatsApp</li>
+        <li>Tu confirmes le paiement</li>
+        <li>Profils → action « Octroyer VIP (1 mois) »</li>
+        <li>Si besoin : « Prolonger VIP (+1 mois) » ou date manuelle</li>
+      </ol>
+      <div class="c2b-side-actions">
+        <a class="c2b-btn c2b-btn-primary c2b-btn-block" href="{% url 'admin:paris_profil_changelist' %}">Octroyer un VIP</a>
+        <a class="c2b-btn c2b-btn-ghost c2b-btn-block" href="{% url 'admin:paris_reglagesite_changelist' %}">Configurer le lien WhatsApp</a>
+      </div>
+      {% if c2b_reglages %}
+      <div class="c2b-status">
+        <span>Tarif affiché</span>
+        <strong>{{ c2b_reglages.vip_tarif_libelle|default:"—" }}</strong>
+      </div>
+      {% endif %}
+    </aside>
+  </div>
+
+  <section class="c2b-card c2b-catalog">
+    <div class="c2b-card-head">
+      <h3>Raccourcis plateforme</h3>
+    </div>
+    <div class="c2b-links">
+      <a href="{% url 'admin:paris_competition_changelist' %}"><span>Compétitions</span></a>
+      <a href="{% url 'admin:paris_equipe_changelist' %}"><span>Équipes</span></a>
+      <a href="{% url 'admin:paris_match_changelist' %}?statut__exact=termine"><span>Matchs terminés</span></a>
+      <a href="{% url 'admin:paris_analyse_changelist' %}"><span>Analyses moteur</span></a>
+      <a href="{% url 'admin:paris_contexte_changelist' %}"><span>Contextes</span></a>
+      <a href="{% url 'admin:paris_cote_changelist' %}"><span>Cotes</span></a>
+      <a href="{% url 'admin:paris_propositionparis_changelist' %}"><span>Propositions users</span></a>
+      <a href="{% url 'admin:auth_user_changelist' %}"><span>Comptes Django</span></a>
+      <a href="{% url 'admin:paris_reglagesite_changelist' %}"><span>Réglages site</span></a>
+    </div>
+  </section>
+</div>
+{% else %}
+<p class="c2b-empty">Dashboard indisponible (migrations ou base à initialiser).</p>
+{% endif %}
+{% endblock %}

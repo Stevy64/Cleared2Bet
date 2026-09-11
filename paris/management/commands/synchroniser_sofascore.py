@@ -220,16 +220,27 @@ class Command(BaseCommand):
                     defaults={'valeur': round(val, 3), 'nb_sources': 1, 'releve_le': now},
                 )
 
-        # H2H (texte contexte) — ne bloque plus la sync si vide.
-        texte = sofa.formater_h2h(sofa.h2h(eid), dom.nom_court, ext.nom_court)
-        if texte:
-            Contexte.objects.update_or_create(
-                match=match,
-                defaults={
-                    'confrontations': texte,
-                    'source': 'SofaScore',
-                    'fiabilite': 'bonne',
-                },
+        # Contexte terrain (H2H, forme, absents, météo) — best-effort.
+        try:
+            ctx = sofa.collecter_contexte_match(
+                eid,
+                home_team_id=dom.sofascore_id,
+                away_team_id=ext.sofascore_id,
+                nom_dom=dom.nom_court,
+                nom_ext=ext.nom_court,
+                event=ev,
+                tournament_id=comp.sofascore_id,
             )
+            if any(ctx.values()):
+                Contexte.objects.update_or_create(
+                    match=match,
+                    defaults={
+                        **{k: v for k, v in ctx.items() if v},
+                        'source': 'SofaScore',
+                        'fiabilite': 'bonne',
+                    },
+                )
+        except Exception:  # noqa: BLE001 — ne jamais casser la sync
+            pass
 
         return created, not created, n_regle

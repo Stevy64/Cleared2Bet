@@ -43,20 +43,21 @@ pytest
 
 CI : pytest, migrations, `collectstatic`, `check --deploy`, smoke VPS.
 
-## Déploiement (Oracle Cloud Free Tier — recommandé)
+## Déploiement
 
-Guide : [docs/oracle-cloud.md](docs/oracle-cloud.md).  
-Alternative VPS OVH : [docs/ovh-vps.md](docs/ovh-vps.md).
+Feuille de route : [docs/deploy.md](docs/deploy.md)
 
-Fichiers dans `deploy/` : Gunicorn, systemd, nginx, `update.sh`.
+1. **PythonAnywhere** (maintenant, sans Docker) → [docs/pythonanywhere.md](docs/pythonanywhere.md)
+2. **OVH Cloud** (proche avenir) → [docs/ovh-vps.md](docs/ovh-vps.md)  
+   - Docker : [docs/docker.md](docs/docker.md) (`make prod-build`, images `cleared2bet-prod`)  
+   - ou systemd + nginx
 
 ```bash
-cp .env.example .env
-# Renseigne DJANGO_SECRET_KEY, ALLOWED_HOSTS, CSRF_TRUSTED_ORIGINS
-pip install -r requirements.txt
-python manage.py migrate --noinput
-python manage.py collectstatic --noinput
-gunicorn --config deploy/gunicorn.conf.py config.wsgi:application
-```
+# Dev Docker
+make dev-build
+# → http://127.0.0.1:8000/   images : cleared2bet-dev
 
-Ouvre `/` en HTTPS, installe la PWA. Hors ligne, le service worker sert la coque et les derniers matchs mis en cache.
+# Prod Docker (Postgres + Gunicorn + nginx)
+cp .env.example .env   # SECRET_KEY + POSTGRES_PASSWORD
+make prod-build
+```

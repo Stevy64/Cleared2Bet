@@ -1,9 +1,36 @@
-from django.contrib import admin
+from django.contrib import admin, messages
+from django.utils import timezone
 
-from .models import (
-    Analyse, Competition, Contexte, Cote, Equipe, Match, Option,
-    Profil, PropositionParis, Vote, VoteOption,
+from paris.dashboard import build_dashboard_stats
+from paris.models import (
+    Analyse, Competition, Contexte, Cote, Equipe, Match, MessageChat, Option,
+    Profil, PropositionParis, ReglageSite, Vote, VoteOption,
 )
+
+# Dashboard activité sur l’index admin.
+_admin_index_orig = admin.site.index
+
+
+def _admin_index(request, extra_context=None):
+    # Ne pas binder avec __get__ : Django appelle site.index(request, …)
+    # sans injecter self (attribut d’instance).
+    ctx = dict(extra_context or {})
+    ctx['title'] = 'Tableau de bord'
+    try:
+        ctx['c2b_stats'] = build_dashboard_stats()
+        ctx['c2b_reglages'] = ReglageSite.get_solo()
+    except Exception:  # noqa: BLE001 — migrations en cours
+        ctx['c2b_stats'] = None
+        ctx['c2b_reglages'] = None
+    return _admin_index_orig(request, ctx)
+
+
+admin.site.index = _admin_index
+admin.site.index_template = 'admin/paris/index.html'
+admin.site.site_header = 'Cleared2Bet'
+admin.site.site_title = 'Cleared2Bet Admin'
+admin.site.index_title = 'Tableau de bord'
+admin.site.enable_nav_sidebar = True
 
 
 @admin.register(Competition)
@@ -47,8 +74,7 @@ class AnalyseInline(admin.StackedInline):
 @admin.register(Match)
 class MatchAdmin(admin.ModelAdmin):
     list_display = (
-        'coup_denvoi', 'competition', 'domicile', 'exterieur',
-        'statut', 'score',
+        'quand', 'competition', 'affiche', 'statut', 'score',
     )
     list_filter = ('statut', 'competition')
     search_fields = ('domicile__nom', 'exterieur__nom', 'journee')
@@ -73,6 +99,14 @@ class MatchAdmin(admin.ModelAdmin):
         }),
     )
 
+    @admin.display(description='Coup d’envoi', ordering='coup_denvoi')
+    def quand(self, obj):
+        return timezone.localtime(obj.coup_denvoi).strftime('%d/%m %H:%M')
+
+    @admin.display(description='Match')
+    def affiche(self, obj):
+        return f'{obj.domicile} – {obj.exterieur}'
+
 
 @admin.register(Analyse)
 class AnalyseAdmin(admin.ModelAdmin):
@@ -90,13 +124,11 @@ class AnalyseAdmin(admin.ModelAdmin):
 
 @admin.register(Option)
 class OptionAdmin(admin.ModelAdmin):
-    list_display = (
-        'libelle', 'code', 'famille', 'niveau',
-        'probabilite', 'cote_juste', 'resultat',
-    )
+    list_display = ('libelle', 'niveau', 'resultat')
     list_filter = ('niveau', 'resultat', 'famille', 'origine')
     search_fields = ('libelle', 'code')
     readonly_fields = ('regle_le',)
+    list_per_page = 50
 
 
 @admin.register(Cote)
@@ -134,7 +166,130 @@ class VoteOptionAdmin(admin.ModelAdmin):
 
 @admin.register(Profil)
 class ProfilAdmin(admin.ModelAdmin):
-    list_display = ('user', 'categorie')
+    list_display = (
+        'user', 'badge_categorie', 'expire_court', 'note_admin',
+    )
     list_filter = ('categorie',)
-    search_fields = ('user__username',)
-    raw_id_fields = ('user',)
+    search_fields = ('user__username', 'note_admin')
+    autocomplete_fields = ('user',)
+    list_editable = ()
+    actions = ('octroyer_vip', 'prolonger_vip', 'retirer_vip')
+    readonly_fields = ()
+    fieldsets = (
+        (None, {
+            'fields': (
+                'user', 'categorie', 'vip_depuis', 'vip_expire_le', 'note_admin',
+            ),
+            'description': (
+                'À l’octroi, l’abonnement VIP dure 1 mois. '
+                'Tu peux prolonger via l’action « Prolonger VIP (+1 mois) » '
+                'ou en modifiant « VIP expire le ».'
+            ),
+        }),
+    )
+
+    @admin.display(description='Statut', ordering='categorie')
+    def badge_categorie(self, obj):
+        from django.utils.html import format_html
+        if obj.abonnement_vip_actif:
+            return format_html(
+                '<span style="display:inline-flex;align-items:center;padding:3px 10px;'
+                'border-radius:999px;font-size:11px;font-weight:800;letter-spacing:.04em;'
+                'background:#fff4ec;color:#e8631c;border:1px solid #ffd7bf;">VIP</span>',
+            )
+        if obj.categorie in ('vip', 'premium'):
+            return format_html(
+                '<span style="display:inline-flex;align-items:center;padding:3px 10px;'
+                'border-radius:999px;font-size:11px;font-weight:800;letter-spacing:.04em;'
+                'background:#fef2f2;color:#b91c1c;border:1px solid #fecaca;">Expiré</span>',
+            )
+        return format_html(
+            '<span style="display:inline-flex;align-items:center;padding:3px 10px;'
+            'border-radius:999px;font-size:11px;font-weight:700;'
+            'background:#f3f4f6;color:#6b7280;">Membre</span>',
+        )
+
+    @admin.display(description='Expire', ordering='vip_expire_le')
+    def expire_court(self, obj):
+        if not obj.vip_expire_le:
+            return '—'
+        return timezone.localtime(obj.vip_expire_le).strftime('%d/%m/%Y')
+
+    def save_model(self, request, obj, form, change):
+        if obj.categorie in ('vip', 'premium'):
+            if not obj.vip_depuis:
+                obj.vip_depuis = timezone.now()
+            if not obj.vip_expire_le:
+                from paris.vip import ajouter_mois
+                obj.vip_expire_le = ajouter_mois(obj.vip_depuis or timezone.now(), 1)
+        super().save_model(request, obj, form, change)
+
+    @admin.action(description='Octroyer VIP (1 mois à partir de maintenant)')
+    def octroyer_vip(self, request, queryset):
+        n = 0
+        for profil in queryset:
+            profil.activer_vip(mois=1)
+            profil.save(update_fields=['categorie', 'vip_depuis', 'vip_expire_le'])
+            n += 1
+        self.message_user(
+            request,
+            f'{n} compte(s) VIP activé(s) pour 1 mois.',
+            messages.SUCCESS,
+        )
+
+    @admin.action(description='Prolonger VIP (+1 mois)')
+    def prolonger_vip(self, request, queryset):
+        n = 0
+        for profil in queryset:
+            profil.prolonger_vip(mois=1)
+            profil.save(update_fields=['categorie', 'vip_depuis', 'vip_expire_le'])
+            n += 1
+        self.message_user(
+            request,
+            f'{n} abonnement(s) prolongé(s) d’un mois.',
+            messages.SUCCESS,
+        )
+
+    @admin.action(description='Retirer le statut VIP → Membre')
+    def retirer_vip(self, request, queryset):
+        n = 0
+        for profil in queryset:
+            profil.retirer_vip()
+            profil.save(update_fields=['categorie', 'vip_expire_le'])
+            n += 1
+        self.message_user(request, f'{n} compte(s) repassé(s) en Membre.', messages.WARNING)
+
+
+@admin.register(ReglageSite)
+class ReglageSiteAdmin(admin.ModelAdmin):
+    list_display = ('__str__', 'whatsapp_phone', 'vip_tarif_libelle', 'updated_at')
+    fields = (
+        'whatsapp_phone', 'whatsapp_message', 'whatsapp_url',
+        'vip_tarif_libelle', 'updated_at',
+    )
+    readonly_fields = ('updated_at',)
+
+    def has_add_permission(self, request):
+        return not ReglageSite.objects.exists()
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
+@admin.register(MessageChat)
+class MessageChatAdmin(admin.ModelAdmin):
+    list_display = ('quand', 'auteur', 'texte_court')
+    list_filter = ()
+    search_fields = ('texte', 'auteur__username')
+    autocomplete_fields = ('auteur',)
+    readonly_fields = ('created_at',)
+    date_hierarchy = None
+
+    @admin.display(description='Quand', ordering='created_at')
+    def quand(self, obj):
+        return timezone.localtime(obj.created_at).strftime('%d/%m %H:%M')
+
+    @admin.display(description='Message')
+    def texte_court(self, obj):
+        t = obj.texte or ''
+        return t if len(t) <= 48 else t[:45] + '…'

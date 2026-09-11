@@ -9,7 +9,7 @@
   <title>Cleared2Bet</title>
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
-  <link rel="stylesheet" href="/static/css/app.css?v=54">
+  <link rel="stylesheet" href="/static/css/app.css?v=60">
 </head>
 <body
   x-data="c2b()"
@@ -585,129 +585,79 @@
       </article>
     </template>
 
-    <template x-if="page === 'historique'">
-      <div class="ecran historique">
-        <p class="lead">Matchs terminés : validation des tips <strong>Prudente</strong> et <strong>Filet de sécurité</strong> Cleared2Bet.</p>
-
-        <section class="bloc-card">
-          <h2>Filtres</h2>
-          <div class="puces" role="tablist" aria-label="Filtrer par compétition">
-            <button type="button" role="tab" :class="vComp === '' ? 'puce on' : 'puce'"
-              :aria-selected="vComp === ''" @click="setVerifComp('')">Tous</button>
-            <template x-for="c in competitionsAll" :key="'v-'+c.code">
-              <button type="button" role="tab" class="puce-comp"
-                :class="vComp === c.code ? 'puce on' : 'puce'"
-                :aria-selected="vComp === c.code"
-                :aria-label="c.nom"
-                :title="c.nom"
-                @click="setVerifComp(c.code)">
-                <span class="flag-wrap" x-html="drapeauComp(c)"></span>
-                <span x-text="c.code"></span>
-              </button>
-            </template>
+    <template x-if="page === 'salon'">
+      <div class="ecran salon" :class="peutVip ? 'salon-vip' : 'salon-locked'">
+        <header class="salon-head">
+          <div>
+            <h1 class="salon-title">
+              <span class="salon-crown" x-html="icon('crown','icon icon-sm')"></span>
+              Salon VIP
+            </h1>
+            <p class="salon-sub">Réservé VIP · messages effacés après 24 h</p>
           </div>
-          <div class="filtres-date">
-            <label>Depuis <input type="date" x-model="vDepuis" @change="rechargerVerif()"></label>
-            <label>Jusqu’à <input type="date" x-model="vJusqua" @change="rechargerVerif()"></label>
-          </div>
-        </section>
+          <span class="salon-live" x-show="peutVip" x-cloak>
+            <i aria-hidden="true"></i> en direct
+          </span>
+        </header>
 
-        <template x-if="verif">
-          <section class="bloc-card histo-kpi">
-            <h2>Bilan Cleared2Bet</h2>
-            <p class="hint" x-show="(verif.par_niveau.prudente.n + verif.par_niveau.filet.n) > 0"
-              x-text="(verif.par_niveau.prudente.n + verif.par_niveau.filet.n) + ' tips Prudente / Filet réglés sur la période'"></p>
-            <div class="kpi-grid kpi-histo">
-              <article class="kpi kpi-prudente">
-                <p class="kpi-label">Prudente</p>
-                <p class="kpi-big" x-text="fmtTaux(verif.par_niveau.prudente)"></p>
-                <p class="kpi-meta"
-                  x-text="verif.par_niveau.prudente.gagnes + ' gagnés / ' + verif.par_niveau.prudente.n"></p>
-                <div class="jauge" aria-hidden="true">
-                  <i :style="'width:' + largeurJauge(verif.par_niveau.prudente) + '%'"></i>
-                </div>
-              </article>
-              <article class="kpi kpi-filet">
-                <p class="kpi-label">Filet de sécurité</p>
-                <p class="kpi-big" x-text="fmtTaux(verif.par_niveau.filet)"></p>
-                <p class="kpi-meta"
-                  x-text="verif.par_niveau.filet.gagnes + ' gagnés / ' + verif.par_niveau.filet.n"></p>
-                <div class="jauge" aria-hidden="true">
-                  <i :style="'width:' + largeurJauge(verif.par_niveau.filet) + '%'"></i>
-                </div>
-              </article>
-            </div>
-          </section>
+        <template x-if="!peutVip">
+          <div class="salon-gate">
+            <span class="salon-gate-ico" x-html="icon('crown','icon icon-lg')"></span>
+            <h2>Salon VIP</h2>
+            <p>Ici, c’est le vestiaire des VIP : discussions, avis, ambiance match.
+              Passe VIP pour entrer.</p>
+            <button type="button" class="btn btn-vip" @click="ouvrirVipGate('salon')">
+              <span x-html="icon('crown','icon icon-sm')"></span>
+              Devenir VIP
+            </button>
+          </div>
         </template>
 
-        <h2 class="sec-titre">Matchs passés</h2>
-        <div class="puces puces-niveaux histo-filtre-niv">
-          <button type="button" :class="vNiveau === '' ? 'puce on' : 'puce'" @click="setVerifNiv('')">Tous</button>
-          <button type="button" :class="vNiveau === 'prudente' ? 'puce on' : 'puce'" @click="setVerifNiv('prudente')">Prudente</button>
-          <button type="button" :class="vNiveau === 'filet' ? 'puce on' : 'puce'" @click="setVerifNiv('filet')">Filet</button>
-        </div>
-
-        <div class="loader-wrap" x-show="chargement && !matchsPasses.length" x-cloak>
-          <div class="spinner" role="status" aria-label="Chargement"></div>
-          <p>Chargement de l’historique…</p>
-        </div>
-
-        <p class="vide vide-sm" x-show="!chargement && !matchsHistoFiltres.length">
-          Aucun match terminé avec tip Prudente / Filet pour ce filtre.
-          Lance <code>regler_options</code> après la saisie des scores.
-        </p>
-
-        <div class="histo-liste">
-          <template x-for="m in matchsHistoFiltres" :key="'pass-'+m.id">
-            <article class="carte-histo" @click="ouvrirMatch(m.id)">
-              <header class="carte-histo-head">
-                <div class="carte-histo-teams">
-                  <span class="crest-btn static">
-                    <img class="club-logo" :src="logoUrl(m.domicile)" alt="" @error="onLogoError($event)">
-                    <span class="crest-wrap crest-fallback" x-html="crestSvg(m.domicile, 32)" style="display:none"></span>
-                  </span>
-                  <div class="carte-titres">
-                    <strong>
-                      <span x-text="m.domicile.nom_court"></span>
-                      <span class="sep"> – </span>
-                      <span x-text="m.exterieur.nom_court"></span>
-                    </strong>
-                    <p class="carte-comp">
-                      <span x-text="m.competition.code"></span>
-                      · <span x-text="jourCourt(m.coup_denvoi)"></span>
-                    </p>
-                  </div>
-                  <span class="crest-btn static">
-                    <img class="club-logo" :src="logoUrl(m.exterieur)" alt="" @error="onLogoError($event)">
-                    <span class="crest-wrap crest-fallback" x-html="crestSvg(m.exterieur, 32)" style="display:none"></span>
-                  </span>
-                </div>
-                <span class="score-pill" x-text="m.score || '—'"></span>
-              </header>
-
-              <div class="histo-tips">
-                <template x-for="o in tipsHisto(m)" :key="'ht-'+o.id">
-                  <div class="histo-tip" :class="['tip-' + o.niveau, 'bilan-' + (o.resultat || 'attente')]">
-                    <div class="histo-tip-top">
-                      <span class="histo-tip-niv">
-                        <span x-html="o.niveau === 'filet' ? icon('shield','icon icon-sm') : icon('crosshair','icon icon-sm')"></span>
-                        <span x-text="o.niveau === 'filet' ? 'Filet de sécurité' : 'Prudente'"></span>
-                      </span>
-                      <span class="histo-verdict" :class="'verdict-' + (o.resultat || 'attente')">
-                        <span x-html="iconResultat(o.resultat || 'attente')"></span>
-                        <span x-text="motResultat(o.resultat || 'attente')"></span>
-                      </span>
-                    </div>
-                    <div class="histo-tip-body">
-                      <span class="histo-tip-lib" x-text="o.libelle"></span>
-                      <strong :class="toneProb(o.probabilite)" x-text="fmtPct(o.probabilite)"></strong>
-                    </div>
-                  </div>
-                </template>
+        <template x-if="peutVip">
+          <div class="salon-shell">
+            <div class="salon-feed" x-ref="salonFeed" @scroll.passive="onSalonScroll()">
+              <div class="salon-empty" x-show="!chatChargement && !chatMessages.length" x-cloak>
+                <p>Encore calme ici… Lance le premier message, allez.</p>
               </div>
-            </article>
-          </template>
-        </div>
+              <div class="loader-wrap salon-loader" x-show="chatChargement && !chatMessages.length" x-cloak>
+                <div class="spinner" role="status" aria-label="Chargement"></div>
+              </div>
+              <template x-for="(msg, idx) in chatMessages" :key="'m-' + msg.id">
+                <div class="chat-row"
+                  :class="{
+                    'is-me': msg.est_moi,
+                    'show-meta': chatShowMeta(msg, idx),
+                  }">
+                  <div class="chat-avatar" aria-hidden="true"
+                    x-show="!msg.est_moi && chatShowMeta(msg, idx)"
+                    x-text="msg.initiale || '?'"></div>
+                  <div class="chat-bubble-wrap">
+                    <p class="chat-author" x-show="!msg.est_moi && chatShowMeta(msg, idx)"
+                      x-text="msg.auteur"></p>
+                    <div class="chat-bubble">
+                      <p x-text="msg.texte"></p>
+                    </div>
+                    <time class="chat-time" x-text="fmtChatHeure(msg.created_at)"></time>
+                  </div>
+                </div>
+              </template>
+            </div>
+
+            <form class="salon-compose" @submit.prevent="envoyerChat()">
+              <input type="text" maxlength="400" autocomplete="off"
+                placeholder="Écrire un message…"
+                x-model="chatDraft"
+                :disabled="chatBusy"
+                @keydown.enter.prevent="envoyerChat()">
+              <button type="submit" class="btn salon-send"
+                :disabled="chatBusy || !(chatDraft || '').trim()"
+                aria-label="Envoyer">
+                <span x-html="icon('send','icon icon-sm')"></span>
+              </button>
+            </form>
+            <p class="salon-hint" x-show="chatErr" x-cloak x-text="chatErr"></p>
+          </div>
+        </template>
       </div>
     </template>
 
@@ -727,11 +677,17 @@
                 </span>
               </p>
               <p class="hint" x-show="categorie === 'membre'" x-cloak>
-                Accès Membre : liste, compos du jour, likes / dislikes.
+                Accès Membre : matchs, compos du jour, likes / dislikes.
+                Justifications + Salon VIP = badge VIP.
               </p>
-              <p class="hint" x-show="categorie === 'premium'" x-cloak>
-                Statut Premium : avantages détaillés à venir.
+              <p class="hint" x-show="categorie === 'vip'" x-cloak>
+                Statut VIP : justifications complètes + Salon VIP.
               </p>
+              <button type="button" class="btn btn-vip" x-show="categorie === 'membre'" x-cloak
+                @click="ouvrirVipGate('reglages')">
+                <span x-html="icon('crown','icon icon-sm')"></span>
+                Demander le VIP
+              </button>
               <button type="button" class="btn btn-ghost" @click="authLogout()">Se déconnecter</button>
             </div>
           </template>
@@ -744,21 +700,35 @@
                 </span> :
                 consultation limitée. Crée un compte pour devenir Membre.
               </p>
-            <form class="form-score" @submit.prevent="authSubmit()">
-              <div class="puces">
+            <form class="auth-form" @submit.prevent="authSubmit()">
+              <div class="puces auth-puces">
                 <button type="button" :class="authMode === 'login' ? 'puce on' : 'puce'"
                   @click="authMode = 'login'; authErr = ''">Connexion</button>
                 <button type="button" :class="authMode === 'register' ? 'puce on' : 'puce'"
                   @click="authMode = 'register'; authErr = ''">Inscription</button>
               </div>
-              <label>Pseudo
-                <input type="text" autocomplete="username" name="username"
-                  minlength="3" maxlength="150" x-model="authUser" required>
+              <label class="auth-field">
+                <span class="auth-field-label">Pseudo</span>
+                <span class="auth-field-control">
+                  <span class="auth-field-ico" x-html="icon('user','icon icon-sm')"></span>
+                  <input type="text" autocomplete="username" name="username"
+                    minlength="3" maxlength="150" x-model="authUser" required
+                    placeholder="Ton pseudo">
+                </span>
               </label>
-              <label>Mot de passe
-                <input type="password"
-                  :autocomplete="authMode === 'register' ? 'new-password' : 'current-password'"
-                  name="password" minlength="8" x-model="authPass" required>
+              <label class="auth-field">
+                <span class="auth-field-label">Mot de passe</span>
+                <span class="auth-field-control">
+                  <span class="auth-field-ico" x-html="icon('lock','icon icon-sm')"></span>
+                  <input :type="authShowPass ? 'text' : 'password'"
+                    :autocomplete="authMode === 'register' ? 'new-password' : 'current-password'"
+                    name="password" minlength="8" x-model="authPass" required
+                    placeholder="••••••••">
+                  <button type="button" class="auth-eye" @click="authShowPass = !authShowPass"
+                    :aria-label="authShowPass ? 'Masquer le mot de passe' : 'Afficher le mot de passe'">
+                    <span x-html="icon(authShowPass ? 'eye-off' : 'eye','icon icon-sm')"></span>
+                  </button>
+                </span>
               </label>
               <p class="hint" x-show="authMode === 'register'">
                 Au moins 8 caractères, évite les mots de passe trop simples.
@@ -820,7 +790,7 @@
     </template>
   </main>
 
-  <div class="sheet-backdrop" :class="(sheetApercu || sheetClub || sheetAuth || sheetCompos || sheetInstall) ? 'open' : ''"
+  <div class="sheet-backdrop" :class="(sheetApercu || sheetClub || sheetAuth || sheetCompos || sheetInstall || sheetJustif || sheetVip) ? 'open' : ''"
     @click="fermerSheets()" @keydown.escape.window="fermerSheets()"></div>
 
   <div class="bottom-sheet sheet-install" :class="sheetInstall ? 'open' : ''"
@@ -922,24 +892,42 @@
                 </div>
               </div>
               <div class="compos-opts">
-                <div class="compos-opt pred-prudente" x-show="bloc.prudente" x-cloak>
+                <button type="button" class="compos-opt pred-prudente"
+                  :class="!peutVip ? 'is-locked' : ''"
+                  x-show="bloc.prudente" x-cloak
+                  @click="ouvrirJustif(bloc, bloc.prudente)"
+                  :aria-label="'Justification : ' + (bloc.prudente && bloc.prudente.libelle)">
                   <span class="pred-mark" aria-hidden="true" x-html="icon('crosshair')"></span>
                   <div class="pred-copy">
-                    <span class="opt-niv">Prudente</span>
+                    <span class="opt-niv">
+                      Prudente
+                      <span class="vip-lock-pill" x-show="!peutVip" x-cloak>
+                        <span x-html="icon('crown','icon icon-sm')"></span> VIP
+                      </span>
+                    </span>
                     <span class="pred-lib" x-text="bloc.prudente && bloc.prudente.libelle"></span>
                   </div>
                   <strong class="pred-pct"
                     x-text="bloc.prudente && fmtPct(bloc.prudente.probabilite)"></strong>
-                </div>
-                <div class="compos-opt pred-filet" x-show="bloc.filet" x-cloak>
+                </button>
+                <button type="button" class="compos-opt pred-filet"
+                  :class="!peutVip ? 'is-locked' : ''"
+                  x-show="bloc.filet" x-cloak
+                  @click="ouvrirJustif(bloc, bloc.filet)"
+                  :aria-label="'Justification : ' + (bloc.filet && bloc.filet.libelle)">
                   <span class="pred-mark" aria-hidden="true" x-html="icon('shield')"></span>
                   <div class="pred-copy">
-                    <span class="opt-niv">Filet</span>
+                    <span class="opt-niv">
+                      Filet
+                      <span class="vip-lock-pill" x-show="!peutVip" x-cloak>
+                        <span x-html="icon('crown','icon icon-sm')"></span> VIP
+                      </span>
+                    </span>
                     <span class="pred-lib" x-text="bloc.filet && bloc.filet.libelle"></span>
                   </div>
                   <strong class="pred-pct"
                     x-text="bloc.filet && fmtPct(bloc.filet.probabilite)"></strong>
-                </div>
+                </button>
               </div>
             </article>
           </template>
@@ -948,6 +936,51 @@
       </div>
 
       <button type="button" class="btn btn-ghost btn-block no-print" @click="fermerSheets()">Fermer</button>
+    </div>
+  </div>
+
+  <div class="bottom-sheet sheet-justif" :class="(sheetJustif ? 'open ' : '') + ((justif && justif.niveau) ? ('niv-' + justif.niveau) : '')"
+    role="dialog" aria-modal="true" aria-label="Justification du tip"
+    :aria-hidden="!sheetJustif">
+    <div class="sheet-handle" aria-hidden="true"></div>
+    <div class="sheet-body justif-body" x-show="justif" x-cloak>
+      <header class="justif-hero">
+        <div class="justif-hero-top">
+          <span class="justif-badge" x-text="justif && libNiveau(justif.niveau)"></span>
+          <span class="justif-conf" x-show="justif && justif.probabilite != null" x-cloak
+            x-text="justif && fmtPct(justif.probabilite)"></span>
+        </div>
+        <div class="justif-teams" x-show="justif && justif.matchLabel" x-cloak>
+          <span class="justif-crest" x-show="justif && justif.domicile" x-cloak>
+            <img class="club-logo" :src="justif && justif.domicile && logoUrl(justif.domicile)" alt=""
+              @error="onLogoError($event)">
+            <span class="crest-wrap crest-fallback"
+              x-html="justif && justif.domicile && crestSvg(justif.domicile, 28)" style="display:none"></span>
+          </span>
+          <p class="justif-match" x-text="justif && justif.matchLabel"></p>
+          <span class="justif-crest" x-show="justif && justif.exterieur" x-cloak>
+            <img class="club-logo" :src="justif && justif.exterieur && logoUrl(justif.exterieur)" alt=""
+              @error="onLogoError($event)">
+            <span class="crest-wrap crest-fallback"
+              x-html="justif && justif.exterieur && crestSvg(justif.exterieur, 28)" style="display:none"></span>
+          </span>
+        </div>
+        <h2 class="justif-titre" x-text="justif && (justif.libelle || justif.titre)"></h2>
+        <p class="justif-accroche" x-text="justif && justif.accroche"></p>
+      </header>
+      <div class="justif-args">
+        <template x-for="(arg, i) in (justif && justif.arguments) || []" :key="'ja-' + i + '-' + (arg.cle || i)">
+          <article class="justif-arg">
+            <span class="justif-arg-icon" aria-hidden="true" x-html="icon(arg.icon || 'info')"></span>
+            <div class="justif-arg-copy">
+              <h3 x-text="arg.titre"></h3>
+              <p x-text="arg.texte"></p>
+            </div>
+          </article>
+        </template>
+      </div>
+      <p class="justif-foot">Pas de maths ici — juste du foot, comme au bord du terrain.</p>
+      <button type="button" class="btn btn-ghost btn-block" @click="fermerJustif()">Fermer</button>
     </div>
   </div>
 
@@ -1055,6 +1088,36 @@
     <p class="hint" x-show="!clubChargement && !clubInfos" x-cloak style="padding:16px">Infos indisponibles pour ce club.</p>
   </div>
 
+  <div class="bottom-sheet sheet-vip" :class="sheetVip ? 'open' : ''"
+    role="dialog" aria-modal="true" aria-label="Devenir VIP"
+    :aria-hidden="!sheetVip">
+    <div class="sheet-handle" aria-hidden="true"></div>
+    <div class="sheet-body vip-sheet-body">
+      <div class="vip-sheet-hero">
+        <span class="vip-sheet-ico" x-html="icon('crown','icon icon-lg')"></span>
+        <h2>Passe VIP</h2>
+        <p class="vip-tarif" x-text="vipTarifLibelle || 'VIP Cleared2Bet'"></p>
+      </div>
+      <ul class="vip-perks">
+        <li><span x-html="icon('crosshair','icon icon-sm')"></span> Justifications complètes des tips</li>
+        <li><span x-html="icon('message','icon icon-sm')"></span> Accès au Salon VIP</li>
+        <li><span x-html="icon('badge-check','icon icon-sm')"></span> Statut couronne visible sur ton compte</li>
+      </ul>
+      <p class="hint vip-hint">
+        Envoie ta demande sur WhatsApp. Après paiement, l’admin active ton badge VIP.
+      </p>
+      <a class="btn btn-block btn-whatsapp"
+        x-show="whatsappVipUrl" x-cloak
+        :href="whatsappVipUrl" target="_blank" rel="noopener">
+        Demander sur WhatsApp
+      </a>
+      <p class="ko" x-show="!whatsappVipUrl" x-cloak>
+        Lien WhatsApp pas encore configuré — reviens un peu plus tard.
+      </p>
+      <button type="button" class="btn btn-ghost btn-block" @click="fermerVipGate()">Plus tard</button>
+    </div>
+  </div>
+
   <div class="bottom-sheet sheet-auth" :class="sheetAuth ? 'open' : ''"
     role="dialog" aria-modal="true" aria-label="Connexion"
     :aria-hidden="!sheetAuth">
@@ -1073,15 +1136,29 @@
         <button type="button" :class="authMode === 'register' ? 'puce on' : 'puce'"
           @click="authMode = 'register'; authErr = ''">Inscription</button>
       </div>
-      <form class="auth-sheet-form" @submit.prevent="authSubmit()">
-        <label>Pseudo
-          <input type="text" autocomplete="username" name="username"
-            minlength="3" maxlength="150" x-model="authUser" required>
+      <form class="auth-form auth-sheet-form" @submit.prevent="authSubmit()">
+        <label class="auth-field">
+          <span class="auth-field-label">Pseudo</span>
+          <span class="auth-field-control">
+            <span class="auth-field-ico" x-html="icon('user','icon icon-sm')"></span>
+            <input type="text" autocomplete="username" name="username"
+              minlength="3" maxlength="150" x-model="authUser" required
+              placeholder="Ton pseudo">
+          </span>
         </label>
-        <label>Mot de passe
-          <input type="password"
-            :autocomplete="authMode === 'register' ? 'new-password' : 'current-password'"
-            name="password" minlength="8" x-model="authPass" required>
+        <label class="auth-field">
+          <span class="auth-field-label">Mot de passe</span>
+          <span class="auth-field-control">
+            <span class="auth-field-ico" x-html="icon('lock','icon icon-sm')"></span>
+            <input :type="authShowPass ? 'text' : 'password'"
+              :autocomplete="authMode === 'register' ? 'new-password' : 'current-password'"
+              name="password" minlength="8" x-model="authPass" required
+              placeholder="••••••••">
+            <button type="button" class="auth-eye" @click="authShowPass = !authShowPass"
+              :aria-label="authShowPass ? 'Masquer le mot de passe' : 'Afficher le mot de passe'">
+              <span x-html="icon(authShowPass ? 'eye-off' : 'eye','icon icon-sm')"></span>
+            </button>
+          </span>
         </label>
         <p class="hint" x-show="authMode === 'register'">Au moins 8 caractères, pas trop simple.</p>
         <button type="submit" class="btn btn-block" :disabled="authBusy"
@@ -1109,9 +1186,9 @@
       <span x-html="icon('home','icon icon-md')"></span>
       Matchs
     </a>
-    <a href="/historique" :class="page==='historique' ? 'on' : ''" @click.prevent="go('/historique')">
-      <span x-html="icon('history','icon icon-md')"></span>
-      Historique
+    <a href="/salon" :class="page==='salon' ? 'on' : ''" @click.prevent="go('/salon')">
+      <span x-html="icon('crown','icon icon-md')"></span>
+      Salon VIP
     </a>
     <a href="/reglages" :class="page==='reglages' ? 'on' : ''" @click.prevent="go('/reglages')">
       <span x-html="icon('settings','icon icon-md')"></span>
@@ -1119,7 +1196,7 @@
     </a>
   </nav>
 
-  <script defer src="/static/js/app.js?v=54"></script>
-  <script defer src="/static/vendor/alpine.min.js?v=54"></script>
+  <script defer src="/static/js/app.js?v=60"></script>
+  <script defer src="/static/vendor/alpine.min.js?v=60"></script>
 </body>
 </html>

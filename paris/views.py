@@ -1,4 +1,4 @@
-from datetime import datetime, time as dt_time
+from datetime import datetime, time as dt_time, timezone as dt_timezone
 import hashlib
 
 from django.contrib.auth import authenticate, login, logout
@@ -16,15 +16,22 @@ from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from paris.models import Competition, Equipe, Match, Option, Profil, PropositionParis, Vote, VoteOption
+from paris.models import (
+    Competition, Equipe, Match, MessageChat, Option, Profil,
+    PropositionParis, ReglageSite, Vote, VoteOption,
+)
 from paris.moteur import VERSION_MOTEUR
 from paris.reglement import regler_match
 from paris import sofascore as sofa
+from paris.chat import messages_actifs, purger_messages_expires
+from paris.roles import est_vip, payload_auth
 from paris.serializers import (
     AuthSerializer,
     CompetitionSerializer,
     MatchDetailSerializer,
     MatchListeSerializer,
+    MessageChatSerializer,
+    MessageCreateSerializer,
     NIVEAUX_COMPOS,
     PropositionCreateSerializer,
     PropositionSerializer,
@@ -35,21 +42,15 @@ from paris.serializers import (
 MIN_ECHANTILLON = 20
 
 
-def _categorie_user(user):
-    """visiteur (anonyme) | membre | premium."""
-    if not user or not user.is_authenticated:
-        return 'visiteur'
-    profil, _ = Profil.objects.get_or_create(user=user)
-    if profil.categorie == 'premium':
-        return 'premium'
-    return 'membre'
-
-
 def _payload_auth(user):
+    return payload_auth(user)
+
+
+def _payload_vip_public():
+    cfg = ReglageSite.get_solo()
     return {
-        'authentifie': bool(user and user.is_authenticated),
-        'username': user.username if user and user.is_authenticated else None,
-        'categorie': _categorie_user(user),
+        'whatsapp_vip_url': cfg.lien_whatsapp_vip(),
+        'vip_tarif_libelle': cfg.vip_tarif_libelle or 'VIP Cleared2Bet',
     }
 
 
@@ -94,7 +95,7 @@ def _matchs_qs():
     return (
         Match.objects
         .filter(sofascore_id__isnull=False)
-        .select_related('competition', 'domicile', 'exterieur')
+        .select_related('competition', 'domicile', 'exterieur', 'analyse', 'contexte')
         .prefetch_related(
             Prefetch(
                 'analyse__options',
@@ -297,6 +298,7 @@ class Info(CacheETagMixin, APIView):
         return Response({
             'version_moteur': VERSION_MOTEUR,
             **_payload_auth(request.user),
+            **_payload_vip_public(),
         })
 
 
@@ -353,7 +355,52 @@ class Logout(APIView):
 
     def post(self, request):
         logout(request)
-        return Response({'authentifie': False, 'username': None, 'categorie': 'visiteur'})
+        return Response({'authentifie': False, 'username': None, 'categorie': 'visiteur', 'est_vip': False})
+
+
+class ChatListCreate(APIView):
+    """Salon VIP : réservé aux comptes VIP, purge 24 h."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        if not est_vip(request.user):
+            return Response(
+                {'detail': 'Salon VIP réservé aux comptes VIP.', 'code': 'vip_required'},
+                status=403,
+            )
+        purger_messages_expires()
+        qs = messages_actifs()
+        since = request.query_params.get('since')
+        if since:
+            try:
+                ts = datetime.fromisoformat(since.replace('Z', '+00:00'))
+                if timezone.is_naive(ts):
+                    ts = timezone.make_aware(ts, dt_timezone.utc)
+                qs = qs.filter(created_at__gt=ts)
+            except (TypeError, ValueError):
+                pass
+        msgs = list(qs.order_by('created_at')[:200])
+        return Response({
+            'results': MessageChatSerializer(msgs, many=True, context={'request': request}).data,
+            'retention_heures': 24,
+            'server_time': timezone.now().isoformat(),
+        })
+
+    def post(self, request):
+        if not est_vip(request.user):
+            return Response(
+                {'detail': 'Salon VIP réservé aux comptes VIP.', 'code': 'vip_required'},
+                status=403,
+            )
+        purger_messages_expires()
+        ser = MessageCreateSerializer(data=request.data)
+        ser.is_valid(raise_exception=True)
+        texte = ser.validated_data['texte']
+        msg = MessageChat.objects.create(auteur=request.user, texte=texte)
+        return Response(
+            MessageChatSerializer(msg, context={'request': request}).data,
+            status=201,
+        )
 
 
 def _propositions_qs(match):

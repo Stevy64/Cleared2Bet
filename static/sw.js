@@ -1,9 +1,9 @@
-const CACHE = 'paris-v54';
+const CACHE = 'paris-v60';
 const PRECACHE = [
   '/manifest.webmanifest',
-  '/static/css/app.css?v=54',
-  '/static/js/app.js?v=54',
-  '/static/vendor/alpine.min.js?v=54',
+  '/static/css/app.css?v=60',
+  '/static/js/app.js?v=60',
+  '/static/vendor/alpine.min.js?v=60',
   '/static/img/hero-accueil.jpg',
   '/static/icons/icon-192.png',
   '/static/icons/icon-512.png',
@@ -72,6 +72,8 @@ function isAppShell(path) {
   return (
     path === '/'
     || path === '/historique'
+    || path === '/salon'
+    || path === '/chat'
     || path === '/verification'
     || path === '/reglages'
     || /^\/matchs\/\d+\/?$/.test(path)

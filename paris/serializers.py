@@ -1,13 +1,19 @@
 from rest_framework import serializers
 
 from paris.models import (
-    Analyse, Competition, Contexte, Match, Option, PropositionParis,
+    Analyse, Competition, Contexte, Match, MessageChat, Option, PropositionParis,
 )
 from paris.moteur import RESIDU_DOUTEUX
 
 NIVEAUX_LISTE = ('prudente', 'equilibree', 'audacieuse')
 # Compos du jour / historique : tips + filet de sécurité
 NIVEAUX_COMPOS = ('prudente', 'equilibree', 'audacieuse', 'filet')
+
+
+def _est_vip_request(request) -> bool:
+    from paris.roles import est_vip
+    user = getattr(request, 'user', None) if request else None
+    return est_vip(user)
 
 
 def _consensus(option, request):
@@ -54,12 +60,14 @@ class OptionListeSerializer(serializers.ModelSerializer):
     dislikes = serializers.SerializerMethodField()
     pct_likes = serializers.SerializerMethodField()
     mon_vote = serializers.SerializerMethodField()
+    justification = serializers.SerializerMethodField()
 
     class Meta:
         model = Option
         fields = (
             'id', 'niveau', 'libelle', 'probabilite', 'resultat',
-            'likes', 'dislikes', 'pct_likes', 'mon_vote',
+            'famille', 'code', 'cote_juste', 'origine',
+            'likes', 'dislikes', 'pct_likes', 'mon_vote', 'justification',
         )
 
     def _c(self, obj):
@@ -76,6 +84,28 @@ class OptionListeSerializer(serializers.ModelSerializer):
 
     def get_mon_vote(self, obj):
         return self._c(obj)['mon_vote']
+
+    def get_justification(self, obj):
+        if not _est_vip_request(self.context.get('request')):
+            return None
+        from paris.justification import justifier_option
+        match = getattr(obj, '_parent_match', None)
+        analyse = getattr(match, 'analyse', None) if match else getattr(obj, 'analyse', None)
+        if match is None and analyse is not None:
+            match = getattr(analyse, 'match', None)
+        contexte = None
+        if match is not None:
+            try:
+                contexte = match.contexte
+            except Exception:  # noqa: BLE001 — Contexte.DoesNotExist
+                contexte = None
+        return justifier_option(
+            option=obj,
+            analyse=analyse,
+            contexte=contexte,
+            domicile=match.domicile.nom_court if match else '',
+            exterieur=match.exterieur.nom_court if match else '',
+        )
 
 
 class MatchListeSerializer(serializers.ModelSerializer):
@@ -99,6 +129,8 @@ class MatchListeSerializer(serializers.ModelSerializer):
             return []
         ordre = {n: i for i, n in enumerate(NIVEAUX_COMPOS)}
         opts.sort(key=lambda o: ordre.get(o.niveau, 9))
+        for o in opts:
+            o._parent_match = obj
         return OptionListeSerializer(opts, many=True, context=self.context).data
 
 
@@ -107,13 +139,14 @@ class OptionDetailSerializer(serializers.ModelSerializer):
     dislikes = serializers.SerializerMethodField()
     pct_likes = serializers.SerializerMethodField()
     mon_vote = serializers.SerializerMethodField()
+    justification = serializers.SerializerMethodField()
 
     class Meta:
         model = Option
         fields = (
             'id', 'famille', 'code', 'libelle', 'probabilite',
             'cote_juste', 'niveau', 'origine', 'resultat',
-            'likes', 'dislikes', 'pct_likes', 'mon_vote',
+            'likes', 'dislikes', 'pct_likes', 'mon_vote', 'justification',
         )
 
     def _c(self, obj):
@@ -130,6 +163,26 @@ class OptionDetailSerializer(serializers.ModelSerializer):
 
     def get_mon_vote(self, obj):
         return self._c(obj)['mon_vote']
+
+    def get_justification(self, obj):
+        if not _est_vip_request(self.context.get('request')):
+            return None
+        from paris.justification import justifier_option
+        analyse = getattr(obj, 'analyse', None)
+        match = getattr(analyse, 'match', None) if analyse else None
+        contexte = None
+        if match is not None:
+            try:
+                contexte = match.contexte
+            except Exception:  # noqa: BLE001
+                contexte = None
+        return justifier_option(
+            option=obj,
+            analyse=analyse,
+            contexte=contexte,
+            domicile=match.domicile.nom_court if match else '',
+            exterieur=match.exterieur.nom_court if match else '',
+        )
 
 
 class AnalyseSerializer(serializers.ModelSerializer):
@@ -273,3 +326,35 @@ class PropositionCreateSerializer(serializers.Serializer):
 
 class VoteSerializer(serializers.Serializer):
     choix = serializers.ChoiceField(choices=['like', 'dislike'])
+
+
+class MessageChatSerializer(serializers.ModelSerializer):
+    auteur = serializers.CharField(source='auteur.username', read_only=True)
+    est_moi = serializers.SerializerMethodField()
+    initiale = serializers.SerializerMethodField()
+
+    class Meta:
+        model = MessageChat
+        fields = ('id', 'auteur', 'texte', 'created_at', 'est_moi', 'initiale')
+
+    def get_est_moi(self, obj):
+        request = self.context.get('request')
+        return bool(
+            request and request.user.is_authenticated and obj.auteur_id == request.user.id
+        )
+
+    def get_initiale(self, obj):
+        nom = (obj.auteur.username or '?').strip()
+        return (nom[0] if nom else '?').upper()
+
+
+class MessageCreateSerializer(serializers.Serializer):
+    texte = serializers.CharField(min_length=1, max_length=400)
+
+    def validate_texte(self, value):
+        texte = ' '.join((value or '').split())
+        if not texte:
+            raise serializers.ValidationError('Message vide.')
+        if len(texte) > 400:
+            raise serializers.ValidationError('Message trop long (400 car. max).')
+        return texte

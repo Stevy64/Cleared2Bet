@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db import models
+from django.utils import timezone
 
 
 class Competition(models.Model):
@@ -12,6 +13,8 @@ class Competition(models.Model):
 
     class Meta:
         ordering = ['ordre', 'nom']
+        verbose_name = 'Compétition'
+        verbose_name_plural = 'Compétitions'
 
     def __str__(self):
         return self.nom
@@ -22,6 +25,10 @@ class Equipe(models.Model):
     nom_court = models.CharField(max_length=24)            # pour l'affichage mobile
     slug = models.SlugField(unique=True)
     sofascore_id = models.PositiveIntegerField(null=True, blank=True, unique=True)
+
+    class Meta:
+        verbose_name = 'Équipe'
+        verbose_name_plural = 'Équipes'
 
     def __str__(self):
         return self.nom_court or self.nom
@@ -48,6 +55,8 @@ class Match(models.Model):
 
     class Meta:
         ordering = ['coup_denvoi']
+        verbose_name = 'Match'
+        verbose_name_plural = 'Matchs'
         indexes = [models.Index(fields=['statut', 'coup_denvoi']),
                    models.Index(fields=['competition', 'coup_denvoi'])]
         constraints = [models.UniqueConstraint(
@@ -73,6 +82,8 @@ class Cote(models.Model):
     releve_le = models.DateTimeField()
 
     class Meta:
+        verbose_name = 'Cote'
+        verbose_name_plural = 'Cotes'
         indexes = [models.Index(fields=['match', 'marche'])]
 
     def __str__(self):
@@ -93,6 +104,10 @@ class Analyse(models.Model):
     residu = models.FloatField()                           # qualité de l'ajustement
     version_moteur = models.CharField(max_length=12)
     calcule_le = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Analyse moteur'
+        verbose_name_plural = 'Analyses moteur'
 
     def __str__(self):
         return f"Analyse {self.match}"
@@ -121,6 +136,8 @@ class Option(models.Model):
     regle_le = models.DateTimeField(null=True, blank=True)
 
     class Meta:
+        verbose_name = 'Tip / option'
+        verbose_name_plural = 'Tips / options'
         indexes = [models.Index(fields=['niveau', 'resultat']),
                    models.Index(fields=['famille', 'resultat'])]
 
@@ -141,6 +158,10 @@ class Contexte(models.Model):
     fiabilite = models.CharField(max_length=8, default='moyenne')
     source = models.CharField(max_length=200, blank=True)
 
+    class Meta:
+        verbose_name = 'Contexte match'
+        verbose_name_plural = 'Contextes match'
+
     def __str__(self):
         return f"Contexte {self.match}"
 
@@ -157,6 +178,8 @@ class PropositionParis(models.Model):
 
     class Meta:
         ordering = ['-created_at']
+        verbose_name = 'Proposition utilisateur'
+        verbose_name_plural = 'Propositions utilisateurs'
 
     def __str__(self):
         return f"{self.libelle} ({self.match})"
@@ -182,6 +205,8 @@ class Vote(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
+        verbose_name = 'Vote proposition'
+        verbose_name_plural = 'Votes propositions'
         constraints = [
             models.UniqueConstraint(
                 fields=['proposition', 'user'], name='vote_unique_user_prop',
@@ -205,6 +230,8 @@ class VoteOption(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
+        verbose_name = 'Vote tip'
+        verbose_name_plural = 'Votes tips'
         constraints = [
             models.UniqueConstraint(
                 fields=['option', 'user'], name='vote_unique_user_option',
@@ -216,10 +243,11 @@ class VoteOption(models.Model):
 
 
 class Profil(models.Model):
-    """Catégorie compte : membre (défaut) ou premium (à venir)."""
+    """Catégorie compte : membre (défaut) ou VIP (justifs + Salon VIP)."""
     CATEGORIES = [
         ('membre', 'Membre'),
-        ('premium', 'Premium'),
+        ('vip', 'VIP'),
+        ('premium', 'Premium'),  # legacy = mêmes droits que VIP
     ]
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
@@ -229,6 +257,123 @@ class Profil(models.Model):
     categorie = models.CharField(
         max_length=16, choices=CATEGORIES, default='membre', db_index=True,
     )
+    vip_depuis = models.DateTimeField(
+        null=True, blank=True,
+        help_text='Date de la dernière activation VIP.',
+    )
+    vip_expire_le = models.DateTimeField(
+        null=True, blank=True, db_index=True,
+        help_text='Fin d’abonnement (en général +1 mois après validation). Editable pour prolonger.',
+    )
+    note_admin = models.CharField(max_length=200, blank=True)
+
+    class Meta:
+        verbose_name = 'Profil utilisateur'
+        verbose_name_plural = 'Profils utilisateurs'
 
     def __str__(self):
         return f'{self.user.username} ({self.categorie})'
+
+    @property
+    def est_vip(self) -> bool:
+        return self.abonnement_vip_actif
+
+    @property
+    def abonnement_vip_actif(self) -> bool:
+        if self.categorie not in ('vip', 'premium'):
+            return False
+        if self.vip_expire_le is None:
+            return True  # legacy sans date → actif jusqu’à retrait
+        return self.vip_expire_le > timezone.now()
+
+    def activer_vip(self, mois: int = 1) -> None:
+        """Active (ou renouvelle) le VIP pour N mois à partir de maintenant."""
+        from paris.vip import debut_abonnement
+        debut, fin = debut_abonnement(mois)
+        self.categorie = 'vip'
+        self.vip_depuis = debut
+        self.vip_expire_le = fin
+
+    def prolonger_vip(self, mois: int = 1) -> None:
+        """Ajoute N mois à la fin d’abonnement (ou depuis maintenant si expiré)."""
+        from paris.vip import nouvelle_expiration
+        maintenant = timezone.now()
+        self.categorie = 'vip'
+        if not self.vip_depuis:
+            self.vip_depuis = maintenant
+        self.vip_expire_le = nouvelle_expiration(self.vip_expire_le, mois)
+
+    def retirer_vip(self) -> None:
+        self.categorie = 'membre'
+        self.vip_expire_le = timezone.now()
+
+
+class ReglageSite(models.Model):
+    """Réglages globaux (singleton) — WhatsApp VIP, etc."""
+    whatsapp_phone = models.CharField(
+        max_length=32, blank=True,
+        help_text='Numéro international sans + (ex. 33612345678).',
+    )
+    whatsapp_message = models.CharField(
+        max_length=300, blank=True,
+        default='Bonjour, je souhaite devenir VIP sur Cleared2Bet.',
+        help_text='Message prérempli quand l’utilisateur ouvre WhatsApp.',
+    )
+    whatsapp_url = models.URLField(
+        blank=True,
+        help_text='Lien WhatsApp complet (prioritaire si renseigné).',
+    )
+    vip_tarif_libelle = models.CharField(
+        max_length=120, blank=True, default='VIP Cleared2Bet',
+        help_text='Court libellé affiché sur le CTA (ex. « VIP — 4,99 € / mois »).',
+    )
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Réglages site'
+        verbose_name_plural = 'Réglages site'
+
+    def __str__(self):
+        return 'Réglages Cleared2Bet'
+
+    def save(self, *args, **kwargs):
+        self.pk = 1
+        super().save(*args, **kwargs)
+
+    @classmethod
+    def get_solo(cls) -> 'ReglageSite':
+        obj, _ = cls.objects.get_or_create(pk=1)
+        return obj
+
+    def lien_whatsapp_vip(self) -> str:
+        from urllib.parse import quote
+        import os
+        import re
+        if (self.whatsapp_url or '').strip():
+            return self.whatsapp_url.strip()
+        phone = re.sub(r'\D', '', self.whatsapp_phone or '')
+        if not phone:
+            phone = re.sub(r'\D', '', os.environ.get('C2B_WHATSAPP_PHONE', ''))
+        if not phone:
+            return ''
+        msg = (self.whatsapp_message or 'Bonjour, je souhaite devenir VIP sur Cleared2Bet.').strip()
+        return f'https://wa.me/{phone}?text={quote(msg)}'
+
+
+class MessageChat(models.Model):
+    """Message du Salon VIP — purgé automatiquement après 24 h."""
+    auteur = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='messages_chat',
+    )
+    texte = models.CharField(max_length=400)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        ordering = ['created_at']
+        verbose_name = 'Message Salon VIP'
+        verbose_name_plural = 'Messages Salon VIP'
+
+    def __str__(self):
+        return f'{self.auteur_id}:{self.texte[:40]}'

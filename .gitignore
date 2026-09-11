@@ -14,3 +14,8 @@ staticfiles/
 media/
 *.log
 .DS_Store
+data/*.sqlite3
+data/calibration.json
+!data/.gitkeep
+logs/
+wheels/

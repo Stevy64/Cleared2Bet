@@ -184,9 +184,19 @@ const ICON_PATHS = {
   share: '<path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="M16 6l-4-4-4 4"/><path d="M12 2v14"/>',
   download: '<path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/>',
   eye: '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+  'eye-off': '<path d="M3 3l18 18"/><path d="M10.6 10.6a2 2 0 0 0 2.8 2.8"/><path d="M9.9 5.1A10.5 10.5 0 0 1 12 5c6.5 0 10 7 10 7a17.5 17.5 0 0 1-3.2 4.1"/><path d="M6.1 6.1C3.7 7.8 2 12 2 12a17.7 17.7 0 0 0 6.2 5.6"/>',
+  user: '<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+  lock: '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
   'badge-check': '<path d="M9 12.5 11 14.5 15.5 10"/><path d="M12 3 14.2 5.1l2.9-.4.9 2.8 2.6 1.4-1.4 2.6.4 2.9L16.9 15.5 15.5 18.4l-2.6-1.4L10.5 18.4 9.1 15.5 6.2 15.9l.4-2.9L5.2 10.4l2.6-1.4.9-2.8 2.9.4z"/>',
   crown: '<path d="M3 8l3.5 3L12 4l5.5 7L21 8v10H3V8z"/><path d="M3 18h18"/>',
   users: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="3"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a3 3 0 0 1 0 5.74"/>',
+  activity: '<path d="M3 12h3l2.5-6 4 12L16 9l2 3h3"/>',
+  swords: '<path d="M14.5 17.5 3 6V3h3l11.5 11.5"/><path d="M13 19l6-6"/><path d="M16 16l3 3 2-2-3-3"/><path d="M9.5 6.5 21 18v3h-3L6.5 9.5"/><path d="M11 5 5 11"/><path d="M8 8 5 5 3 7l3 3"/>',
+  'user-x': '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="3"/><path d="m17 8 5 5M22 8l-5 5"/>',
+  trending: '<path d="M3 17 9 11l4 4 8-8"/><path d="M14 7h7v7"/>',
+  cloud: '<path d="M7 18h10a4 4 0 0 0 0-8 6 6 0 0 0-11.3-2A4.5 4.5 0 0 0 7 18z"/>',
+  message: '<path d="M21 12a8 8 0 0 1-8 8H7l-4 3V12a8 8 0 1 1 18 0z"/>',
+  send: '<path d="M4 12 20 4l-6 16-2-6-6-2z"/>',
 };
 
 function icon(name, cls) {
@@ -329,7 +339,7 @@ function c2b() {
     get kickerPage() {
       return {
         fiche: 'Analyse',
-        historique: 'Passé',
+        salon: 'Salon VIP',
         reglages: 'Compte',
       }[this.page] || '';
     },
@@ -372,6 +382,19 @@ function c2b() {
     vJusqua: '',
     vNiveau: '',
     vComp: '',
+    chatMessages: [],
+    chatDraft: '',
+    chatBusy: false,
+    chatChargement: false,
+    chatErr: '',
+    chatSince: null,
+    _chatPoll: null,
+    _chatStickBottom: true,
+    estVip: false,
+    authShowPass: false,
+    whatsappVipUrl: '',
+    vipTarifLibelle: 'VIP Cleared2Bet',
+    sheetVip: false,
     cacheBanner: false,
     cacheLabel: '',
     dernierRafraichissement: localStorage.getItem(LS_REFRESH) ? fmtCache(localStorage.getItem(LS_REFRESH)) : '',
@@ -412,6 +435,8 @@ function c2b() {
     sheetCompos: false,
     composExpanded: false,
     _composDragY: null,
+    sheetJustif: false,
+    justif: null,
     jourDate: '',
     predictionsJour: [],
     chargementJour: false,
@@ -453,21 +478,25 @@ function c2b() {
       return this.categorie === 'visiteur' || !this.authentifie;
     },
     get peutVoter() {
-      return this.authentifie && (this.categorie === 'membre' || this.categorie === 'premium');
+      return this.authentifie && (this.categorie === 'membre' || this.categorie === 'vip');
     },
     get peutCompos() {
-      return this.authentifie && (this.categorie === 'membre' || this.categorie === 'premium');
+      return this.authentifie && (this.categorie === 'membre' || this.categorie === 'vip');
+    },
+    get peutVip() {
+      return this.authentifie && (this.categorie === 'vip' || this.estVip);
     },
     get libCategorie() {
       return {
         visiteur: 'Visiteur',
         membre: 'Membre',
-        premium: 'Premium',
+        vip: 'VIP',
+        premium: 'VIP',
       }[this.categorie] || 'Visiteur';
     },
     iconCategorie(cat) {
       const c = cat || this.categorie || 'visiteur';
-      const name = { visiteur: 'eye', membre: 'badge-check', premium: 'crown' }[c] || 'eye';
+      const name = { visiteur: 'eye', membre: 'badge-check', vip: 'crown', premium: 'crown' }[c] || 'eye';
       return icon(name, 'icon icon-sm');
     },
 
@@ -477,6 +506,9 @@ function c2b() {
         this.authentifie = !!(data && data.authentifie);
         this.username = data && data.username;
         this.categorie = (data && data.categorie) || (this.authentifie ? 'membre' : 'visiteur');
+        this.estVip = !!(data && data.est_vip) || this.categorie === 'vip';
+        this.whatsappVipUrl = (data && data.whatsapp_vip_url) || '';
+        this.vipTarifLibelle = (data && data.vip_tarif_libelle) || 'VIP Cleared2Bet';
         if (data && data.version_moteur) this.moteur = data.version_moteur;
       } catch (_) { /* hors ligne */ }
     },
@@ -485,14 +517,19 @@ function c2b() {
       if (opts.pop) this.navDir = 'back';
       const path = location.pathname.replace(/\/$/, '') || '/';
       const m = path.match(/^\/matchs\/(\d+)$/);
+      this.stopChatPoll();
       if (m) {
         this.page = 'fiche';
         this.titrePage = 'Match';
         this._matchId = m[1];
       } else if (path === '/historique' || path === '/verification') {
-        this.page = 'historique';
-        this.titrePage = 'Historique';
-        if (path === '/verification') history.replaceState({}, '', '/historique');
+        this.page = 'salon';
+        this.titrePage = 'Salon';
+        history.replaceState({}, '', '/salon');
+      } else if (path === '/salon' || path === '/chat') {
+        this.page = 'salon';
+        this.titrePage = 'Salon';
+        if (path === '/chat') history.replaceState({}, '', '/salon');
       } else if (path === '/jour') {
         // Ancienne route → accueil + sheet compos
         this.page = 'matchs';
@@ -531,6 +568,9 @@ function c2b() {
       this.sheetAuth = false;
       this.sheetCompos = false;
       this.sheetInstall = false;
+      this.sheetJustif = false;
+      this.sheetVip = false;
+      this.justif = null;
       this.authPending = null;
       this.apercu = null;
       this.clubInfos = null;
@@ -557,6 +597,14 @@ function c2b() {
     },
 
     fermerSheets() {
+      if (this.sheetVip) {
+        this.fermerVipGate();
+        return;
+      }
+      if (this.sheetJustif) {
+        this.fermerJustif();
+        return;
+      }
       if (this.sheetInstall) {
         this.sheetInstall = false;
         if (!this.sheetApercu && !this.sheetAuth && !this.sheetClub && !this.sheetCompos) {
@@ -586,6 +634,8 @@ function c2b() {
         this.sheetCompos = false;
         this.composExpanded = false;
         this.partageMsg = '';
+        this.sheetJustif = false;
+        this.justif = null;
         if (!this.sheetApercu && !this.sheetAuth && !this.sheetClub && !this.sheetInstall) {
           document.body.classList.remove('sheet-open');
         }
@@ -594,6 +644,66 @@ function c2b() {
       this.sheetApercu = false;
       this.apercu = null;
       document.body.classList.remove('sheet-open');
+    },
+
+    ouvrirJustif(bloc, option) {
+      if (!option) return;
+      if (!this.peutVip) {
+        this.ouvrirVipGate('justif');
+        return;
+      }
+      const j = option.justification || {};
+      if (!j.accroche && !(j.arguments && j.arguments.length) && !(j.points && j.points.length)) {
+        this.ouvrirVipGate('justif');
+        return;
+      }
+      const args = Array.isArray(j.arguments) && j.arguments.length
+        ? j.arguments
+        : (Array.isArray(j.points) ? j.points.map((texte, i) => ({
+          cle: 'p' + i,
+          titre: 'Point clé',
+          texte,
+          icon: 'info',
+        })) : []);
+      this.justif = {
+        titre: j.titre || ((option.niveau || '') + ' · ' + (option.libelle || '')),
+        libelle: j.libelle || option.libelle || '',
+        accroche: j.accroche || '',
+        arguments: args,
+        points: Array.isArray(j.points) ? j.points : args.map((a) => a.texte),
+        matchLabel: bloc
+          ? ((bloc.domicile && bloc.domicile.nom_court) || '') +
+            ' – ' +
+            ((bloc.exterieur && bloc.exterieur.nom_court) || '')
+          : '',
+        niveau: option.niveau || j.niveau,
+        probabilite: option.probabilite != null ? option.probabilite : j.probabilite,
+        domicile: bloc && bloc.domicile,
+        exterieur: bloc && bloc.exterieur,
+      };
+      this.sheetJustif = true;
+      document.body.classList.add('sheet-open');
+    },
+
+    ouvrirVipGate(motif) {
+      this.sheetVip = true;
+      document.body.classList.add('sheet-open');
+      if (!this.whatsappVipUrl) this.chargerInfo();
+    },
+
+    fermerVipGate() {
+      this.sheetVip = false;
+      if (!this.sheetCompos && !this.sheetApercu && !this.sheetAuth && !this.sheetClub && !this.sheetInstall && !this.sheetJustif) {
+        document.body.classList.remove('sheet-open');
+      }
+    },
+
+    fermerJustif() {
+      this.sheetJustif = false;
+      this.justif = null;
+      if (!this.sheetCompos && !this.sheetApercu && !this.sheetAuth && !this.sheetClub && !this.sheetInstall) {
+        document.body.classList.remove('sheet-open');
+      }
     },
 
     ouvrirAuth(motif, pending) {
@@ -662,11 +772,8 @@ function c2b() {
         this.voteErr = '';
         this.propType = 'plus_25';
         this.propErr = '';
-      } else if (this.page === 'historique') {
-        await Promise.all([
-          this.chargerVerif(),
-          this.chargerMatchsPasses(),
-        ]);
+      } else if (this.page === 'salon') {
+        await this.ouvrirSalon();
       } else if (this.page === 'reglages') {
         await this.chargerInfo();
       }
@@ -1161,6 +1268,7 @@ function c2b() {
           this.authentifie = true;
           this.username = data.username;
           this.categorie = data.categorie || 'membre';
+          this.estVip = !!(data.est_vip) || this.categorie === 'vip';
           this.authPass = '';
           this.authErr = '';
           const pending = this.authPending;
@@ -1192,6 +1300,8 @@ function c2b() {
       this.authentifie = false;
       this.username = null;
       this.categorie = 'visiteur';
+      this.estVip = false;
+      this.stopChatPoll();
     },
 
     setJourDate(val) {
@@ -1424,6 +1534,131 @@ function c2b() {
       const keys = await caches.keys();
       await Promise.all(keys.map((k) => caches.delete(k)));
       this.cachePurge = true;
+    },
+
+    stopChatPoll() {
+      if (this._chatPoll) {
+        clearInterval(this._chatPoll);
+        this._chatPoll = null;
+      }
+    },
+
+    async ouvrirSalon() {
+      this.stopChatPoll();
+      if (!this.peutVip) {
+        this.chatMessages = [];
+        return;
+      }
+      this.chatErr = '';
+      this.chatSince = null;
+      this._chatStickBottom = true;
+      await this.chargerChat({ reset: true });
+      this._chatPoll = setInterval(() => {
+        if (this.page === 'salon' && this.peutVip) this.chargerChat({ silent: true });
+      }, 3500);
+    },
+
+    chatShowMeta(msg, idx) {
+      if (!msg || msg.est_moi) return false;
+      if (idx === 0) return true;
+      const prev = this.chatMessages[idx - 1];
+      return !prev || prev.auteur !== msg.auteur || prev.est_moi;
+    },
+
+    fmtChatHeure(iso) {
+      if (!iso) return '';
+      const d = new Date(iso);
+      if (Number.isNaN(d.getTime())) return '';
+      return d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    },
+
+    onSalonScroll() {
+      const el = this.$refs.salonFeed;
+      if (!el) return;
+      const dist = el.scrollHeight - el.scrollTop - el.clientHeight;
+      this._chatStickBottom = dist < 72;
+    },
+
+    scrollSalonBas(force) {
+      this.$nextTick(() => {
+        const el = this.$refs.salonFeed;
+        if (!el) return;
+        if (force || this._chatStickBottom) {
+          el.scrollTop = el.scrollHeight;
+          this._chatStickBottom = true;
+        }
+      });
+    },
+
+    async chargerChat(opts = {}) {
+      if (!this.peutVip) return;
+      if (opts.reset) this.chatChargement = true;
+      const q = new URLSearchParams();
+      if (!opts.reset && this.chatSince) q.set('since', this.chatSince);
+      const url = '/api/v1/salon/' + (q.toString() ? '?' + q.toString() : '');
+      try {
+        const { data, ok, status } = await getJSON(url);
+        if (status === 401 || status === 403) {
+          if (data && data.code === 'vip_required') {
+            this.chatErr = 'Salon VIP réservé aux comptes VIP.';
+          }
+          this.stopChatPoll();
+          return;
+        }
+        if (!ok || !data) return;
+        const incoming = data.results || [];
+        if (opts.reset || !this.chatSince) {
+          this.chatMessages = incoming;
+        } else if (incoming.length) {
+          const seen = new Set(this.chatMessages.map((m) => m.id));
+          const fresh = incoming.filter((m) => !seen.has(m.id));
+          if (fresh.length) this.chatMessages = this.chatMessages.concat(fresh);
+        }
+        if (this.chatMessages.length) {
+          this.chatSince = this.chatMessages[this.chatMessages.length - 1].created_at;
+        }
+        this.scrollSalonBas(!!opts.reset);
+      } finally {
+        this.chatChargement = false;
+      }
+    },
+
+    async envoyerChat() {
+      const texte = (this.chatDraft || '').trim();
+      if (!texte || this.chatBusy) return;
+      if (!this.peutVip) {
+        this.ouvrirVipGate('salon');
+        return;
+      }
+      this.chatBusy = true;
+      this.chatErr = '';
+      try {
+        const res = await fetch('/api/v1/salon/', {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+            'X-CSRFToken': csrf(),
+          },
+          body: JSON.stringify({ texte }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          this.chatErr = (data && data.detail) || (data.texte && data.texte[0]) || 'Envoi impossible.';
+          return;
+        }
+        this.chatDraft = '';
+        const seen = new Set(this.chatMessages.map((m) => m.id));
+        if (!seen.has(data.id)) this.chatMessages.push(data);
+        this.chatSince = data.created_at;
+        this._chatStickBottom = true;
+        this.scrollSalonBas(true);
+      } catch (_) {
+        this.chatErr = 'Réseau indisponible.';
+      } finally {
+        this.chatBusy = false;
+      }
     },
 
     enregistrerSW() {

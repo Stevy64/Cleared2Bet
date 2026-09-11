@@ -1,0 +1,55 @@
+{% extends "admin/base.html" %}
+{% load i18n static %}
+
+{% block title %}{% if subtitle %}{{ subtitle }} | {% endif %}{{ title }} | Cleared2Bet Admin{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>html { color-scheme: light; }</style>
+{% endblock %}
+
+{% block dark-mode-vars %}{% endblock %}
+
+{% block responsive %}
+{{ block.super }}
+{# Après responsive.css Django pour gagner la cascade mobile #}
+<link rel="stylesheet" href="{% static 'admin/css/c2b_admin.css' %}?v=69">
+{% endblock %}
+
+{% block branding %}
+<div id="site-name">
+  <a href="{% url 'admin:index' %}">Cleared2Bet</a>
+</div>
+{% endblock %}
+
+{% block usertools %}
+{% if has_permission %}
+<div id="user-tools" class="c2b-usertools">
+  <span class="c2b-userchip" title="{{ user.get_username }}">{{ user.get_username }}</span>
+  <div class="c2b-user-desktop">
+    <a href="{% url 'admin:password_change' %}">{% translate 'Change password' %}</a>
+    <a href="/">{% translate 'View site' %}</a>
+  </div>
+  <details class="c2b-user-menu">
+    <summary aria-label="Menu compte">Menu</summary>
+    <div class="c2b-user-menu-panel">
+      <a href="{% url 'admin:password_change' %}">{% translate 'Change password' %}</a>
+      <a href="/">{% translate 'View site' %}</a>
+      <form method="post" action="{% url 'admin:logout' %}">
+        {% csrf_token %}
+        <button type="submit">{% translate 'Log out' %}</button>
+      </form>
+    </div>
+  </details>
+  <form id="logout-form" class="c2b-logout-desktop" method="post" action="{% url 'admin:logout' %}">
+    {% csrf_token %}
+    <button type="submit">{% translate 'Log out' %}</button>
+  </form>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block nav-global %}{% endblock %}

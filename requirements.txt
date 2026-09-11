@@ -7,4 +7,4 @@ gunicorn==23.0.0
 whitenoise==6.9.0
 python-dotenv==1.1.1
 curl_cffi>=0.7.0
-# Postgres optionnel : pip install "psycopg[binary]>=3.2"
+psycopg[binary]>=3.2

@@ -26,7 +26,7 @@ import numpy as np
 
 # Correction Dixon–Coles des petits scores (voir docstring module).
 RHO = -0.06
-VERSION_MOTEUR = '1.0.1'
+VERSION_MOTEUR = '1.1.0'
 # Part des buts attendus attribuée à la 1re mi-temps (approx. empirique).
 FACTEUR_MI_TEMPS = 0.45
 # Residu (sqrt SSE) au-delà duquel l’ajustement λ est jugé douteux.
@@ -37,8 +37,9 @@ P_1X2_MAX_RECO = 0.62
 COTE_MIN, COTE_MAX = 1.01, 100.0
 MARGE_MAX = 0.35  # overround 1X2 au-delà → analyse refusée
 
-# Tables empiriques (p prédite → p calibrée). Familles hors table : identité.
-CALIBRATION = {
+# Tables empiriques par défaut (p prédite → p calibrée). Remplacées / fusionnées
+# par data/calibration.json après `apprendre_calibration`.
+CALIBRATION_DEFAUT = {
     'Total buts':        [(.233, .243), (.551, .550), (.651, .649),
                           (.752, .735), (.852, .838), (.936, .922)],
     'Mi-temps':          [(.318, .320), (.550, .547), (.652, .669),
@@ -49,6 +50,29 @@ CALIBRATION = {
     'Une équipe marque': [(.417, .572), (.555, .622), (.653, .690),
                           (.749, .779), (.846, .848), (.931, .914)],
 }
+# Alias rétrocompatibilité tests / imports.
+CALIBRATION = CALIBRATION_DEFAUT
+
+_CALIBRATION_CACHE: dict | None = None
+
+
+def invalider_calibration_cache() -> None:
+    global _CALIBRATION_CACHE
+    _CALIBRATION_CACHE = None
+
+
+def tables_calibration() -> dict:
+    """Tables actives (fichier appris si présent, sinon défaut)."""
+    global _CALIBRATION_CACHE
+    if _CALIBRATION_CACHE is not None:
+        return _CALIBRATION_CACHE
+    try:
+        from paris.calibration_store import charger_tables
+        _CALIBRATION_CACHE = charger_tables()
+    except Exception:  # noqa: BLE001 — tests hors Django / fichier absent
+        from copy import deepcopy
+        _CALIBRATION_CACHE = deepcopy(CALIBRATION_DEFAUT)
+    return _CALIBRATION_CACHE
 
 FAMILLES_ELIGIBLES = frozenset({
     'Total buts', 'Mi-temps', 'Handicap', 'Double chance', '1X2',
@@ -159,7 +183,7 @@ def ajuster(p1, pn, p2, p_over25=None):
 
 
 def corriger(p, famille):
-    t = CALIBRATION.get(famille)
+    t = tables_calibration().get(famille)
     if not t:
         return p
     xs = [a for a, _ in t]
