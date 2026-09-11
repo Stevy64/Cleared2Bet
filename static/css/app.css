@@ -53,34 +53,16 @@
   max-width: 100%;
   padding: 10px 12px;
   padding-top: calc(10px + env(safe-area-inset-top, 0px));
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.14) 0%, transparent 45%),
-    linear-gradient(135deg, #ff8a45 0%, #ff7a30 42%, #e8631c 100%);
-  border-bottom: 1px solid rgba(120, 40, 0, 0.18);
+  background: #e8631c;
+  border-bottom: 1px solid rgba(100, 30, 0, 0.18);
   color: #fff;
-  box-shadow:
-    0 10px 28px rgba(232, 99, 28, 0.35),
-    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  box-shadow: 0 8px 22px rgba(180, 70, 10, 0.32);
   transition: transform 0.28s var(--ease), opacity 0.28s var(--ease);
   overflow: hidden;
   box-sizing: border-box;
 }
 .topnav::after {
-  content: "";
-  position: absolute;
-  left: 12%;
-  right: 12%;
-  bottom: 0;
-  height: 2px;
-  border-radius: 999px;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.55) 50%,
-    transparent 100%
-  );
-  opacity: 0.7;
-  pointer-events: none;
+  display: none;
 }
 .topnav-hide {
   transform: translateY(calc(-100% - 8px));
@@ -374,10 +356,13 @@ button { cursor: pointer; }
   overflow: hidden;
 }
 .page-hero-photo {
-  min-height: 220px;
-  padding: 10px 16px 44px;
+  min-height: 380px;
+  padding: 36px 18px 72px;
   color: #fff;
-  background: #0b1728 url("/static/img/hero-accueil.jpg") center 30% / cover no-repeat;
+  background: #0b1728 url("/static/img/hero-accueil.jpg") center 26% / cover no-repeat;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 .page-hero-photo::after {
   content: "";
@@ -385,14 +370,14 @@ button { cursor: pointer; }
   inset: 0;
   background: linear-gradient(
     180deg,
-    rgba(8, 16, 28, 0.55) 0%,
-    rgba(8, 16, 28, 0.25) 45%,
-    rgba(8, 16, 28, 0.72) 100%
+    rgba(8, 16, 28, 0.48) 0%,
+    rgba(8, 16, 28, 0.22) 42%,
+    rgba(8, 16, 28, 0.7) 100%
   );
 }
 .page-hero-accent {
-  min-height: 112px;
-  padding: 10px 16px 36px;
+  min-height: 132px;
+  padding: 16px 16px 44px;
   color: #fff;
   background: linear-gradient(145deg, #061018 0%, #12263a 52%, #1a3550 100%);
   border-radius: 0 0 28px 28px;
@@ -419,27 +404,30 @@ button { cursor: pointer; }
   position: relative;
   z-index: 1;
   text-align: center;
-  padding: 10px 8px 0;
+  padding: 24px 10px 16px;
+  max-width: 22rem;
+  margin: 0 auto;
 }
 .slogan {
-  margin: 2px 0 6px;
-  font-size: clamp(1.2rem, 5vw, 1.55rem);
-  line-height: 1.15;
+  margin: 0 0 10px;
+  font-size: clamp(1.35rem, 5.5vw, 1.75rem);
+  line-height: 1.2;
   letter-spacing: -0.03em;
   font-weight: 800;
 }
 .slogan-sub {
   margin: 0;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
-  opacity: 0.95;
+  line-height: 1.4;
+  opacity: 0.92;
 }
 .hero-actions {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   gap: 8px;
-  margin-top: 12px;
+  margin-top: 22px;
 }
 .btn-hero,
 .btn-hero-ghost {
@@ -472,7 +460,8 @@ button { cursor: pointer; }
 }
 .install-steps li { margin: 0 0 8px; }
 .page-hero-photo .hero-copy {
-  padding-top: 18px;
+  padding-top: 36px;
+  padding-bottom: 20px;
 }
 .kicker {
   margin: 4px 0 0;
@@ -492,7 +481,7 @@ button { cursor: pointer; }
 .sheet {
   position: relative;
   z-index: 2;
-  margin-top: -26px;
+  margin-top: -18px;
   padding: 16px 14px 108px;
   min-height: 52vh;
   background: var(--sheet);
@@ -3244,7 +3233,7 @@ button.compos-opt:active {
 /* Desktop : 2 colonnes, mobile-first conservé */
 @media (min-width: 960px) {
   :root { --app-max: 960px; }
-  .page-hero-photo { min-height: 230px; }
+  .page-hero-photo { min-height: 440px; }
   .jour {
     display: grid;
     grid-template-columns: 1fr 1fr;
