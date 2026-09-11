@@ -17,7 +17,7 @@ make superuser
 ```
 
 Services démarrés : **nginx · web · moteur · worker · postgres · redis**.  
-Le worker boucle ~toutes les 2 h (voir `C2B_WORKER_INTERVAL`).
+Le worker boucle ~toutes les 2 h (voir `ZANALYZ_WORKER_INTERVAL`).
 
 Vérifications :
 
@@ -48,7 +48,7 @@ make health
 
 ## Santé
 
-`GET /health/` → `{"status":"ok","app":"cleared2bet"}`  
+`GET /health/` → `{"status":"ok","app":"zanalyz"}`  
 Moteur : `GET http://moteur:8001/health` (réseau Docker)
 
 Schéma des services : [architecture.md](architecture.md).

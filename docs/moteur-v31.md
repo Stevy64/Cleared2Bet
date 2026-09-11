@@ -1,4 +1,4 @@
-# Moteur de pronostics — version 3.1 (intégré dans Cleared2Bet)
+# Moteur de pronostics — version 3.1 (intégré dans ZanalyZ)
 
 Modules portés dans `paris/` :
 

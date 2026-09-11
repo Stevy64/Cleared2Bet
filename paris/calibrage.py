@@ -20,7 +20,7 @@ _FICHIER_DEFAUT = _ICI / 'calibration_par_marche.json'
 
 COMPLEMENT = '~'
 
-# Clé de marché par code d'option Cleared2Bet (stable, indépendant du libellé).
+# Clé de marché par code d'option ZanalyZ (stable, indépendant du libellé).
 CODE_VERS_MARCHE: dict[str, Any] = {
     'OV_0.5': '+0.5',
     'OV_1.5': '+1.5',

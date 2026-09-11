@@ -1,4 +1,4 @@
-# Cleared2Bet
+# ZanalyZ
 
 PWA d’aide à la décision pour les paris football. Affiche des **chances** et une **cote juste**.  
 Ne prend pas de paris, ne se connecte à aucun bookmaker, ne promet aucun gain.
@@ -12,8 +12,8 @@ Stack : **Django 5 + DRF** (PWA Alpine), **moteur v3.1** (FastAPI), **Postgres /
 ### Option A — Docker (recommandé)
 
 ```bash
-git clone https://github.com/Stevy64/Cleared2Bet.git
-cd Cleared2Bet
+git clone https://github.com/Stevy64/ZanalyZ.git
+cd ZanalyZ
 cp .env.example .env
 
 # Si pip/DNS flaky dans Docker Desktop (Windows) :
@@ -50,7 +50,7 @@ python manage.py calculer_analyses
 python manage.py runserver
 ```
 
-Sans `C2B_MOTEUR_URL`, le moteur tourne **dans le process Django**.
+Sans `ZANALYZ_MOTEUR_URL`, le moteur tourne **dans le process Django**.
 
 ### Tests
 
@@ -79,7 +79,7 @@ cp .env.example .env
 make prod-build          # nginx + web + moteur + worker + postgres + redis
 make migrate
 make superuser
-# → http://TON_IP/  (port C2B_HTTP_PORT, défaut 80)
+# → http://TON_IP/  (port ZANALYZ_HTTP_PORT, défaut 80)
 ```
 
 Le **worker** enchaîne toutes les ~2 h : sync calendrier → analyses → règlement → purge chat.  

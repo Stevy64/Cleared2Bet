@@ -1,7 +1,7 @@
 {% extends "admin/base.html" %}
 {% load i18n static %}
 
-{% block title %}{% if subtitle %}{{ subtitle }} | {% endif %}{{ title }} | Cleared2Bet Admin{% endblock %}
+{% block title %}{% if subtitle %}{{ subtitle }} | {% endif %}{{ title }} | ZanalyZ Admin{% endblock %}
 
 {% block extrastyle %}
 {{ block.super }}
@@ -16,26 +16,26 @@
 {% block responsive %}
 {{ block.super }}
 {# Après responsive.css Django pour gagner la cascade mobile #}
-<link rel="stylesheet" href="{% static 'admin/css/c2b_admin.css' %}?v=71">
+<link rel="stylesheet" href="{% static 'admin/css/zanalyz_admin.css' %}?v=71">
 {% endblock %}
 
 {% block branding %}
 <div id="site-name">
-  <a href="{% url 'admin:index' %}">Cleared2Bet</a>
+  <a href="{% url 'admin:index' %}">ZanalyZ</a>
 </div>
 {% endblock %}
 
 {% block usertools %}
 {% if has_permission %}
-<div id="user-tools" class="c2b-usertools">
-  <span class="c2b-userchip" title="{{ user.get_username }}">{{ user.get_username }}</span>
-  <div class="c2b-user-desktop">
+<div id="user-tools" class="zyz-usertools">
+  <span class="zyz-userchip" title="{{ user.get_username }}">{{ user.get_username }}</span>
+  <div class="zyz-user-desktop">
     <a href="{% url 'admin:password_change' %}">{% translate 'Change password' %}</a>
     <a href="/">{% translate 'View site' %}</a>
   </div>
-  <details class="c2b-user-menu">
+  <details class="zyz-user-menu">
     <summary aria-label="Menu compte">Menu</summary>
-    <div class="c2b-user-menu-panel">
+    <div class="zyz-user-menu-panel">
       <a href="{% url 'admin:password_change' %}">{% translate 'Change password' %}</a>
       <a href="/">{% translate 'View site' %}</a>
       <form method="post" action="{% url 'admin:logout' %}">
@@ -44,7 +44,7 @@
       </form>
     </div>
   </details>
-  <form id="logout-form" class="c2b-logout-desktop" method="post" action="{% url 'admin:logout' %}">
+  <form id="logout-form" class="zyz-logout-desktop" method="post" action="{% url 'admin:logout' %}">
     {% csrf_token %}
     <button type="submit">{% translate 'Log out' %}</button>
   </form>

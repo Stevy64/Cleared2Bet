@@ -319,7 +319,7 @@ class ReglageSite(models.Model):
     )
     whatsapp_message = models.CharField(
         max_length=300, blank=True,
-        default='Bonjour, je souhaite devenir VIP sur Cleared2Bet.',
+        default='Bonjour, je souhaite devenir VIP sur ZanalyZ.',
         help_text='Message prérempli quand l’utilisateur ouvre WhatsApp.',
     )
     whatsapp_url = models.URLField(
@@ -327,7 +327,7 @@ class ReglageSite(models.Model):
         help_text='Lien WhatsApp complet (prioritaire si renseigné).',
     )
     vip_tarif_libelle = models.CharField(
-        max_length=120, blank=True, default='VIP Cleared2Bet',
+        max_length=120, blank=True, default='VIP ZanalyZ',
         help_text='Court libellé affiché sur le CTA (ex. « VIP — 4,99 € / mois »).',
     )
     updated_at = models.DateTimeField(auto_now=True)
@@ -337,7 +337,7 @@ class ReglageSite(models.Model):
         verbose_name_plural = 'Réglages site'
 
     def __str__(self):
-        return 'Réglages Cleared2Bet'
+        return 'Réglages ZanalyZ'
 
     def save(self, *args, **kwargs):
         self.pk = 1
@@ -356,10 +356,14 @@ class ReglageSite(models.Model):
             return self.whatsapp_url.strip()
         phone = re.sub(r'\D', '', self.whatsapp_phone or '')
         if not phone:
-            phone = re.sub(r'\D', '', os.environ.get('C2B_WHATSAPP_PHONE', ''))
+            phone = re.sub(
+                r'\D', '',
+                os.environ.get('ZANALYZ_WHATSAPP_PHONE')
+                or os.environ.get('C2B_WHATSAPP_PHONE', ''),
+            )
         if not phone:
             return ''
-        msg = (self.whatsapp_message or 'Bonjour, je souhaite devenir VIP sur Cleared2Bet.').strip()
+        msg = (self.whatsapp_message or 'Bonjour, je souhaite devenir VIP sur ZanalyZ.').strip()
         return f'https://wa.me/{phone}?text={quote(msg)}'
 
 

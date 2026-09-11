@@ -1,7 +1,7 @@
 # ════════════════════════════════════════════
-# Cleared2Bet — Commandes simplifiées
+# ZanalyZ — Commandes simplifiées
 # Usage : make <commande>
-# Images : cleared2bet-dev, cleared2bet-prod
+# Images : zanalyz-dev, zanalyz-prod
 # ════════════════════════════════════════════
 
 COMPOSE_DEV  = docker compose -f docker-compose.dev.yml
@@ -13,7 +13,7 @@ COMPOSE_PROD = docker compose -f docker-compose.yml
 	sync-full-dev psql health
 
 help:
-	@echo "Commandes Cleared2Bet :"
+	@echo "Commandes ZanalyZ :"
 	@echo "  make wheels / wheels-win - Prefetch wheels Docker"
 	@echo "  make dev-build      - web + moteur (+ redis)"
 	@echo "  make dev-worker     - active le worker autonome (profile)"
@@ -135,11 +135,11 @@ test:
 	$(COMPOSE_DEV) exec web python manage.py test --verbosity=2
 
 psql:
-	$(COMPOSE_PROD) exec db psql -U $${POSTGRES_USER:-cleared2bet} $${POSTGRES_DB:-cleared2bet}
+	$(COMPOSE_PROD) exec db psql -U $${POSTGRES_USER:-zanalyz} $${POSTGRES_DB:-zanalyz}
 
 health:
-	@curl -sf http://127.0.0.1:$${C2B_DEV_PORT:-8000}/health/ && echo OK || \
-	 curl -sf http://127.0.0.1:$${C2B_HTTP_PORT:-80}/health/ && echo OK
+	@curl -sf http://127.0.0.1:$${ZANALYZ_DEV_PORT:-8000}/health/ && echo OK || \
+	 curl -sf http://127.0.0.1:$${ZANALYZ_HTTP_PORT:-80}/health/ && echo OK
 
 clean:
 	$(COMPOSE_DEV) down -v --remove-orphans

@@ -1,10 +1,10 @@
 const PEU_FIABLES = new Set(['BTTS', 'Une équipe marque']);
-const LS_FILTRE = 'c2b.filtre';
-const LS_MASQUEES = 'c2b.masquees';
-const LS_REFRESH = 'c2b.refresh';
-const LS_DATE = 'c2b.filtreDate';
-const LS_SALON_READ = 'c2b.salon.lastReadAt';
-const SS_SCROLL = 'c2b.scroll';
+const LS_FILTRE = 'zanalyz.filtre';
+const LS_MASQUEES = 'zanalyz.masquees';
+const LS_REFRESH = 'zanalyz.refresh';
+const LS_DATE = 'zanalyz.filtreDate';
+const LS_SALON_READ = 'zanalyz.salon.lastReadAt';
+const SS_SCROLL = 'zanalyz.scroll';
 const TZ_APP = 'Europe/Paris';
 
 function csrf() {
@@ -70,7 +70,7 @@ function texteVersPdfBlob(titre, blocs) {
     (b.lines || []).forEach((l) => push('  ' + l, 'opt'));
     push('', 'gap');
   });
-  push('You Are Cleared to Bet - Cleared2Bet', 'foot');
+  push('ZanalyZ', 'foot');
 
   const pageW = 595;
   const pageH = 842;
@@ -336,7 +336,7 @@ const TYPES_PROPOSITION = [
   { code: 'moins_25', label: 'Moins de 2,5 buts' },
 ];
 
-function c2b() {
+function zanalyz() {
   return {
     page: 'matchs',
     titrePage: 'Matchs',
@@ -399,7 +399,7 @@ function c2b() {
     estVip: false,
     authShowPass: false,
     whatsappVipUrl: '',
-    vipTarifLibelle: 'VIP Cleared2Bet',
+    vipTarifLibelle: 'VIP ZanalyZ',
     sheetVip: false,
     cacheBanner: false,
     cacheLabel: '',
@@ -522,7 +522,7 @@ function c2b() {
         this.categorie = (data && data.categorie) || (this.authentifie ? 'membre' : 'visiteur');
         this.estVip = !!(data && data.est_vip) || this.categorie === 'vip';
         this.whatsappVipUrl = (data && data.whatsapp_vip_url) || '';
-        this.vipTarifLibelle = (data && data.vip_tarif_libelle) || 'VIP Cleared2Bet';
+        this.vipTarifLibelle = (data && data.vip_tarif_libelle) || 'VIP ZanalyZ';
         if (data && data.version_moteur) this.moteur = data.version_moteur;
         this.demarrerUnreadPoll();
       } catch (_) { /* hors ligne */ }
@@ -1390,7 +1390,7 @@ function c2b() {
     async ouvrirCompos() {
       if (!this.authentifie) {
         this.ouvrirAuth(
-          'Connecte-toi pour ouvrir l’Analyse du jour.',
+          'Connecte-toi pour ouvrir Nos ZanalyZ.',
           () => this.ouvrirCompos(),
         );
         return;
@@ -1498,7 +1498,7 @@ function c2b() {
         });
         lignes.push('');
       });
-      lignes.push('You Are Cleared to Bet');
+      lignes.push('ZanalyZ');
       return lignes;
     },
 
@@ -1524,16 +1524,16 @@ function c2b() {
     async partagerPredictionsJour() {
       this.partageMsg = '';
       this.partageBusy = true;
-      const titre = 'Cleared2Bet — Analyse du ' + fmtJour(this.jourDate + 'T12:00:00');
+      const titre = 'ZanalyZ — Nos ZanalyZ · ' + fmtJour(this.jourDate + 'T12:00:00');
       const text = [
         titre,
-        'Voici notre sélection du jour, tirée de notre moteur de prédiction C2B',
+        'Voici notre sélection du jour, tirée de notre moteur de prédiction ZanalyZ',
         '',
         ...this.textePredictionsJour(),
       ].join('\n');
       try {
         if (navigator.share) {
-          await navigator.share({ title: 'Analyse Cleared2Bet', text });
+          await navigator.share({ title: 'Nos ZanalyZ', text });
           this.partageMsg = 'Partage envoyé.';
           return;
         }

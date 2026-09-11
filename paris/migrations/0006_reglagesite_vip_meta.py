@@ -27,7 +27,7 @@ class Migration(migrations.Migration):
                 )),
                 ('whatsapp_message', models.CharField(
                     blank=True,
-                    default='Bonjour, je souhaite devenir VIP sur Cleared2Bet.',
+                    default='Bonjour, je souhaite devenir VIP sur ZanalyZ.',
                     help_text='Message prérempli quand l’utilisateur ouvre WhatsApp.',
                     max_length=300,
                 )),
@@ -35,7 +35,7 @@ class Migration(migrations.Migration):
                     blank=True, help_text='Lien WhatsApp complet (prioritaire si renseigné).',
                 )),
                 ('vip_tarif_libelle', models.CharField(
-                    blank=True, default='VIP Cleared2Bet',
+                    blank=True, default='VIP ZanalyZ',
                     help_text='Court libellé affiché sur le CTA (ex. « VIP — 4,99 € / mois »).',
                     max_length=120,
                 )),

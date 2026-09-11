@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 # Clé publique gratuite documentée par TheSportsDB (v1).
 BASE = 'https://www.thesportsdb.com/api/v1/json/3'
 
-# Compétitions Cleared2Bet → idLeague TheSportsDB
+# Compétitions ZanalyZ → idLeague TheSportsDB
 LIGUES = {
     'PL': 4328,
     'LIGA': 4335,
@@ -83,7 +83,7 @@ def _get(path: str, *, timeout: float = 12) -> dict[str, Any]:
     req = urllib.request.Request(
         url,
         headers={
-            'User-Agent': 'Mozilla/5.0 Cleared2Bet/1.0',
+            'User-Agent': 'Mozilla/5.0 ZanalyZ/1.0',
             'Accept': 'application/json',
         },
         method='GET',

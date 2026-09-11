@@ -1,4 +1,4 @@
-# Déployer Cleared2Bet sur PythonAnywhere
+# Déployer ZanalyZ sur PythonAnywhere
 
 Guide **pas à pas** (compte Beginner ou payant).  
 **Pas de Docker** sur PythonAnywhere — app WSGI classique.
@@ -38,8 +38,8 @@ L’UI PA n’a **pas besoin** de recalculer ni d’appeler d’API calendrier.
 ### B. Sur PythonAnywhere
 
 ```bash
-cd ~/Cleared2Bet
-source ~/.virtualenvs/cleared2bet/bin/activate
+cd ~/ZanalyZ
+source ~/.virtualenvs/zanalyz/bin/activate
 git pull
 set -a && source .env && set +a
 python manage.py importer_snapshot --source exports/matchs.json
@@ -62,7 +62,7 @@ Le filtre date doit correspondre à des matchs présents dans le snapshot
 | Chez toi | `make sync-dev` → `make snapshot-export-dev` → commit/push |
 | Sur PA | `git pull` → `importer_snapshot` |
 
-Sans `C2B_MOTEUR_URL` sur PA : le moteur tourne **dans Django** si tu utilises `--recalculer`.
+Sans `ZANALYZ_MOTEUR_URL` sur PA : le moteur tourne **dans Django** si tu utilises `--recalculer`.
 
 ---
 
@@ -70,8 +70,8 @@ Sans `C2B_MOTEUR_URL` sur PA : le moteur tourne **dans Django** si tu utilises `
 
 ```bash
 cd ~
-git clone https://github.com/Stevy64/Cleared2Bet.git
-cd Cleared2Bet
+git clone https://github.com/Stevy64/ZanalyZ.git
+cd ZanalyZ
 ```
 
 ---
@@ -81,9 +81,9 @@ cd Cleared2Bet
 Python **3.10** ou **3.11**.
 
 ```bash
-cd ~/Cleared2Bet
-python3.11 -m venv ~/.virtualenvs/cleared2bet
-source ~/.virtualenvs/cleared2bet/bin/activate
+cd ~/ZanalyZ
+python3.11 -m venv ~/.virtualenvs/zanalyz
+source ~/.virtualenvs/zanalyz/bin/activate
 pip install -U pip
 pip install -r requirements.txt
 ```
@@ -104,7 +104,7 @@ DJANGO_ALLOWED_HOSTS=TONUSER.pythonanywhere.com
 DJANGO_CSRF_TRUSTED_ORIGINS=https://TONUSER.pythonanywhere.com
 DJANGO_SSL=1
 DJANGO_SECURE_SSL_REDIRECT=0
-# Pas de C2B_MOTEUR_URL
+# Pas de ZANALYZ_MOTEUR_URL
 ```
 
 ---
@@ -112,7 +112,7 @@ DJANGO_SECURE_SSL_REDIRECT=0
 ## 4. Migrate + static + snapshot
 
 ```bash
-source ~/.virtualenvs/cleared2bet/bin/activate
+source ~/.virtualenvs/zanalyz/bin/activate
 set -a && source .env && set +a
 python manage.py migrate --noinput
 python manage.py collectstatic --noinput
@@ -129,8 +129,8 @@ Les **fiches club** (blason) viennent du champ embarqué dans le snapshot.
 ## 5. Web app WSGI
 
 1. **Web** → Manual configuration → même Python que le venv  
-2. Source / working dir : `/home/TONUSER/Cleared2Bet`  
-3. Virtualenv : `/home/TONUSER/.virtualenvs/cleared2bet`  
+2. Source / working dir : `/home/TONUSER/ZanalyZ`  
+3. Virtualenv : `/home/TONUSER/.virtualenvs/zanalyz`  
 4. WSGI :
 
 ```python
@@ -138,7 +138,7 @@ import os
 import sys
 from dotenv import load_dotenv
 
-project_home = "/home/TONUSER/Cleared2Bet"
+project_home = "/home/TONUSER/ZanalyZ"
 if project_home not in sys.path:
     sys.path.insert(0, project_home)
 load_dotenv(os.path.join(project_home, ".env"))
@@ -153,15 +153,15 @@ application = get_wsgi_application()
 
    | URL | Directory |
    |-----|-----------|
-   | `/static/` | `/home/TONUSER/Cleared2Bet/staticfiles` |
-   | `/media/` | `/home/TONUSER/Cleared2Bet/media` |
+   | `/static/` | `/home/TONUSER/ZanalyZ/staticfiles` |
+   | `/media/` | `/home/TONUSER/ZanalyZ/media` |
 
    Puis clique **Reload** en haut de la page Web.
 
 6. Créer le dossier media si besoin :
 
 ```bash
-mkdir -p ~/Cleared2Bet/media
+mkdir -p ~/ZanalyZ/media
 ```
 
 7. **Reload** — health : `/health/`

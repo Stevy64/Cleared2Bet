@@ -1,9 +1,9 @@
 {% extends "admin/base_site.html" %}
 {% load i18n static %}
 
-{% block title %}Connexion · Cleared2Bet Admin{% endblock %}
+{% block title %}Connexion · ZanalyZ Admin{% endblock %}
 
-{% block bodyclass %}{{ block.super }} login c2b-login-page{% endblock %}
+{% block bodyclass %}{{ block.super }} login zyz-login-page{% endblock %}
 
 {% block usertools %}{% endblock %}
 {% block nav-global %}{% endblock %}
@@ -24,17 +24,17 @@
 {% endfor %}
 {% endif %}
 
-<div class="c2b-login-shell">
-  <div id="content-main" class="c2b-login-panel">
-    <div class="c2b-login-brand">
-      <p class="c2b-login-badge">Page Admin · C2B</p>
+<div class="zyz-login-shell">
+  <div id="content-main" class="zyz-login-panel">
+    <div class="zyz-login-brand">
+      <p class="zyz-login-badge">Page Admin · ZanalyZ</p>
       <span class="dot" aria-hidden="true"></span>
-      <h1>Cleared2Bet Admin</h1>
-      <p class="c2b-login-lead">Vous êtes sur la page d’administration de Cleared2Bet (C2B). Accès réservé au staff.</p>
+      <h1>ZanalyZ Admin</h1>
+      <p class="zyz-login-lead">Vous êtes sur la page d’administration de ZanalyZ (ZanalyZ). Accès réservé au staff.</p>
     </div>
 
     {% if user.is_authenticated %}
-    <p class="c2b-login-hint">
+    <p class="zyz-login-hint">
       {% blocktranslate trimmed %}
         You are authenticated as {{ username }}, but are not authorized to
         access this page. Would you like to login to a different account?
@@ -46,10 +46,10 @@
       {% csrf_token %}
       <input type="hidden" name="next" value="{{ next }}">
 
-      <div class="c2b-field">
+      <div class="zyz-field">
         <label for="id_username">Nom d’utilisateur</label>
-        <div class="c2b-input-wrap">
-          <span class="c2b-input-ico" aria-hidden="true">
+        <div class="zyz-input-wrap">
+          <span class="zyz-input-ico" aria-hidden="true">
             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="7" r="4"/></svg>
           </span>
           {{ form.username }}
@@ -57,10 +57,10 @@
         {{ form.username.errors }}
       </div>
 
-      <div class="c2b-field">
+      <div class="zyz-field">
         <label for="id_password">{% translate 'Password' %}</label>
-        <div class="c2b-input-wrap">
-          <span class="c2b-input-ico" aria-hidden="true">
+        <div class="zyz-input-wrap">
+          <span class="zyz-input-ico" aria-hidden="true">
             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
           </span>
           {{ form.password }}
@@ -71,7 +71,7 @@
 
       {% url 'admin_password_reset' as password_reset_url %}
       {% if password_reset_url %}
-      <div class="c2b-login-reset">
+      <div class="zyz-login-reset">
         <a href="{{ password_reset_url }}">{% translate 'Forgotten your password or username?' %}</a>
       </div>
       {% endif %}
@@ -81,7 +81,7 @@
       </div>
     </form>
 
-    <p class="c2b-login-foot"><a href="/">← Retour à l’app</a></p>
+    <p class="zyz-login-foot"><a href="/">← Retour à l’app</a></p>
   </div>
 </div>
 {% endblock %}

@@ -1,6 +1,6 @@
 {
-  "name": "Cleared2Bet",
-  "short_name": "Cleared2Bet",
+  "name": "ZanalyZ",
+  "short_name": "ZanalyZ",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
@@ -9,7 +9,7 @@
   "background_color": "#eef1f5",
   "theme_color": "#0b1728",
   "lang": "fr",
-  "description": "You Are Cleared to Bet. Chances réelles et cote juste.",
+  "description": "ZanalyZ. Chances réelles et cote juste.",
   "categories": ["sports", "utilities"],
   "icons": [
     { "src": "/static/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },

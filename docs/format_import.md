@@ -1,4 +1,4 @@
-# Format d'import JSON — Cleared2Bet
+# Format d'import JSON — ZanalyZ
 
 > **Attention** : cet import est réservé aux **démos / tests**. En usage normal,
 > les matchs viennent uniquement de `synchroniser_sofascore`. Un JSON inventé

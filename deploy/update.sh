@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Déploiement / mise à jour Cleared2Bet sur VPS (Ubuntu/Debian).
-# Usage (depuis /var/www/cleared2bet, en root ou sudo) :
+# Déploiement / mise à jour ZanalyZ sur VPS (Ubuntu/Debian).
+# Usage (depuis /var/www/zanalyz, en root ou sudo) :
 #   bash deploy/update.sh
 
 set -euo pipefail
@@ -30,9 +30,9 @@ pip install -r requirements.txt
 python manage.py migrate --noinput
 python manage.py collectstatic --noinput
 
-if systemctl list-unit-files | grep -q '^cleared2bet.service'; then
-  systemctl restart cleared2bet
+if systemctl list-unit-files | grep -q '^zanalyz.service'; then
+  systemctl restart zanalyz
   systemctl reload nginx || true
 fi
 
-echo "OK — Cleared2Bet à jour."
+echo "OK — ZanalyZ à jour."

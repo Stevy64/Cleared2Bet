@@ -17,18 +17,18 @@ def _admin_index(request, extra_context=None):
     ctx = dict(extra_context or {})
     ctx['title'] = 'Tableau de bord'
     try:
-        ctx['c2b_stats'] = build_dashboard_stats()
-        ctx['c2b_reglages'] = ReglageSite.get_solo()
+        ctx['zanalyz_stats'] = build_dashboard_stats()
+        ctx['zanalyz_reglages'] = ReglageSite.get_solo()
     except Exception:  # noqa: BLE001 — migrations en cours
-        ctx['c2b_stats'] = None
-        ctx['c2b_reglages'] = None
+        ctx['zanalyz_stats'] = None
+        ctx['zanalyz_reglages'] = None
     return _admin_index_orig(request, ctx)
 
 
 admin.site.index = _admin_index
 admin.site.index_template = 'admin/paris/index.html'
-admin.site.site_header = 'Cleared2Bet'
-admin.site.site_title = 'Cleared2Bet Admin'
+admin.site.site_header = 'ZanalyZ'
+admin.site.site_title = 'ZanalyZ Admin'
 admin.site.index_title = 'Tableau de bord'
 admin.site.enable_nav_sidebar = True
 

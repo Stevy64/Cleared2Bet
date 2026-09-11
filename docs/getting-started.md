@@ -1,4 +1,4 @@
-# Prise en main — Cleared2Bet
+# Prise en main — ZanalyZ
 
 Guide pour lancer le projet en local et comprendre le flux quotidien.
 
@@ -10,8 +10,8 @@ Guide pour lancer le projet en local et comprendre le flux quotidien.
 ## 2. Premier démarrage (Docker)
 
 ```bash
-git clone https://github.com/Stevy64/Cleared2Bet.git
-cd Cleared2Bet
+git clone https://github.com/Stevy64/ZanalyZ.git
+cd ZanalyZ
 cp .env.example .env
 ```
 
@@ -90,11 +90,11 @@ python manage.py runserver
 pytest
 ```
 
-Le moteur peut rester local (pas de `C2B_MOTEUR_URL`). Pour tester le micro-service :
+Le moteur peut rester local (pas de `ZANALYZ_MOTEUR_URL`). Pour tester le micro-service :
 
 ```bash
 uvicorn moteur_service.app:app --reload --port 8001
-# .env : C2B_MOTEUR_URL=http://127.0.0.1:8001
+# .env : ZANALYZ_MOTEUR_URL=http://127.0.0.1:8001
 ```
 
 ## 6. Flux données (résumé)

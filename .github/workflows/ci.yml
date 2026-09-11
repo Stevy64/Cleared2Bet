@@ -71,8 +71,8 @@ jobs:
       DJANGO_SETTINGS_MODULE: config.settings
       DJANGO_SECRET_KEY: vps-smoke-secret-key-not-for-production-use-please-rotate-locally-xx
       DJANGO_DEBUG: "0"
-      DJANGO_ALLOWED_HOSTS: cleared2bet.example.com,www.cleared2bet.example.com,localhost,127.0.0.1,testserver
-      DJANGO_CSRF_TRUSTED_ORIGINS: https://cleared2bet.example.com,https://www.cleared2bet.example.com
+      DJANGO_ALLOWED_HOSTS: zanalyz.example.com,www.zanalyz.example.com,localhost,127.0.0.1,testserver
+      DJANGO_CSRF_TRUSTED_ORIGINS: https://zanalyz.example.com,https://www.zanalyz.example.com
       DJANGO_SSL: "1"
       DJANGO_SECURE_SSL_REDIRECT: "1"
       PYTHONUNBUFFERED: "1"
@@ -105,8 +105,8 @@ jobs:
           from django.conf import settings
           assert settings.DEBUG is False
           assert not settings.SECRET_KEY.startswith("django-insecure-")
-          assert "cleared2bet.example.com" in settings.ALLOWED_HOSTS
-          assert any("cleared2bet.example.com" in o for o in settings.CSRF_TRUSTED_ORIGINS)
+          assert "zanalyz.example.com" in settings.ALLOWED_HOSTS
+          assert any("zanalyz.example.com" in o for o in settings.CSRF_TRUSTED_ORIGINS)
           assert settings.SECURE_PROXY_SSL_HEADER == ("HTTP_X_FORWARDED_PROTO", "https")
           print("VPS / Oracle Cloud prod smoke OK")
           PY

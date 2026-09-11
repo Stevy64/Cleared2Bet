@@ -1,8 +1,8 @@
 """
-Microservice moteur Cleared2Bet (stateless).
+Microservice moteur ZanalyZ (stateless).
 
 Expose l’analyse / classement de journée sans Django ni base.
-Le worker et le web appellent ce service via C2B_MOTEUR_URL.
+Le worker et le web appellent ce service via ZANALYZ_MOTEUR_URL.
 """
 from __future__ import annotations
 
@@ -19,7 +19,7 @@ from paris.moteur import (
 )
 
 app = FastAPI(
-    title='Cleared2Bet Moteur',
+    title='ZanalyZ Moteur',
     version=VERSION_MOTEUR,
     docs_url='/docs',
 )
@@ -47,7 +47,7 @@ class AnalyserResponse(BaseModel):
 
 @app.get('/health')
 def health() -> dict[str, str]:
-    return {'status': 'ok', 'service': 'cleared2bet-moteur', 'version': VERSION_MOTEUR}
+    return {'status': 'ok', 'service': 'zanalyz-moteur', 'version': VERSION_MOTEUR}
 
 
 @app.post('/v1/analyser', response_model=AnalyserResponse)

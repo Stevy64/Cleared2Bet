@@ -53,7 +53,7 @@ def _payload_vip_public():
     cfg = ReglageSite.get_solo()
     return {
         'whatsapp_vip_url': cfg.lien_whatsapp_vip(),
-        'vip_tarif_libelle': cfg.vip_tarif_libelle or 'VIP Cleared2Bet',
+        'vip_tarif_libelle': cfg.vip_tarif_libelle or 'VIP ZanalyZ',
     }
 
 

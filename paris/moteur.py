@@ -1,5 +1,5 @@
 """
-Moteur de probabilités Cleared2Bet — fonctions pures, sans Django.
+Moteur de probabilités ZanalyZ — fonctions pures, sans Django.
 
 Pipeline (v3.1)
 ---------------

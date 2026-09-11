@@ -12,7 +12,7 @@ _TTL = 120  # secondes — le client poll toutes les ~8–12 s
 
 
 def _client():
-    url = (getattr(settings, 'C2B_REDIS_URL', '') or '').strip()
+    url = (getattr(settings, 'ZANALYZ_REDIS_URL', '') or '').strip()
     if not url:
         return None
     try:

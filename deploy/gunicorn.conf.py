@@ -2,7 +2,7 @@
 import multiprocessing
 import os
 
-bind = os.environ.get('GUNICORN_BIND', 'unix:/run/cleared2bet/gunicorn.sock')
+bind = os.environ.get('GUNICORN_BIND', 'unix:/run/zanalyz/gunicorn.sock')
 workers = int(os.environ.get('GUNICORN_WORKERS', max(2, multiprocessing.cpu_count() * 2 + 1)))
 threads = int(os.environ.get('GUNICORN_THREADS', '2'))
 timeout = int(os.environ.get('GUNICORN_TIMEOUT', '60'))

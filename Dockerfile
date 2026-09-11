@@ -1,4 +1,4 @@
-# Cleared2Bet — build offline-friendly (wheels/ préchargés sur l’hôte)
+# ZanalyZ — build offline-friendly (wheels/ préchargés sur l’hôte)
 # Targets : builder (dev) | runner (web/worker) | moteur (API analyse)
 
 FROM python:3.11-slim AS builder
@@ -50,8 +50,8 @@ CMD ["gunicorn", "--config", "deploy/gunicorn.conf.py", "config.wsgi:application
 # --- Microservice moteur (FastAPI, pas de migrate) ---
 FROM runner AS moteur
 
-ENV C2B_SKIP_MIGRATE=1 \
-    C2B_SKIP_COLLECTSTATIC=1 \
+ENV ZANALYZ_SKIP_MIGRATE=1 \
+    ZANALYZ_SKIP_COLLECTSTATIC=1 \
     MOTEUR_BIND=0.0.0.0:8001
 
 EXPOSE 8001

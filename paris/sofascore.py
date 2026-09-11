@@ -18,7 +18,7 @@ except ImportError:  # pragma: no cover - environnement sans curl_cffi
 
 BASE = 'https://api.sofascore.com/api/v1'
 
-# uniqueTournament id → code interne Cleared2Bet
+# uniqueTournament id → code interne ZanalyZ
 TOURNOIS = {
     7: {'code': 'UCL', 'nom': 'Ligue des champions', 'pays': 'Europe', 'ordre': 10},
     17: {'code': 'PL', 'nom': 'Premier League', 'pays': 'Angleterre', 'ordre': 20},

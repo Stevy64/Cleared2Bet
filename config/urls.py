@@ -7,14 +7,14 @@ from django.urls import include, path, re_path
 
 from paris import views
 
-admin.site.site_header = 'Cleared2Bet'
-admin.site.site_title = 'Cleared2Bet'
+admin.site.site_header = 'ZanalyZ'
+admin.site.site_title = 'ZanalyZ'
 admin.site.index_title = 'Saisie et consultation'
 
 
 def health(_request):
     """Sonde Docker / load-balancer (pas d’auth)."""
-    return JsonResponse({'status': 'ok', 'app': 'cleared2bet'})
+    return JsonResponse({'status': 'ok', 'app': 'zanalyz'})
 
 
 def service_worker(request):

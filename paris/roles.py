@@ -1,4 +1,4 @@
-"""Rôles / catégories compte Cleared2Bet."""
+"""Rôles / catégories compte ZanalyZ."""
 from __future__ import annotations
 
 CATEGORIES_VIP = frozenset({'vip', 'premium'})

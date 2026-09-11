@@ -1,4 +1,4 @@
-"""Client du microservice moteur (fallback local si C2B_MOTEUR_URL vide)."""
+"""Client du microservice moteur (fallback local si ZANALYZ_MOTEUR_URL vide)."""
 from __future__ import annotations
 
 import json
@@ -12,7 +12,7 @@ from paris.moteur import AnalyseInvalide, analyser, classer_journee
 
 
 def _moteur_url() -> str:
-    return (getattr(settings, 'C2B_MOTEUR_URL', None) or '').rstrip('/')
+    return (getattr(settings, 'ZANALYZ_MOTEUR_URL', None) or '').rstrip('/')
 
 
 def moteur_disponible() -> bool:

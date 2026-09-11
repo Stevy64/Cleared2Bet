@@ -1,6 +1,6 @@
-# Docker — Cleared2Bet
+# Docker — ZanalyZ
 
-Stack alignée Makefile + images `cleared2bet-dev` / `cleared2bet-prod` / `cleared2bet-moteur`.  
+Stack alignée Makefile + images `zanalyz-dev` / `zanalyz-prod` / `zanalyz-moteur`.  
 Prise en main générale : [getting-started.md](getting-started.md).
 
 ## Prérequis
@@ -19,7 +19,7 @@ make wheels-win               # ou make wheels (Linux/macOS)
 
 ```bash
 cp .env.example .env          # optionnel en local
-make dev-build                # build cleared2bet-dev + runserver
+make dev-build                # build zanalyz-dev + runserver
 # ou : docker compose -f docker-compose.dev.yml up --build
 ```
 
@@ -36,7 +36,7 @@ make logs-dev
 make stop-dev
 ```
 
-SQLite persisté dans le volume `cleared2bet_dev_data` (`/app/data/db.sqlite3`).
+SQLite persisté dans le volume `zanalyz_dev_data` (`/app/data/db.sqlite3`).
 
 ## Production (OVH Cloud / VPS Docker)
 
@@ -54,12 +54,12 @@ make logs-worker
 
 | Conteneur              | Image / rôle                         |
 |------------------------|--------------------------------------|
-| `cleared2bet-web`      | `cleared2bet-prod` (Gunicorn)        |
-| `cleared2bet-moteur`   | `cleared2bet-moteur` (FastAPI)       |
-| `cleared2bet-worker`   | pipeline sync / analyse / règlement  |
-| `cleared2bet-db`       | Postgres 16                          |
-| `cleared2bet-redis`    | lock anti-chevauchement              |
-| `cleared2bet-nginx`    | reverse-proxy port 80                |
+| `zanalyz-web`      | `zanalyz-prod` (Gunicorn)        |
+| `zanalyz-moteur`   | `zanalyz-moteur` (FastAPI)       |
+| `zanalyz-worker`   | pipeline sync / analyse / règlement  |
+| `zanalyz-db`       | Postgres 16                          |
+| `zanalyz-redis`    | lock anti-chevauchement              |
+| `zanalyz-nginx`    | reverse-proxy port 80                |
 
 Dev avec worker : `make dev-worker` (profile Compose).
 

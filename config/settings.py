@@ -1,5 +1,5 @@
 """
-Django settings for Cleared2Bet (dev local + prod VPS).
+Django settings for ZanalyZ (dev local + prod VPS).
 """
 
 from __future__ import annotations
@@ -133,7 +133,7 @@ if _db_url.startswith(('postgres://', 'postgresql://')):
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
-            'NAME': (u.path or '/').lstrip('/') or 'cleared2bet',
+            'NAME': (u.path or '/').lstrip('/') or 'zanalyz',
             'USER': u.username or '',
             'PASSWORD': u.password or '',
             'HOST': u.hostname or '',
@@ -204,5 +204,17 @@ LOGGING = {
 }
 
 # Microservice moteur (vide = calcul local dans le process Django)
-C2B_MOTEUR_URL = os.environ.get('C2B_MOTEUR_URL', '').strip()
-C2B_REDIS_URL = os.environ.get('C2B_REDIS_URL', '').strip()
+# ZANALYZ_* prioritaire ; C2B_* conservé en secours pour les anciens déploiements.
+def _env_first(*keys: str, default: str = '') -> str:
+    for key in keys:
+        value = os.environ.get(key, '').strip()
+        if value:
+            return value
+    return default
+
+
+ZANALYZ_MOTEUR_URL = _env_first('ZANALYZ_MOTEUR_URL', 'C2B_MOTEUR_URL')
+ZANALYZ_REDIS_URL = _env_first('ZANALYZ_REDIS_URL', 'C2B_REDIS_URL')
+# Alias rétrocompat (imports / scripts externes éventuels)
+C2B_MOTEUR_URL = ZANALYZ_MOTEUR_URL
+C2B_REDIS_URL = ZANALYZ_REDIS_URL
